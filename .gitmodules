@@ -1,0 +1,3 @@
+[submodule "lib/gamenode"]
+	path = lib/gamenode
+	url = git://github.com/bzar/gamenode.git

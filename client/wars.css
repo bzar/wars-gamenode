@@ -1,0 +1,321 @@
+body {
+  margin: 0;
+  padding: 0;
+}
+
+#sidebar {
+  width: 190px;
+  height: 100%;
+  float: left;
+  background-color: #222;
+  overflow: auto;
+}
+
+#content {
+  height: 100%;
+  display: block;
+  background-color: #eee;
+  overflow: auto;
+}
+
+h1 {
+  text-align: center;
+  color: #ddd;
+  font: 50px sans-serif;
+  margin: 0;
+  padding: 0;
+}
+
+h2 {
+  color: #333;
+  font: 40px sans-serif;
+  margin: 0;
+  padding: 20px 0px 0px 20px;
+  margin-bottom: 20px;
+  width: 30%;
+  border-bottom: 1px solid #888;
+}
+
+.navigation {
+  list-style: none;
+  padding: 0;
+  margin: 0 0 8px 0;
+  text-align: left;
+}
+
+.navigation li {
+  display: block;
+  background-color: #444;
+  border-bottom: 1px solid #888;
+  border-top: 1px solid #888;
+  margin-top: -1px;
+}
+
+.navigation li a {
+  color: #eee;
+  padding: 10px;
+  font: 16px sans-serif;
+  text-decoration: none;
+  display: block;
+}
+
+.navigation a:visited {
+  color: #eee;
+}
+
+.navigation li:hover {
+  color: #fff;
+  background-color: #666;
+}
+
+.centeredForm {
+  max-width: 600px;
+  margin: 64px;
+  padding: 32px;
+  background-color: #f5f5f5;
+  display: inline-block;
+  border-radius: 8px;
+  border: 1px solid #ddd;
+}
+
+.centeredForm ul {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+}
+
+.centeredForm li {
+  margin-bottom: 8px;
+}
+
+.centeredForm label {
+  font: 20px sans-serif;
+  width: 50%;
+  display: inline-block;
+}
+
+.centeredForm input[type=text], .centeredForm input[type=password] {
+  width: 48%;
+  display: inline-block;
+}
+
+.alignRight {
+  text-align: right;
+}
+
+.bigTable {
+  width: 100%;
+  border-collapse: collapse;
+  font: 20px sans-serif;
+  text-align: center;
+}
+
+.bigTable td {
+  padding: 8px;
+  color: #111;
+}
+
+.bigTable tbody tr:nth-child(even) {
+  background-color: #bbb;
+}
+
+.bigTable tbody tr:nth-child(odd) {
+  background-color: #aaa;
+}
+.bigTable thead tr {
+  background-color: #eee;
+}
+
+.mapContainer {
+  width: 200;
+  border: 1px solid #ccc;
+  display: inline-block;
+  margin: 16px;
+  background-color: #ddd;
+  border-radius: 16px;
+  cursor: pointer;
+  color: #333;
+  text-decoration: none;
+}
+
+.mapContainer:hover {
+  background-color: #e8e8e8;
+  color: #111;
+}
+
+.mapContainer.selected {
+  background-color: #aad;
+}
+
+.mapContainer .name {
+  font: 16px sans-serif;
+  margin: 4px 8px;
+  text-align: center;
+  font-weight: bold;
+}
+
+.mapContainer .info {
+  font: 14px sans-serif;
+  margin: 2px 4px;
+  text-align: center;
+}
+
+#mapEditorView {
+}
+
+#mapEditorTools {
+  text-align: center;
+}
+
+.player1 {
+  background-color: rgba(214,61,56, 0.7) !important;
+}
+
+.player2 {
+  background-color: rgba(56,67,214, 0.7) !important;
+}
+
+.player3 {
+  background-color: rgba(217,213,43, 0.7) !important;
+}
+
+.player4 {
+  background-color: rgba(99,173,208, 0.7) !important;
+}
+
+#playerSelection .selected {
+  border: 2px solid #ddf;
+}
+
+#playerSelection .disabled {
+  background-color: #333 !important;
+  cursor: default;
+}
+
+
+.playerSelection, .paletteSelection, .button {
+  background-color: #555;
+  color: #eee;
+  padding: 2px;
+  display: inline-block;
+  border: 1px solid #888;
+  font: 16px sans-serif;  
+  cursor: pointer;
+}
+
+.button {
+  min-width: 24px;
+  height: 24px;
+  display: inline-block;
+  text-align: center;
+}
+
+#import, #export {
+  margin: 4px;
+}
+
+#importExportData {
+  border: 1px solid #ccc;
+  margin: auto;
+  display: inline-block;
+  background-color: #ddd;
+}
+
+.paletteSelection.selected, .playerSelection.selected {
+  border: 2px solid #ddf;
+}
+
+.playerSelection {
+  min-width: 16px;
+  height: 16px;
+}
+
+#playerSelection, #paletteSelection {
+  margin-bottom: 8px;
+}
+
+.paletteSelection {
+  width: 60px;
+}
+
+#terrainPalette, #unitPalette {
+  background-color: #333;
+  padding: 4px 0;
+}
+#terrainTypePalette {
+  margin-bottom: 16px;
+}
+
+#playerSelection {
+  width: 100%;
+}
+
+#palette img {
+  margin: 2px;
+  cursor: pointer;
+}
+
+#palette img.selected {
+  margin: 0px;
+  border: 2px solid #ddf;
+}
+
+.toolForm {
+  background-color: #444;
+  color: #eee;
+  padding: 4px;
+}
+
+.toolForm ul {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+}
+
+.toolForm label {
+  width: 48%;
+}
+
+.toolForm input[type=text] {
+  width: 50%;
+  border: 1px solid #111;
+  background-color: #ddd;
+}
+
+.smallInput {
+  width: 50px !important;
+}
+
+.tinyInput {
+  width: 25px !important;
+}
+
+.buttonTable {
+  border-collapse: collapse;
+  margin: auto;
+  padding: 0;  
+}
+
+.buttonTable tr {
+  margin: 0;
+  padding: 0;  
+}
+
+.buttonTable td {
+  margin: 0;
+  padding: 0;  
+}
+
+.buttonTable button {
+  width: 32px;
+  height: 32px;
+  font: 24px sans-serif;
+  margin: 0;
+  padding: 0;
+  border: 1px solid #111;
+  background-color: #ddd;
+}
+
+.buttonTable button:active {
+  background-color: #eee;
+}

@@ -1,0 +1,58 @@
+<html>
+  <head>
+    <script type="text/javascript" src="jquery-1.6.2.min.js"></script>
+    <script type="text/javascript" src="/socket.io/socket.io.js"></script> 
+    <script type="text/javascript" src="/gamenode/gameNodeClient.js"></script>
+    <script type="text/javascript" src="/gamenode/session.js"></script>
+    <script type="text/javascript" src="skeleton.js"></script>
+    <script type="text/javascript" src="base.js"></script>
+    <script type="text/javascript" src="image_map.js"></script>
+    <script type="text/javascript" src="map.js"></script>
+    <script type="text/javascript" src="createGame.js"></script>
+
+    <link rel="stylesheet" href="wars.css" type="text/css"/>
+
+    <title>Wars - Create a game</title>
+  </head>
+
+  <body>
+    <div id="sidebar">
+      <h1>Wars</h1>
+      <ul id="navigation" class="navigation"></ul>
+    </div>
+
+    <div id="content">
+      <h2>Create a game</h2>
+      <div id="maps"></div>
+      <div id="gameSettings">
+        <form class="centeredForm">
+          <ul>
+            <li>
+              <label for="gameName">Game name</label>
+              <input id="gameName" name="gameName" type="text" value="My awesome game"/>
+            </li>
+            <li>
+              <label for="publicGame">Public game</label>
+              <input id="publicGame" name="publicGame" type="checkbox" checked />
+            </li>
+            <li>
+              <label for="turnTimeLimit">Limit turn time</label>
+              <input id="turnTimeLimit" name="turnTimeLimit" type="checkbox" />
+            </li>
+            <li id="timeLimitInput">
+              <input id="hourLimit" name="hourLimit" type="text" value="" class="tinyInput"/>
+              <span>hours</span>
+              <input id="minuteLimit" name="minuteLimit" type="text" value="" class="tinyInput"/>
+              <span>minutes</span>
+              <input id="secondLimit" name="secondLimit" type="text" value="" class="tinyInput"/>
+              <span>seconds</span>
+            </li>
+            <li class="alignRight">
+              <input type="submit" value="Start game" />
+            </li>
+          </ul>
+        </form>
+      </div>
+    </div>
+  </body>
+</html>

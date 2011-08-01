@@ -1,0 +1,40 @@
+<html>
+  <head>
+    <script type="text/javascript" src="jquery-1.6.2.min.js"></script>
+    <script type="text/javascript" src="/socket.io/socket.io.js"></script> 
+    <script type="text/javascript" src="/gamenode/gameNodeClient.js"></script>
+    <script type="text/javascript" src="/gamenode/session.js"></script>
+    <script type="text/javascript" src="skeleton.js"></script>
+    <script type="text/javascript" src="login.js"></script>
+
+    <link rel="stylesheet" href="wars.css" type="text/css"/>
+
+    <title>Wars - Login</title>
+  </head>
+
+  <body>
+    <div id="sidebar">
+      <h1>Wars</h1>
+      <ul id="navigation" class="navigation">
+        <li><a href="login.html">Login</a></li>
+        <li><a href="register.html">Register</a></li>
+      </ul>      
+    </div>
+
+    <div id="content">
+      <form id="loginForm" class="centeredForm">
+        <ul>
+          <li>
+            <label for="username">Username</label>
+            <input type="text" id="username" name="username" />
+          </li>
+          <li>
+            <label for="password">Password</label>
+            <input type="password" id="password" name="password" />
+          </li>
+          <li class="alignRight"><input type="submit" value="Login"/></li>
+        </ul>
+      </form>
+    </div>
+  </body>
+</html>
