@@ -1,6 +1,7 @@
 var fs = require('fs');
 
 var entities = require("../../entities");
+var settings = require("../../settings").settings;
 var DummyDatabase = require("./dummy").implementation;
 
 var JSONFileDatabase = function() {
@@ -141,40 +142,56 @@ JSONFileDatabase.prototype.game = function(gameId, callback) {
 
 JSONFileDatabase.prototype.createGame = function(game, callback) {
   var this_ = this;
+  var newGame = game.clone();
   this.loadDatabase(function(database) {
-    game.gameId = database.gameIdCounter;
+    newGame.gameId = database.gameIdCounter;
     database.gameIdCounter += 1;
-    database.games.push(game);
-    
-    var playerIds = {};
-    for(var i = 0; i < database.players.length; ++i) {
-      var p = database.players[i];
-      if(p.gameId == game.mapId) {
-	var player = p.clone();
-        player.playerId = database.playerIdCounter;
-        database.playerIdCounter += 1;
-        player.gameId = game.gameId;
-        database.players.push(player);
-        playerIds[p.playerId] = player.playerId;
+    var map = database.map(newGame.mapId);
+    var players = {0: {playerId: null}};
+    for(var i = 0; i < map.mapData.length; ++i) {
+      var mapTile = map.mapData[i];
+
+      if(mapTile.owner > 0) {
+        if(!(mapTile.owner in players)) {
+          var player = new entities.Player(database.playerIdCounter, newGame.gameId, 
+                                              null, mapTile.owner, map.funds, 0, 
+                                              {emailNotifications: true});
+          database.playerIdCounter += 1;
+          players[player.playerNumber] = player;
+          database.players.push(player);
+        }
       }
+      
+      var unit = null;
+      if(mapTile.unit !== null) {
+        if(!(mapTile.unit.owner in players)) {
+          var player = new entities.Player(database.playerIdCounter, newGame.gameId, 
+                                              null, mapTile.unit.owner, map.funds, 0, 
+                                              {emailNotifications: true});
+          database.playerIdCounter += 1;
+          players[player.playerNumber] = player;
+          database.players.push(player);
+        }
+        unit = new entities.Unit(database.unitIdCounter, null, mapTile.unit.type, 
+                                  players[mapTile.unit.owner].playerId, null, 100, 
+                                  false, false, false);
+        database.unitIdCounter += 1;
+        database.units.push(unit);
+      }
+      
+      var tileUnit = unit !== null ? unit.unitId : null;
+      var tileOwner = players[mapTile.owner].playerId;
+      var tile = new entities.Tile(database.tileIdCounter, newGame.gameId,
+                                   mapTile.x, mapTile.y, mapTile.type, 
+                                   mapTile.subType, tileOwner, tileUnit, 
+                                   settings.maxCapturePoints, false);
+      database.tileIdCounter += 1;
+      database.tiles.push(tile);
     }
     
-    var tiles = [];
-    for(var i = 0; i < database.tiles.length; ++i) {
-      var t = database.tiles[i];
-      if(t.gameId == game.mapId) {
-        var tile = t.clone();
-        tile.tileId = database.tileIdCounter;
-        database.tileIdCounter += 1;
-        tile.gameId = game.gameId;
-        if(tile.ownerId !== null)
-          tile.ownerId = playerIds[tile.ownerId];
-        database.tiles.push(tile);
-      }
-    }
-            
+    database.games.push(newGame);
     this_.saveDatabase(function() {
-      callback(game.gameId);
+      callback(newGame.gameId);
     });
   });
 }

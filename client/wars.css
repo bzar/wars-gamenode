@@ -29,10 +29,10 @@ h1 {
 h2 {
   color: #333;
   font: 40px sans-serif;
-  margin: 0;
+  margin: 0 0 20px 0;  
   padding: 20px 0px 0px 20px;
-  margin-bottom: 20px;
-  width: 30%;
+  
+  display: block;
   border-bottom: 1px solid #888;
 }
 
@@ -78,25 +78,47 @@ h2 {
   border: 1px solid #ddd;
 }
 
-.centeredForm ul {
+.columnForm {
+  height: 100%;
+  border-right: 1px solid #ddd;
+  width: 300px;
+  float: left;
+  padding: 8px;
+  margin-right: 8px;
+}
+
+.centeredForm ul , .columnForm ul {
   list-style: none;
   margin: 0;
   padding: 0;
 }
 
-.centeredForm li {
+.centeredForm li, .columnForm li {
   margin-bottom: 8px;
+  clear: both;
 }
 
-.centeredForm label {
+.centeredForm input, .columnForm input {
+  float: right;
+}
+
+#timeLimitInput input {
+  float: none !important;
+}
+.centeredForm label, .columnForm label {
   font: 20px sans-serif;
   width: 50%;
   display: inline-block;
 }
 
-.centeredForm input[type=text], .centeredForm input[type=password] {
+.centeredForm input[type=text], .centeredForm input[type=password], .columnForm input[type=text], .columnForm input[type=password] {
   width: 48%;
+}
+
+input[type=text], input[type=password] {
   display: inline-block;
+  border: 1px solid #aaa;
+  background-color: #f8f8f8;
 }
 
 .alignRight {
@@ -136,6 +158,7 @@ h2 {
   cursor: pointer;
   color: #333;
   text-decoration: none;
+  overflow: hidden;
 }
 
 .mapContainer:hover {
@@ -319,3 +342,27 @@ h2 {
 .buttonTable button:active {
   background-color: #eee;
 }
+
+.mapInfo {
+  list-style: none;
+  color: #eee;
+  margin: 0;
+  padding: 8px;
+  font: 20px sans-serif;
+}
+
+.mapInfo li {
+  border-bottom: 1px dotted #444;
+  margin: 2px;
+  padding: 2px;
+}
+
+.mapTileStat {
+  font: 32px sans-serif;
+}
+
+.mapTileStat img {
+  vertical-align: middle;
+  margin-right: 8px;
+}
+

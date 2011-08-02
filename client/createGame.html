@@ -19,13 +19,34 @@
     <div id="sidebar">
       <h1>Wars</h1>
       <ul id="navigation" class="navigation"></ul>
+      <div id="mapPreviewControls">
+        <ul class="navigation">
+          <li><a id="toGameSettings" href="#">Continue</a></li>
+          <li><a id="backToMaps" href="#">Back</a></li>
+        </ul>
+        <ul id="mapInfo" class="mapInfo"></ul>
+        <ul id="mapTiles" class="mapInfo"></ul>
+      </div>
+      <div id="createGameControls">
+        <ul class="navigation">
+          <li><a id="createGame" href="#">Create game</a></li>
+          <li><a id="backToMapPreview" href="#">Back</a></li>
+        </ul>
+      </div>
     </div>
 
     <div id="content">
-      <h2>Create a game</h2>
-      <div id="maps"></div>
+      <div id="mapSelection">
+        <h2>Create a game - select map</h2>
+        <div id="maps"></div>
+      </div>
+      <div id="mapFullPreview">
+        <h2>Create a game - map preview</h2>
+        <canvas id="mapCanvas"></canvas>
+      </div>
       <div id="gameSettings">
-        <form class="centeredForm">
+        <h2>Create a game - game settings</h2>
+        <form class="columnForm">
           <ul>
             <li>
               <label for="gameName">Game name</label>
@@ -39,16 +60,13 @@
               <label for="turnTimeLimit">Limit turn time</label>
               <input id="turnTimeLimit" name="turnTimeLimit" type="checkbox" />
             </li>
-            <li id="timeLimitInput">
+            <li id="timeLimitInput" class="alignRight">
               <input id="hourLimit" name="hourLimit" type="text" value="" class="tinyInput"/>
               <span>hours</span>
               <input id="minuteLimit" name="minuteLimit" type="text" value="" class="tinyInput"/>
               <span>minutes</span>
               <input id="secondLimit" name="secondLimit" type="text" value="" class="tinyInput"/>
               <span>seconds</span>
-            </li>
-            <li class="alignRight">
-              <input type="submit" value="Start game" />
             </li>
           </ul>
         </form>

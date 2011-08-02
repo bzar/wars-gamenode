@@ -1,14 +1,14 @@
-function Tile() {
-  this.tileId = null;
-  this.gameId = null;
-  this.type = null;
-  this.subType = null;
-  this.x = null;
-  this.y = null;
-  this.ownerId = null;
-  this.unitId = null;
-  this.capturePoints = null;
-  this.beingCaptured = null;
+function Tile(tileId, gameId, x, y, type, subType, ownerId, unitId, capturePoints, beingCaptured) {
+  this.tileId = tileId;
+  this.gameId = gameId;
+  this.x = x;
+  this.y = y;
+  this.type = type;
+  this.subType = subType;
+  this.ownerId = ownerId;
+  this.unitId = unitId;
+  this.capturePoints = capturePoints;
+  this.beingCaptured = beingCaptured;
 };
 
 Tile.prototype.clone = function() {

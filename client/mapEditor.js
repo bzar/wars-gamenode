@@ -138,7 +138,7 @@ var wrap = function() {
     var mapSize = mapPainter.getMapSize();
     if(width > mapSize.w) {
       for(var x = mapSize.w; x < width; ++x) {
-        for(var y = 0; y < height; ++y) {
+        for(var y = 0; y < mapSize.h; ++y) {
           mapPainter.currentTiles.push({x:x, y:y, type:1, subtype:0, owner:0, unit: null});
         }
       }
@@ -226,7 +226,7 @@ var wrap = function() {
       client.stub.createMap({name: name, initialFunds: funds, mapData: mapData}, function(response) {
         if(response.success) {
           mapId = response.mapId;
-          history.pushState(undefined, undefined, document.location.path + "?mapId=" + mapId);
+          history.pushState(undefined, undefined, document.location.pathname + "?mapId=" + mapId);
           var message = $("#mapSavedMessage")
           message.show();
           message.fadeOut(2000);

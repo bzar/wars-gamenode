@@ -11,8 +11,21 @@ exports.Skeleton = Skeleton;
 
 // GAME MANAGEMENT
 
-Skeleton.prototype.createGame = function(name, mapId, public) {
-  
+Skeleton.prototype.createGame = function(info) {
+  if(this.sessionId === null)
+    return {success: false, reason: "Not logged in"}
+    
+  var game = new entities.Game(null, info.name, info.mapId, 'pregame', 0, 0, 0, 1, 
+                               {public: info.public, turnLength: info.turnLength});
+  var requestId = this.client.requestId;
+  var this_ = this;
+  this.server.database.createGame(game, function(gameId) {
+    if(gameId !== null) {
+      this_.client.sendResponse(requestId, {success: true, gameId: gameId});
+    } else {
+      this_.client.sendResponse(requestId, {success: false});
+    }
+  });
 }
 
 Skeleton.prototype.joinGame = function(gameId, playerNumber) {
@@ -202,6 +215,26 @@ Skeleton.prototype.register = function(userInfo) {
 }
 
 // GAME
+
+Skeleton.prototype.gameRules = function(gameId) {
+  var elements = this.server.settings.gameElements;
+  var rules = {
+    armors: elements.armors,
+    units: elements.unitTypes,
+    terrains: elements.terrains,
+    weapons: elements.weapons,
+    terrainFlags: elements.terrainFlags,
+    unitClasses: elements.unitClasses,
+    movementTypes: elements.movement,
+    unitFlags: elements.unitFlags
+  }
+  
+  if(gameId !== null) {
+    rules.bannedUnits = [];
+  }
+  
+  return rules;
+}
 
 Skeleton.prototype.gameData = function(gameId) {
   

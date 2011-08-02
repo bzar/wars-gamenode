@@ -1,13 +1,13 @@
-function Unit() {
-  this.unitId = null;
-  this.tileId = null;
-  this.type = null;
-  this.ownerId = null;
-  this.carriedBy = null;
-  this.health = null;
-  this.deployed = null;
-  this.moved = null;
-  this.capturing = null;
+function Unit(unitId, tileId, type, ownerId, carriedBy, health, deployed, moved, capturing) {
+  this.unitId = unitId;
+  this.tileId = tileId;
+  this.type = type;
+  this.ownerId = ownerId;
+  this.carriedBy = carriedBy;
+  this.health = health;
+  this.deployed = deployed;
+  this.moved = moved;
+  this.capturing = capturing;
 };
 
 exports.Unit = Unit;

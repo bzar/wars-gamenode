@@ -1,25 +1,19 @@
-function Player() {
-  this.playerId = null;
-  this.gameId = null;
-  this.userId = null;
-  this.playerNumber = null;
-  this.funds = null;
-  this.score = null;
+function Player(playerId, gameId, userId, playerNumber, funds, score, settings) {
+  this.playerId = playerId;
+  this.gameId = gameId;
+  this.userId = userId;
+  this.playerNumber = playerNumber;
+  this.funds = funds;
+  this.score = score;
   this.settings = {
-    emailNotifications: null
+    emailNotifications: settings.emailNotifications
   };
 };
 
 exports.Player = Player;
 
 Player.prototype.clone = function() {
-  var p = new Player();
-  p.playerId = this.playerId;
-  p.gameId = this.gameId;
-  p.userId = this.userId;
-  p.playerNumber = this.playerNumber;
-  p.funds = this.funds;
-  p.score = this.score;
-  p.settings.emailNotifications = this.settings.emailNotifications;
+  var p = new Player(this.playerId, this.gameId, this.userId, this.playerNumber, this.funds, this.score, 
+                     {emailNotifications: this.settings.emailNotifications});
   return p;
 }

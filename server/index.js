@@ -2,13 +2,16 @@ var Server = require("../lib/gamenode/server/gameNodeServer").GameNodeServer,
     SessionStorage = require("../lib/gamenode/server/sessionStorage").SessionStorage,
     FileServer = require("../lib/gamenode/server/fileServer").FileServer,
     Skeleton = require("./skeleton").Skeleton,
-    config = require("./configuration").configuration//,
+    config = require("./configuration").configuration,
+    settings = require("./settings").settings,
     database = require("./database")
 
 
 function WarsServer() {
   this.sessionStorage = new SessionStorage();
   this.database = database.create(config.database.type, config.database);
+  this.config = config;
+  this.settings = settings;
 }
 
 WarsServer.prototype = new Server(Skeleton);
@@ -17,6 +20,17 @@ var server = new WarsServer();
 
 server.listen(8888,"0.0.0.0");
 
+server.io.configure(null, function(){
+  server.io.set('log level', 3);
+
+  server.io.set('transports', [
+    //    'websocket'
+    , 'flashsocket'
+    , 'htmlfile'
+    , 'xhr-polling'
+    , 'jsonp-polling'
+  ]);
+});
 var fileServer = undefined;
 if(config.enableFileServer) {
   fileServer = new FileServer(
