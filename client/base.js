@@ -3,7 +3,7 @@ function populateNavigation(session) {
     {title: "Home", href: "home.html"},
     {title: "My maps", href: "myMaps.html"},
     {title: "Create a game", href: "createGame.html"},
-    {title: "Join a game", href: "joinGame.html"},
+    {title: "Join a game", href: "join.html"},
     {title: "Spectate", href: "spectate.html"},
     {title: "Logout", href: "#", id: "logout"},
   ]

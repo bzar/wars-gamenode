@@ -1,17 +1,26 @@
 var Server = require("../lib/gamenode/server/gameNodeServer").GameNodeServer,
     SessionStorage = require("../lib/gamenode/server/sessionStorage").SessionStorage,
+    SubscriptionManager = require("../lib/gamenode/server/subscriptionManager").SubscriptionManager,
     FileServer = require("../lib/gamenode/server/fileServer").FileServer,
     Skeleton = require("./skeleton").Skeleton,
     config = require("./configuration").configuration,
     settings = require("./settings").settings,
-    database = require("./database")
+    database = require("./database");
 
+var GameManagement = require("./site").GameManagement;
+
+/*process.on('uncaughtException', function (err) {
+  console.error(err);
+  console.log("Node NOT Exiting...");
+});*/
 
 function WarsServer() {
   this.sessionStorage = new SessionStorage();
   this.database = database.create(config.database.type, config.database);
   this.config = config;
   this.settings = settings;
+  this.subscriptions = new SubscriptionManager();
+  this.gameManagement = new GameManagement(this.database);
 }
 
 WarsServer.prototype = new Server(Skeleton);
@@ -25,7 +34,7 @@ server.io.configure(null, function(){
 
   server.io.set('transports', [
     //    'websocket'
-    , 'flashsocket'
+    //, 'flashsocket'
     , 'htmlfile'
     , 'xhr-polling'
     , 'jsonp-polling'
@@ -38,7 +47,8 @@ if(config.enableFileServer) {
     "login.html", "login.js", "register.html", "register.js", 
     "home.html", "home.js", "myMaps.html", "myMaps.js",
     "mapEditor.html", "mapEditor.js", "map.js", "image_map.js",
-    "createGame.html", "createGame.js"
+    "createGame.html", "createGame.js", "pregame.html", "pregame.js",
+    "join.html", "join.js"
     ], 
     { 
       gamenode: "../lib/gamenode/web", 

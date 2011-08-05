@@ -1,0 +1,46 @@
+<html>
+  <head>
+    <script type="text/javascript" src="jquery-1.6.2.min.js"></script>
+    <script type="text/javascript" src="/socket.io/socket.io.js"></script> 
+    <script type="text/javascript" src="/gamenode/gameNodeClient.js"></script>
+    <script type="text/javascript" src="/gamenode/session.js"></script>
+    <script type="text/javascript" src="skeleton.js"></script>
+    <script type="text/javascript" src="base.js"></script>
+    <script type="text/javascript" src="image_map.js"></script>
+    <script type="text/javascript" src="map.js"></script>
+    <script type="text/javascript" src="pregame.js"></script>
+
+    <link rel="stylesheet" href="wars.css" type="text/css"/>
+
+    <title>Wars - Pregame</title>
+  </head>
+
+  <body>
+    <div id="sidebar">
+      <h1>Wars</h1>
+      <ul id="navigation" class="navigation"></ul>
+
+      <ul id="authorTools" class="navigation">
+        <li><a id="startGame" href="#">Start game</a></li>
+        <li><a id="deleteGame" href="#">Delete game</a></li>
+      </ul>
+
+      <div id="gameInfo">
+        <ul id="players">
+        
+        </ul>
+      </div>
+
+      </div>
+
+    </div>
+
+    <div id="content">
+      <h2>Pregame - <span id="gameName"></span></h2>
+      
+      <div id="mapPreview">
+        <canvas id="mapCanvas"></canvas>
+      </div>
+    </div>
+  </body>
+</html>

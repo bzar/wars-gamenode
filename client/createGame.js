@@ -10,7 +10,8 @@ var wrap = function() {
   var mapPainter = new Map(undefined, undefined, "pixel");
   
   $(document).ready(function() {
-    session = resumeSessionOrRedirect(client, undefined, "login.html", function() {
+    var loginUrl = "login.html?next=" + document.location.pathname + document.location.search;
+    session = resumeSessionOrRedirect(client, undefined, loginUrl, function() {
       initializeControls();
       populateNavigation(session);
       
@@ -70,8 +71,7 @@ var wrap = function() {
       }
       client.stub.createGame({name: name, turnLength: turnLength, mapId: mapId, public: publicGame}, function(response) {
         if(response.success) {
-          console.log(JSON.stringify({name: name, turnTime: turnLength, mapId: mapId, public: publicGame}));
-          console.log(response.gameId);
+          document.location = "/pregame.html?gameId=" + response.gameId;
         } else {
           alert("Error creating game!");
         }

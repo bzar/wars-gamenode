@@ -1,0 +1,200 @@
+var entities = require("../entities");
+var settings = require("../settings").settings;
+
+function GameManagement(database) {
+  this.database = database;
+}
+
+exports.GameManagement = GameManagement;
+
+GameManagement.prototype.createGame = function(game, callback) {
+  var this_ = this;
+  this.database.map(game.mapId, function(result) {
+    if(!result.success) {
+      callback({success: false, reason: result.reason});
+      return;
+    }
+    var map = result.map;
+    
+    this_.database.mapData(game.mapId, function(result) {
+      if(!result.success) {
+        callback({success: false, reason: result.reason});
+        return;
+      }
+      
+      map.mapData = result.mapData;
+      var playerIds = [];
+      var players = [];
+      var gameData = [];
+      for(var i = 0; i < map.mapData.length; ++i) {
+        var mapTile = map.mapData[i];
+
+        var tile = new entities.Tile(null, null, mapTile.x, mapTile.y, mapTile.type, 
+                                    mapTile.subtype, mapTile.owner, null, 
+                                    settings.maxCapturePoints, false);
+        
+        if(mapTile.owner > 0) {
+          if(playerIds.indexOf(mapTile.owner) == -1) {
+            var player = new entities.Player(null, null, null, mapTile.owner, null, map.funds, 0, 
+                                            {emailNotifications: true});
+            players.push(player);
+            playerIds.push(mapTile.owner);
+          }
+        }
+
+
+        tile.unit = null;
+        if(mapTile.unit !== null) {
+          if(playerIds.indexOf(mapTile.unit.owner) == -1) {
+            var player = new entities.Player(null, null, null, mapTile.unit.owner, null, map.funds, 0, 
+                                            {emailNotifications: true});
+            players.push(player);
+            playerIds.push(mapTile.unit.owner);
+          }
+          tile.unit = new entities.Unit(null, null, mapTile.unit.type, 
+                                        mapTile.unit.owner, null, 100, 
+                                        false, false, false);
+        }
+        
+        gameData.push(tile);
+      }
+      
+      this_.database.createGame(game, gameData, players, function(result) {
+        if(result.success) {
+          callback({success: true, gameId: result.gameId});
+        } else {
+          callback({success: false, reason: result.reason});
+        }
+      });
+    });
+  });
+}
+
+GameManagement.prototype.joinGame = function(userId, gameId, playerNumber, callback) {
+  var this_ = this;
+  this.database.game(gameId, function(result) {
+    if(!result.success) {
+      callback({success: false, reason: result.reason});
+    } else if(result.game.state != "pregame") {
+      callback({success: false, reason: "Can only join during pregame!"});
+    } else {
+      this_.database.gamePlayer(gameId, playerNumber, function(result) {
+        if(!result.success) {
+          callback({success: false, reason: result.reason});
+        } else if(result.player.userId !== null) {
+          callback({success: false, reason: "Player already reserved!"});
+          return;
+        } else {
+          var player = result.player;
+          this_.database.user(userId, function(result) {
+            if(!result.success) {
+              callback({success: false, reason: result.reason});
+            } else {
+              player.userId = userId;
+              player.playerName = result.user.username;
+              this_.database.updatePlayer(player, function(result) {
+                if(result.success) {
+                  callback({success: true});
+                } else {
+                  callback({success: false, reason: result.reason});
+                }
+              });
+            }
+          });
+        }
+      });
+    }
+  });
+}
+
+GameManagement.prototype.leaveGame = function(userId, gameId, playerNumber, callback) {
+  var this_ = this;
+  this.database.game(gameId, function(result) {
+    if(!result.success) {
+      callback({success: false, reason: result.reason});
+    } else if(result.game.state != "pregame") {
+      callback({success: false, reason: "Can only leave during pregame!"});
+    } else {
+      var game = result.game;
+      this_.database.gamePlayer(gameId, playerNumber, function(result) {
+        if(!result.success) {
+          callback({success: false, reason: result.reason});
+        } else if(result.player.userId != userId && game.authorId != userId) {
+          callback({success: false, reason: "Not the user or game author!"});
+          return;
+        } else {
+          result.player.userId = null;
+          result.player.playerName = null;
+          this_.database.updatePlayer(result.player, function(result) {
+            if(result.success) {
+              callback({success: true});
+            } else {
+              callback({success: false, reason: result.reason});
+            }
+          });
+        }
+      });
+    }
+  });
+}
+
+GameManagement.prototype.startGame = function(userId, gameId, callback) {
+  var this_ = this;
+  this.database.game(function(result) {
+    if(!result.success) {
+      callback({success: false, reason: result.reason});
+    } else if(game.authorId != userId) {
+      callback({success: false, reason: "Not the game author!"});
+    } else if(game.state != "pregame") {
+      callback({success: false, reason: "Can start during pregame!"});
+    } else {
+      game.state = "inProgress";
+      this_.database.updateGame(game, function(result) {
+        if(result.success) {
+          callback({success: true});
+        } else {
+          callback({success: false, reason: result.reason});
+        }
+      });
+    }
+  });
+}
+
+GameManagement.prototype.deleteGame = function(userId, gameId, callback) {
+  var this_ = this;
+  this.database.game(gameId, function(result) {
+    if(!result.success) {
+      callback({success: false, reason: result.reason});
+    } else if(result.game.authorId != userId) {
+      callback({success: false, reason: "Not the game author!"});
+    } else {
+      this_.database.deleteGame(gameId, function(result) {
+        if(result.success) {
+          callback({success: true});
+        } else {
+          callback({success: false, reason: result.reason});
+        }
+      });
+    }
+  });
+}
+
+GameManagement.prototype.openGames = function(callback) {
+  this.database.openGames(function(result) {
+    if(!result.success) {
+      callback({success: false, reason: result.reason});
+    } else {
+      callback({success: true, games: result.games});
+    }
+  });
+}
+
+GameManagement.prototype.myGames = function(userId, callback) {
+  this.database.myGames(userId, function(result) {
+    if(!result.success) {
+      callback({success: false, reason: result.reason});
+    } else {
+      callback({success: true, games: result.games});
+    }
+  });
+}

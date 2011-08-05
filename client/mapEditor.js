@@ -4,7 +4,7 @@ var wrap = function() {
 
   var mapId = /[?&]mapId=(\d+)/.exec(window.location.search);
   if(mapId !== null)
-    mapId = mapId[1];
+    mapId = parseInt(mapId[1]);
   
   var mapPainter = new Map(undefined, 1.0, "pixel");
 
@@ -13,7 +13,8 @@ var wrap = function() {
   var lastY = null;
 
   $(document).ready(function() {
-    session = resumeSessionOrRedirect(client, undefined, "login.html", function() {
+    var loginUrl = "login.html?next=" + document.location.pathname + document.location.search;
+    session = resumeSessionOrRedirect(client, undefined, loginUrl, function() {
       populateNavigation(session);
       initializeMapEditor(client);
     });
@@ -105,13 +106,14 @@ var wrap = function() {
     
     if(terrainSelection.hasClass("selected")) {
       var selected = $($("#terrainSubtypePalette .selected")[0]);
-      return {type: selected.attr("type"), subtype: selected.attr("subtype"), owner: selected.attr("owner")}
+      return {type: parseInt(selected.attr("type")), subtype: parseInt(selected.attr("subtype")), 
+              owner: parseInt(selected.attr("owner"))}
     } else {
       var selected = $($("#unitPalette .selected")[0]);
       if(selected.attr("type") == "null") {
         return {unit: null};
       }
-      return {unit: {type: selected.attr("type"), owner: selected.attr("owner")}}
+      return {unit: {type: parseInt(selected.attr("type")), owner: parseInt(selected.attr("owner"))}}
     }
   }
   
@@ -225,7 +227,7 @@ var wrap = function() {
     if(mapId === null) {
       client.stub.createMap({name: name, initialFunds: funds, mapData: mapData}, function(response) {
         if(response.success) {
-          mapId = response.mapId;
+          mapId = parseInt(response.mapId);
           history.pushState(undefined, undefined, document.location.pathname + "?mapId=" + mapId);
           var message = $("#mapSavedMessage")
           message.show();
@@ -493,7 +495,7 @@ var wrap = function() {
     
     $("#mapSaveForm").submit(function(e) {
       e.preventDefault();
-      saveMap($("#mapName").val(), $("#mapFunds").val());
+      saveMap($("#mapName").val(), parseInt($("#mapFunds").val()));
     });
     
     $("#import").click(importMap);

@@ -5,7 +5,8 @@ var wrap = function() {
   var mapPainter = new Map(undefined, undefined, "pixel");
   
   $(document).ready(function() {
-    session = resumeSessionOrRedirect(client, undefined, "login.html", function() {
+    var loginUrl = "login.html?next=" + document.location.pathname + document.location.search;
+    session = resumeSessionOrRedirect(client, undefined, loginUrl, function() {
       populateNavigation(session);
       populateMyMaps(client);
     });

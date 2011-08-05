@@ -1,21 +1,26 @@
 body {
   margin: 0;
   padding: 0;
+  width: 100%;
+  height: 100%;
+  background-color: #eee;  
 }
 
 #sidebar {
+  position: relative;
   width: 190px;
   height: 100%;
   float: left;
   background-color: #222;
   overflow: auto;
+  box-shadow: inset -5px 0 15px #000;
 }
 
 #content {
-  height: 100%;
-  display: block;
-  background-color: #eee;
+  height:100%;
   overflow: auto;
+  margin: 0;
+  padding: 0;
 }
 
 h1 {
@@ -68,6 +73,10 @@ h2 {
   background-color: #666;
 }
 
+#gameSettings {
+    height: 100%;
+}
+
 .centeredForm {
   max-width: 600px;
   margin: 64px;
@@ -79,7 +88,7 @@ h2 {
 }
 
 .columnForm {
-  height: 100%;
+  min-height: 50%;
   border-right: 1px solid #ddd;
   width: 300px;
   float: left;
@@ -133,20 +142,40 @@ input[type=text], input[type=password] {
 }
 
 .bigTable td {
+  
+}
+
+.bigTable td a {
+  text-decoration:none; 
+  display:block; 
   padding: 8px;
-  color: #111;
+  height:100%;
+  color: inherit;
+}
+
+.bigTable td a:visited {
+  color: inherit;
 }
 
 .bigTable tbody tr:nth-child(even) {
-  background-color: #bbb;
+  background-color: #ccc;
+  border-top: 2px solid #aaa;
+  border-bottom: 2px solid #aaa;
 }
 
 .bigTable tbody tr:nth-child(odd) {
-  background-color: #aaa;
+  background-color: #ddd;
 }
+
 .bigTable thead tr {
-  background-color: #eee;
+  color: #222;
 }
+
+.bigTable tbody tr:hover {
+  color: #444;
+  background-color: #e8e8e8;
+}
+
 
 .mapContainer {
   width: 200;
@@ -355,6 +384,7 @@ input[type=text], input[type=password] {
   border-bottom: 1px dotted #444;
   margin: 2px;
   padding: 2px;
+  display: block;
 }
 
 .mapTileStat {
@@ -366,3 +396,108 @@ input[type=text], input[type=password] {
   margin-right: 8px;
 }
 
+
+#players {
+  list-style: none;
+  color: #eee;
+  margin: 0;
+  padding: 8px;
+  font: 16px sans-serif;
+  background-color: #333;
+}
+
+#players li {
+  padding-bottom: 4px;
+  padding-top: 4px;
+  margin-bottom: 4px;
+  margin-top: 4px;
+  vertical-align: middle;
+  display: block;
+  clear: both;
+  height: 24px;
+}
+
+.playerNumber {
+  border: 2px solid #444;
+  margin-right: 8px;
+  padding: 4px;
+  font-weight: bold;
+}
+
+.playerName {
+}
+
+.joinButton {
+  font: 14px sans-serif;
+  padding: 2px;
+  display: inline-block;
+  text-align: center;
+  vertical-align: middle;
+  cursor: pointer;
+  border: 2px solid #ddd;
+  border-radius: 4px;
+  font-weight: bold;
+  float: right;
+  margin: auto;
+}
+
+.joinButton.notJoined {
+  background-color: #6a6;
+  width: 128px;
+}
+
+.joinButton.notJoined:hover {
+  background-color: #7b7;
+}
+
+.joinButton.joined {
+  border-radius: 4px;
+  background-color: #a66;
+}
+
+.joinButton.joined:hover {
+  border-radius: 4px;
+  background-color: #b77;
+}
+
+#chat {
+  height: 180px;
+  background-color: #ddd;
+  margin: 0;
+  padding: 0 8px;
+  box-shadow: 0px 0px 10px #666;
+}
+
+#chatMessages {
+  margin: 0;
+  padding: 0;
+  background-color: #f8f8f8;
+  height: 148px;
+  overflow-y: scroll;
+}
+
+#chatForm {
+  margin: 0;
+  padding: 0;
+  width: 100%;
+  height: 32px;
+}
+
+#chatInput {
+  width: 90%;
+  float:left;
+}
+
+#chatSend {
+  float:right;
+  width: 9%;
+}
+
+#chatMessages .messageTime {
+  display: inline-block;
+  width: 3em;
+}
+
+#chatMessages .messageSender {
+  margin-right: 1em;
+}

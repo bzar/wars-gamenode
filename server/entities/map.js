@@ -4,6 +4,7 @@ function Map(mapId, authorId, name, funds, mapData) {
   this.name = name;
   this.funds = funds;
   this.players = null;
+  this.mapData = mapData;
   
   if(mapData !== undefined)
     this.parseInfo(mapData);
@@ -12,13 +13,18 @@ function Map(mapId, authorId, name, funds, mapData) {
 exports.Map = Map;
 
 Map.prototype.clone = function() {
-  var m = new Map();
-  m.mapId = this.mapId;
-  m.authorId = this.authorId;
-  m.name = this.name;
-  m.funds = this.funds;
-  m.players = this.players;
+  var m = new Map(this.mapId, this.authorId, this.name, this.funds, this.mapData);
   return m;
+}
+
+Map.prototype.cloneFrom = function(other) {
+  this.mapId = other.mapId;
+  this.authorId = other.authorId;
+  this.name = other.name;
+  this.funds = other.funds;
+  this.players = other.players;
+  this.mapData = other.mapData;
+  return this;
 }
 
 Map.prototype.parseInfo = function(mapData) {
