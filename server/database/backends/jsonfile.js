@@ -416,6 +416,26 @@ JSONFileDatabase.prototype.gamePlayer = function(gameId, playerNumber, callback)
   });
 }
 
+JSONFileDatabase.prototype.userPlayerInTurn = function(gameId, userId, callback) {
+  var this_ = this;
+  this.loadDatabase(function(database) {
+    var game = this.database.game(gameId);
+    if(game === null) {
+      callback({success: false, reason: "No such game!"});
+      return;
+    }
+    
+    for(var i = 0; i < database.players.length; ++i) {
+      var player = database.players[i];
+      if(player.gameId == gameId && player.userId == userId && player.playerNumber == game.inTurnNumber) {
+        callback({success: true, player: player.clone()});
+        return;
+      }
+    }
+    callback({success: false, reason: "User not in turn or not a player!"});
+  });
+}
+
 JSONFileDatabase.prototype.player = function(playerId, callback) {
   var this_ = this;
   this.loadDatabase(function(database) {
@@ -719,7 +739,7 @@ JSONFileDatabase.prototype.createUnit = function(newUnit, callback) {
   });
 }
 
-JSONFileDatabase.prototype.updateUnit = function(unitId, unit, callback) {
+JSONFileDatabase.prototype.updateUnit = function(unit, callback) {
   var this_ = this;
   this.loadDatabase(function(database) {
     var existingUnit = database.unit(unit.unitId);
@@ -729,6 +749,25 @@ JSONFileDatabase.prototype.updateUnit = function(unitId, unit, callback) {
     }
     existingUnit.cloneFrom(unit);
     
+    this_.saveDatabase(function() {
+      callback({success: true});
+    });    
+  });
+}
+
+JSONFileDatabase.prototype.updateUnits = function(units, callback) {
+  var this_ = this;
+  this.loadDatabase(function(database) {
+    for(var i = 0; i < units.length; ++i) {
+      var unit = units[i];
+      var existingUnit = database.unit(unit.unitId);
+      if(existingUnit === null) {
+        callback({success: false, reason: "Unit does not exist!"});
+        return;
+      }
+      existingUnit.cloneFrom(unit);
+    
+    }
     this_.saveDatabase(function() {
       callback({success: true});
     });    
@@ -801,7 +840,7 @@ JSONFileDatabase.prototype.myTiles = function(gameId, playerNumber, callback) {
   });
 }
 
-JSONFileDatabase.prototype.updateTile = function(gameId, tileId, tile, callback) {
+JSONFileDatabase.prototype.updateTile = function(tile, callback) {
   var this_ = this;
   this.loadDatabase(function(database) {
     var existingTile = database.tile(tile.tileId);
@@ -810,6 +849,25 @@ JSONFileDatabase.prototype.updateTile = function(gameId, tileId, tile, callback)
       return;
     }
     existingTile.cloneFrom(tile);
+    
+    this_.saveDatabase(function() {
+      callback({success: true});
+    });    
+  });
+}
+
+JSONFileDatabase.prototype.updateTiles = function(tiles, callback) {
+  var this_ = this;
+  this.loadDatabase(function(database) {
+    for(var i = 0; i < tiles.length; ++i) {
+      var tile = tiles[i];
+      var existingTile = database.tile(tile.tileId);
+      if(existingTile === null) {
+        callback({success: false, reason: "Tile does not exist!"});
+        return;
+      }
+      existingTile.cloneFrom(tile);
+    }
     
     this_.saveDatabase(function() {
       callback({success: true});

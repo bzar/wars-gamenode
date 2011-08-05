@@ -39,3 +39,11 @@ Game.prototype.cloneFrom = function(other) {
   }
   return this;
 }
+
+Game.prototype.changeTurn = function(nextInTurn) {
+  if(nextInTurn < this.inTurnNumber) {
+    this.roundNumber += 1;
+  }
+  this.turnNumber += 1;
+  this.inTurnNumber = nextInTurn;
+}

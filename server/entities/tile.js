@@ -1,3 +1,5 @@
+var settings = require("../settings").settings;
+
 function Tile(tileId, gameId, x, y, type, subtype, owner, unitId, capturePoints, beingCaptured) {
   this.tileId = tileId;
   this.gameId = gameId;
@@ -40,4 +42,8 @@ Tile.prototype.cloneFrom = function(other) {
   this.capturePoints = other.capturePoints;
   this.beingCaptured = other.beingCaptured;
   return this;
+}
+
+Tile.prototype.terrainType = function() {
+  return settings.gameElements.terrains[this.type];
 }

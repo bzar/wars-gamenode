@@ -1,3 +1,5 @@
+var settings = require("../settings").settings;
+
 function Unit(unitId, tileId, type, owner, carriedBy, health, deployed, moved, capturing) {
   this.unitId = unitId;
   this.tileId = tileId;
@@ -37,4 +39,24 @@ Unit.prototype.cloneFrom = function(other) {
   this.moved = other.moved;
   this.capturing = other.capturing;
   return this;
+}
+
+Unit.prototype.wait = function() {
+  this.moved = true;
+  this.capturing = false;
+}
+
+Unit.prototype.reset = function() {
+  this.moved = false;
+}
+
+Unit.prototype.unitType = function() {
+  return settings.gameElements.unitTypes[this.type];
+}
+
+Unit.prototype.heal = function(amount) {
+  this.health += amount;
+  if(this.health > 100) {
+    this.health = 100;
+  }
 }

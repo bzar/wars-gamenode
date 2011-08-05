@@ -152,11 +152,11 @@ TerrainType.prototype.capturable = function() {
   return this.flags.indexOf(terrainFlagsByName['Capturable'].id) != -1 ;
 };
 
-TerrainType.prototype.produces_funds = function() {
+TerrainType.prototype.producesFunds = function() {
   return this.flags.indexOf(terrainFlagsByName['Funds'].id) != -1;
 };
 
-TerrainType.prototype.can_build = function() {
+TerrainType.prototype.canBuild = function() {
   return len(this.buildTypes) > 0;
 };
 
@@ -167,8 +167,8 @@ TerrainType.prototype.builds = function() {
   });
 };
 
-TerrainType.prototype.can_repair = function(unitType) {
-  return this.repairTypes.indexOf(unitType.id) != -1;
+TerrainType.prototype.canRepair = function(unitClassId) {
+  return this.repairTypes.indexOf(unitClassId) != -1;
 };
 
 
