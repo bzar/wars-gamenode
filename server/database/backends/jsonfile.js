@@ -219,6 +219,21 @@ JSONFileDatabase.prototype.createGame = function(game, gameData, players, callba
   });
 }
 
+JSONFileDatabase.prototype.updateGame = function(game, callback) {
+  var this_ = this;
+  this.loadDatabase(function(database) {
+    var existingGame = database.game(game.gameId);
+    if(existingGame === null) {
+      callback({success: false, reason: "Game does not exist!"});
+      return;
+    }
+    existingGame.cloneFrom(game);
+    
+    this_.saveDatabase(function() {
+      callback({success: true});
+    });    
+  });
+}
 JSONFileDatabase.prototype.deleteGame = function(gameId, callback) {
   var this_ = this;
   this.loadDatabase(function(database) {
@@ -371,26 +386,7 @@ JSONFileDatabase.prototype.players = function(gameId, callback) {
     for(var i = 0; i < database.players.length; ++i) {
       var player = database.players[i];
       if(player.gameId == gameId) {
-        players.push(players);
-      }
-    }
-    
-    if(players.length != 0) {
-      callback({success: true, players: players});
-    } else {
-      callback({success: false, reason: "No players for such game!"});
-    }
-  });
-}
-
-JSONFileDatabase.prototype.gamePlayers = function(gameId, callback) {
-  var this_ = this;
-  this.loadDatabase(function(database) {
-    var players = [];
-    for(var i = 0; i < database.players.length; ++i) {
-      var player = database.players[i];
-      if(player.gameId == gameId) {
-        players.push(player.clone());
+        players.push(player);
       }
     }
     
@@ -419,7 +415,7 @@ JSONFileDatabase.prototype.gamePlayer = function(gameId, playerNumber, callback)
 JSONFileDatabase.prototype.userPlayerInTurn = function(gameId, userId, callback) {
   var this_ = this;
   this.loadDatabase(function(database) {
-    var game = this.database.game(gameId);
+    var game = this_.database.game(gameId);
     if(game === null) {
       callback({success: false, reason: "No such game!"});
       return;
@@ -658,6 +654,55 @@ JSONFileDatabase.prototype.gameData = function(gameId, callback) {
   });
 }
 
+JSONFileDatabase.prototype.surrender = function(players, callback) {
+  // Wrap in an array if surrendering a single player
+  players = typeof(players) == "object" ? players : [players];
+  var this_ = this;
+  this.loadDatabase(function(database) {
+    var unitIds = [];
+    for(var p = 0; p < players.length; ++p) {
+      var player = players[p];
+      for(var i = 0; i < database.tiles.length; ++i) {
+        var tile = database.tiles[i];
+        if(tile.gameId == player.gameId && tile.owner == player.playerNumber) {
+          tile.owner = 0;
+          if(tile.unitId !== null) {
+            unitIds.push(tile.unitId);
+            tile.unitId = null;
+          }
+        }
+      }
+    }
+    
+    for(var i = 0; i < database.units.length; ++i) {
+      if(unitIds.indexOf(database.units[i].carriedBy) != -1) {
+        unitIds.push(database.units[i].unitId);
+      }
+    }
+    
+    var start = null;
+    for(var i = 0; i < database.units.length; ++i) {
+      if(unitIds.indexOf(database.units[i].unitId) != -1) {
+        if(start === null)
+          start = i;
+      } else if(start !== null) {
+        database.units.splice(start, i - start);
+        i -= i - start;
+        start = null;
+      }
+    }
+    if(start !== null) {
+      database.units.splice(start);
+      start = null;
+    }
+    
+    this_.saveDatabase(function() {
+      callback({success: true});
+    });
+  });
+  
+}
+
 JSONFileDatabase.prototype.unit = function(unitId, callback) {
   var this_ = this;
   this.loadDatabase(function(database) {
@@ -825,13 +870,13 @@ JSONFileDatabase.prototype.tiles = function(gameId, callback) {
   });
 }
 
-JSONFileDatabase.prototype.myTiles = function(gameId, playerNumber, callback) {
+JSONFileDatabase.prototype.playerTiles = function(gameId, playerNumber, callback) {
   var this_ = this;
   this.loadDatabase(function(database) {
     var tiles = [];
     for(var i = 0; i < database.tiles.length; ++i) {
       var tile = database.tiles[i];
-      if(tile.gameId == gameId && tile.owner = playerNumber) {
+      if(tile.gameId == gameId && tile.owner == playerNumber) {
         tiles.push(tile.clone());
       }
     }

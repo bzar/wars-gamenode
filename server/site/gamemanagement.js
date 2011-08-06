@@ -59,6 +59,8 @@ GameManagement.prototype.createGame = function(game, callback) {
         gameData.push(tile);
       }
       
+      game.inTurnNumber = 0;
+      
       this_.database.createGame(game, gameData, players, function(result) {
         if(result.success) {
           callback({success: true, gameId: result.gameId});
@@ -139,21 +141,45 @@ GameManagement.prototype.leaveGame = function(userId, gameId, playerNumber, call
 }
 
 GameManagement.prototype.startGame = function(userId, gameId, callback) {
-  var this_ = this;
-  this.database.game(function(result) {
+  var database = this.database;
+  database.game(gameId, function(result) {
     if(!result.success) {
       callback({success: false, reason: result.reason});
-    } else if(game.authorId != userId) {
+    } else if(result.game.authorId != userId) {
       callback({success: false, reason: "Not the game author!"});
-    } else if(game.state != "pregame") {
+    } else if(result.game.state != "pregame") {
       callback({success: false, reason: "Can start during pregame!"});
     } else {
-      game.state = "inProgress";
-      this_.database.updateGame(game, function(result) {
-        if(result.success) {
-          callback({success: true});
-        } else {
+      var game = result.game;
+      database.players(gameId, function(result) {
+        if(!result.success) {
           callback({success: false, reason: result.reason});
+        } else {
+          var players = result.players;
+          var numPlayers = 0;
+          var playersWithoutUsers = [];
+          for(var i = 0; i < players.length; ++i) {
+            var player = players[i];
+            if(player.userId !== null) {
+              numPlayers += 1;
+            } else {
+              playersWithoutUsers.push(player);
+            }
+          }
+          if(numPlayers < 2) {
+            callback({success: false, reason: "Need at least two players to start!"});
+          } else {
+            database.surrender(playersWithoutUsers, function(response) {
+              game.state = "inProgress";
+              database.updateGame(game, function(result) {
+                if(result.success) {
+                  callback({success: true});
+                } else {
+                  callback({success: false, reason: result.reason});
+                }
+              });
+            });
+          }
         }
       });
     }

@@ -20,7 +20,7 @@ Skeleton.prototype.createGame = function(info) {
   if(this.sessionId === null)
     return {success: false, reason: "Not logged in"}
     
-  var game = new entities.Game(null, this.session.userId, info.name, info.mapId, "pregame", 0, 0, 0, 1, 
+  var game = new entities.Game(null, this.session.userId, info.name, info.mapId, "pregame", 0, 0, 0, 0, 
                                {public: info.public, turnLength: info.turnLength});
   var requestId = this.client.requestId;
   var this_ = this;
@@ -83,10 +83,16 @@ Skeleton.prototype.startGame = function(gameId) {
   var userId = this.session.userId;
   this.server.gameManagement.startGame(userId, gameId, function(result) {
     if(result.success) {
-      this_.server.subscriptions.forSubscribers(function(sub) {
-        sub.client.stub.startGame({gameId:gameId});
-      }, "game-" + gameId);
-      this_.client.sendResponse(requestId, {success: true});
+      this_.server.gameActions.nextTurn(gameId, userId, function(result) {
+        if(result.success) {
+          this_.server.subscriptions.forSubscribers(function(sub) {
+            sub.client.stub.gameStarted({gameId:gameId});
+          }, "game-" + gameId);
+          this_.client.sendResponse(requestId, {success: true});
+        } else {
+          this_.client.sendResponse(requestId, {success: false, reason: result.reason});
+        }
+      });
     } else {
       this_.client.sendResponse(requestId, {success: false, reason: result.reason});
     }

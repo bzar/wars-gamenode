@@ -8,6 +8,7 @@ var Server = require("../lib/gamenode/server/gameNodeServer").GameNodeServer,
     database = require("./database");
 
 var GameManagement = require("./site").GameManagement;
+var GameActions = require("./game").GameActions;
 
 /*process.on('uncaughtException', function (err) {
   console.error(err);
@@ -21,6 +22,7 @@ function WarsServer() {
   this.settings = settings;
   this.subscriptions = new SubscriptionManager();
   this.gameManagement = new GameManagement(this.database);
+  this.gameActions = new GameActions(this.database);
 }
 
 WarsServer.prototype = new Server(Skeleton);
