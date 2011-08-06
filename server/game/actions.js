@@ -43,7 +43,7 @@ GameActions.prototype.build = function(gameId, userId, unitType, destination, ca
   
 }
 
-GameActions.prototype.endTurn = function(game, callback) {
+GameActions.prototype.endTurn = function(game, userId, callback) {
   var database = this.database;
   database.userPlayerInTurn(game.gameId, userId, function(result) {
     if(!result.success) {
@@ -182,7 +182,7 @@ GameActions.prototype.nextTurn = function(gameId, userId, callback) {
       });      
     } else {
       var game = result.game;
-      this_.endTurn(game, function(result) {
+      this_.endTurn(game, userId, function(result) {
         if(!result.success) {
           callback({success: false, reason: result.reason});
         } else {
