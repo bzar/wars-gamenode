@@ -233,7 +233,7 @@ var wrap = function() {
           message.show();
           message.fadeOut(2000);
         } else {
-          alert("Error saving map!");
+          alert("Error saving map!" + response.reason);
         }
       });
     } else {
@@ -243,7 +243,7 @@ var wrap = function() {
           message.show();
           message.fadeOut(2000);
         } else {
-          alert("Error saving map!");
+          alert("Error saving map!" + response.reason);
         }
       });
     }

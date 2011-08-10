@@ -14,7 +14,7 @@ var wrap = function() {
   function populateMyGames(client) {
     client.stub.myGames(null, function(response) {
       if(!response.success) {
-        alert("Error loading games!");
+        alert("Error loading games! " + response.reason);
         return;
       }
       
@@ -53,51 +53,6 @@ var wrap = function() {
         
         $("a", row).attr("href", (game.state == "pregame" ? "/pregame.html" : "game.html") + "?gameId=" + game.gameId);
         myGames.append(row);
-      }
-    });
-  }
-  
-  function zeroPad(str, len) {
-    var s = str.toString();
-    while(s.length < len) {
-      s = "0" + str;
-    }
-    return s;
-  }
-  function initializeChat(client) {
-    client.stub.subscribeLobbyChat();
-    
-    client.skeleton.chatMessage = function(messageInfo) {
-      var messages = $("#chatMessages");
-      var messageItem = $("<li></li>");
-      var messageTime = $("<span></span>");
-      var messageSender = $("<span></span>");
-      var messageContent = $("<span></span>");
-      
-      var time = new Date(Date.parse(messageInfo.time));
-      messageTime.text(zeroPad(time.getHours(), 2) + ":" + zeroPad(time.getMinutes(), 2));
-      messageTime.addClass("messageTime");
-      
-      messageSender.text(messageInfo.sender);
-      messageSender.addClass("messageSender");
-      
-      messageContent.text(messageInfo.content);
-      messageContent.addClass("messageContent");
-      
-      messageItem.append(messageTime);
-      messageItem.append(messageSender);
-      messageItem.append(messageContent);
-      
-      messages.append(messageItem);
-      messages.scrollTop(messages[0].scrollHeight);
-    }
-    
-    $("#chatForm").submit(function(e) {
-      e.preventDefault();
-      var message = $("#chatInput").val();
-      $("#chatInput").val("");
-      if(message.length > 0) {
-        client.stub.lobbyChat(message);
       }
     });
   }

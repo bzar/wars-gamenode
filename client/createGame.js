@@ -73,7 +73,7 @@ var wrap = function() {
         if(response.success) {
           document.location = "/pregame.html?gameId=" + response.gameId;
         } else {
-          alert("Error creating game!");
+          alert("Error creating game! " + response.reason);
         }
       });
   }

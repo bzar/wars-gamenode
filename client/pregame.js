@@ -23,9 +23,10 @@ var wrap = function() {
             if(response.game.state != "pregame") {
               document.location = "game.html?gameId=" + gameId;
             }
+            initializeChat(client, gameId);
             showGame(response);
           } else {
-            alert("Error loading game!");
+            alert("Error loading game!" + response.reason);
           }
         });
       }
@@ -86,18 +87,14 @@ var wrap = function() {
         joinButton.click(function() {
           if($(this).hasClass("notJoined")) {
             client.stub.joinGame({gameId: gameId, playerNumber: playerNumber}, function(response) {
-              if(response.success) {
-                
-              } else {
-                alert("Error joining game!");
+              if(!response.success) {
+                alert("Error joining game!" + response.reason);
               }
             });
           } else {
             client.stub.leaveGame({gameId: gameId, playerNumber: playerNumber}, function(response) {
-              if(response.success) {
-                
-              } else {
-                alert("Error leaving game!");
+              if(!response.success) {
+                alert("Error leaving game!" + response.reason);
               }
             });              
           }
@@ -144,6 +141,10 @@ var wrap = function() {
       joinButton.text("Click to join!");
       joinButton.show();
     }
+    
+    client.skeleton.onGameStarted = function(gameId) {
+      document.location = "game.html?gameId=" + gameId;
+    }
   }
   
   function initalizeAuthorTools() {
@@ -168,13 +169,5 @@ var wrap = function() {
         });
       });
 
-  }
-  
-  function makeObj(id, arr) {
-    var obj = {};
-    arr.forEach(function(i) {
-      obj[i[id]] = i;
-    });
-    return obj;
   }
 }();

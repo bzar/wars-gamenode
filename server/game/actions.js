@@ -87,7 +87,7 @@ GameActions.prototype.startTurn = function(game, callback) {
         for(var i = 0; i < players.length && nextPlayer === null; ++i) {
           var player = players[(currentIndex + i) % players.length];
           
-          if(player.userId = null)
+          if(player.userId == null)
             continue;
           
           var stillAlive = false;

@@ -13,7 +13,7 @@ var wrap = function() {
   function populateOpenGames(client) {
     client.stub.openGames(null, function(response) {
       if(!response.success) {
-        alert("Error loading games!");
+        alert("Error loading games! " + response.reason);
         return
       }
       

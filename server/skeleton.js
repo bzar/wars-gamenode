@@ -86,7 +86,7 @@ Skeleton.prototype.startGame = function(gameId) {
       this_.server.gameActions.nextTurn(gameId, userId, function(result) {
         if(result.success) {
           this_.server.subscriptions.forSubscribers(function(sub) {
-            sub.client.stub.gameStarted({gameId:gameId});
+            sub.client.stub.gameStarted(gameId);
           }, "game-" + gameId);
           this_.client.sendResponse(requestId, {success: true});
         } else {
@@ -348,7 +348,47 @@ Skeleton.prototype.gameData = function(gameId) {
 }
 
 Skeleton.prototype.myFunds = function(gameId) {
-  
+  var requestId = this.client.requestId;
+  var this_ = this;
+  var userId = this.session.userId;
+  this.server.database.game(gameId, function(result) {
+    if(!result.success) {
+      this_.client.sendResponse(requestId, {success: false, reason: result.reason});
+    } else {
+      var game = result.game;
+    
+      this_.server.database.players(gameId, function(result) {
+        if(result.success) {
+          var players = result.players;
+          var funds = null;
+          var passedInTurn = false;
+          for(var i = 0; i < players.length; ++i) {
+            var player = players[i];
+            if(player.playerNumber == game.inTurnNumber) {
+              passedInTurn = true;
+            }
+            if(player.userId == userId) {
+              if(passedInTurn) {
+                funds = player.funds;
+                break;
+              } else if(funds === null) {
+                funds = player.funds;
+              } 
+            }
+          }
+          
+          if(funds !== null) {
+            this_.client.sendResponse(requestId, {success: true, funds: funds});
+          } else {
+            this_.client.sendResponse(requestId, {success: false, reason: "No player for user!"});
+          }
+        } else {
+          this_.client.sendResponse(requestId, {success: false, reason: result.reason});
+        }
+      
+      });
+    }
+  });
 }
 
 Skeleton.prototype.turnRemaining = function(gameId) {
@@ -415,7 +455,7 @@ Skeleton.prototype.chatMessages = function(gameId) {
   
 }
 
-Skeleton.prototype.subscribeLobbyChat = function(message) {
+Skeleton.prototype.subscribeLobbyChat = function() {
   this.server.subscriptions.addSubscription(this, "lobbyChat");
 }
 
@@ -430,8 +470,15 @@ Skeleton.prototype.lobbyChat = function(message) {
   });
 }
 
-Skeleton.prototype.chat = function(gameId, message) {
-  
+Skeleton.prototype.chat = function(info) {
+  var this_ = this;
+  var time = (new Date()).toUTCString();
+  this.server.database.user(this.session.userId, function(result) {
+    var sender = result.user.username;
+    this_.server.subscriptions.forSubscribers(function(sub) {
+      sub.client.stub.chatMessage({time: time, sender: sender, content: info.message});
+    }, "game-" + info.gameId);
+  });
 }
 
 // GAME EVENT TICKER

@@ -1,0 +1,61 @@
+<html>
+  <head>
+    <script type="text/javascript" src="jquery-1.6.2.min.js"></script>
+    <script type="text/javascript" src="/socket.io/socket.io.js"></script> 
+    <script type="text/javascript" src="/gamenode/gameNodeClient.js"></script>
+    <script type="text/javascript" src="/gamenode/session.js"></script>
+    <script type="text/javascript" src="skeleton.js"></script>
+    <script type="text/javascript" src="base.js"></script>
+    <script type="text/javascript" src="image_map.js"></script>
+    <script type="text/javascript" src="map.js"></script>
+    <script type="text/javascript" src="game.js"></script>
+
+    <link rel="stylesheet" href="wars.css" type="text/css"/>
+
+    <title>Wars - Pregame</title>
+  </head>
+
+  <body>
+    <div id="sidebar">
+      <h1>Wars</h1>
+      <ul id="menuNavigation" class="navigation">
+          <li><a id="showGameMenu" href="#">Game menu</a></li>
+          <li><a id="showMainMenu" href="#">Main menu</a></li>
+      </ul>
+
+      <ul id="navigation" class="navigation"></ul>
+
+      <div id="gameMenu">
+        <ul id="players"></ul>
+        <ul id="gameInfo" class="sidebarInfo">
+          <li>Funds: <span id="funds"></span></li>
+          <li>Round: <span id="round"></span></li>
+        </ul>
+        <ul id="gameTools" class="navigation">
+          <li><a id="showChat" href="#">Show chat</a></li>
+          <li><a id="endTurn" href="#">End turn</a></li>
+          <li><a id="surrender" href="#">Surrender</a></li>
+        </ul>
+        <ul id="authorTools" class="navigation">
+
+        </ul>
+      </div>
+
+      </div>
+
+    </div>
+  
+    <div id="chat" class="gameChat">
+      <ul id="chatMessages"><li>Welcome to game chat!</li></ul>
+      <form id="chatForm">
+        <input id="chatInput" type="text" value=""/>
+        <input id="chatSend" type="submit" value="send"/>
+      </form>
+      <a id="showHideChat" href="#">-</a>
+    </div>
+
+    <div id="content" >
+      <canvas id="mapCanvas"></canvas>
+    </div>
+  </body>
+</html>

@@ -64,6 +64,10 @@ h2 {
   display: block;
 }
 
+.navigation li a.highlight {
+  background-color: #448;
+}
+
 .navigation a:visited {
   color: #eee;
 }
@@ -372,7 +376,7 @@ input[type=text], input[type=password] {
   background-color: #eee;
 }
 
-.mapInfo {
+.sidebarInfo {
   list-style: none;
   color: #eee;
   margin: 0;
@@ -380,8 +384,7 @@ input[type=text], input[type=password] {
   font: 20px sans-serif;
 }
 
-.mapInfo li {
-  border-bottom: 1px dotted #444;
+.sidebarInfo li {
   margin: 2px;
   padding: 2px;
   display: block;
@@ -407,14 +410,18 @@ input[type=text], input[type=password] {
 }
 
 #players li {
-  padding-bottom: 4px;
-  padding-top: 4px;
-  margin-bottom: 4px;
-  margin-top: 4px;
+  padding: 4px 0 4px 0;
+  margin: 4px 0 4px 0;
   vertical-align: middle;
   display: block;
   clear: both;
   height: 24px;
+  border: 0;
+}
+
+#players li.inTurn{
+  font-weight: bold;
+  color: #eee;
 }
 
 .playerNumber {
@@ -461,36 +468,56 @@ input[type=text], input[type=password] {
 }
 
 #chat {
-  height: 180px;
   background-color: #ddd;
   margin: 0;
-  padding: 0 8px;
   box-shadow: 0px 0px 10px #666;
+  display: block;
+}
+
+#chat.gameChat {
+  position: absolute;
+  top: 0;
+  left: 190;
+  right: 0;
+  opacity: 0.8;
+  display: none;
+}
+#chat.small {
 }
 
 #chatMessages {
   margin: 0;
-  padding: 0;
+  padding: 0 8px;
   background-color: #f8f8f8;
-  height: 148px;
+  height: 136px;
   overflow-y: scroll;
+}
+
+#chat.small #chatMessages {
+  height: 18px;
+  overflow-y: hidden;
 }
 
 #chatForm {
   margin: 0;
-  padding: 0;
-  width: 100%;
-  height: 32px;
+  display: block;
+  height: 24px;
+  text-align: center;
+}
+
+#chat.small #chatForm {
+  display: none;
 }
 
 #chatInput {
   width: 90%;
-  float:left;
+  display: inline-block;
+  background-color: #f8f8f8;
 }
 
 #chatSend {
-  float:right;
-  width: 9%;
+  width: 4%;
+  display: inline-block;
 }
 
 #chatMessages .messageTime {
@@ -500,4 +527,27 @@ input[type=text], input[type=password] {
 
 #chatMessages .messageSender {
   margin-right: 1em;
+}
+
+#showHideChat {
+  display: block;
+  height: 12px;
+  font: 10px sans-serif;
+  color: #ccc !important;
+  background-color: #777;
+  text-decoration: none;
+  text-align: center;
+}
+
+#showHideChat:hover {
+  color: #eee !important;
+  background-color: #999;
+}
+
+#showHideChat:visited {
+  color: inherit;
+}
+
+#gameInfo {
+  list-style:
 }

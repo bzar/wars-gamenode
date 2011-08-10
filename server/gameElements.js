@@ -157,7 +157,7 @@ TerrainType.prototype.producesFunds = function() {
 };
 
 TerrainType.prototype.canBuild = function() {
-  return len(this.buildTypes) > 0;
+  return this.buildTypes.length > 0;
 };
 
 TerrainType.prototype.builds = function() {
