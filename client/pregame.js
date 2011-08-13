@@ -24,7 +24,7 @@ var wrap = function() {
               document.location = "game.html?gameId=" + gameId;
             }
             initializeChat(client, gameId);
-            showGame(response);
+            showGame(response.game, response.author);
           } else {
             alert("Error loading game!" + response.reason);
           }
@@ -34,18 +34,18 @@ var wrap = function() {
   });
   
  
-  function showGame(response) {
+  function showGame(game, author) {
     $("#gameName").text(response.game.name);
-    if(response.author) {
+    if(author) {
       initalizeAuthorTools();
     } else {
       $("#authorTools").hide();
     }
     
     mapPainter.doPreload(function() {
-      showPlayers(response.players, response.author);
+      showPlayers(game.players, author);
       
-      mapPainter.currentTiles = response.tiles;
+      mapPainter.currentTiles = game.tiles;
       var mapSize = mapPainter.getMapSize();
       var width = mapSize.w * mapPainter.tileW
       var height = mapSize.h * mapPainter.tileH

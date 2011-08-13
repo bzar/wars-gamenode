@@ -51,7 +51,7 @@ Unit.prototype.reset = function() {
 }
 
 Unit.prototype.unitType = function() {
-  return settings.gameElements.unitTypes[this.type];
+  return settings.gameElements.units[this.type];
 }
 
 Unit.prototype.heal = function(amount) {

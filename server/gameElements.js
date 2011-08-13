@@ -156,19 +156,16 @@ TerrainType.prototype.producesFunds = function() {
   return this.flags.indexOf(terrainFlagsByName['Funds'].id) != -1;
 };
 
-TerrainType.prototype.canBuild = function() {
-  return this.buildTypes.length > 0;
+TerrainType.prototype.canBuild = function(unitTypeId) {
+  return this.buildTypes.indexOf(unitTypes[unitTypeId].unitClass) != -1;
 };
 
 TerrainType.prototype.builds = function() {
-  var this_ = this;
-  return unitTypeList.filter(function(u) {
-    return this_.buildTypes.indexOf(u.id) != 0;
-  });
+  return this.buildTypes.length > 0;
 };
 
-TerrainType.prototype.canRepair = function(unitClassId) {
-  return this.repairTypes.indexOf(unitClassId) != -1;
+TerrainType.prototype.canRepair = function(unitTypeId) {
+  return this.repairTypes.indexOf(unitTypes[unitTypeId].unitClass) != -1;
 };
 
 
@@ -683,7 +680,7 @@ exports.unitClasses = unitClasses;
 exports.terrains = terrain;
 exports.movementTypes = movementTypes;
 exports.unitFlags = unitFlags;
-exports.unitTypes = unitTypes;
+exports.units = unitTypes;
 
 exports.armorsByName = armorsByName;
 exports.weaponsByName = weaponsByName;

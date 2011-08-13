@@ -79,7 +79,8 @@ function initializeChat(client, gameId) {
       chat.removeClass("small");
     } else {
       chat.addClass("small");
-      $("#chatMessages").scrollTop(messages[0].scrollHeight);
+      var messages = $("#chatMessages")
+      messages.scrollTop(messages[0].scrollHeight);
     }
   });
   

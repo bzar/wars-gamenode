@@ -6,6 +6,7 @@ function Skeleton(server) {
     this.onUnitUnbanned = function(){};
     this.onGameStarted = function(){};
     this.onGameUpdate = function(){};
+    this.onGameTurnChange = function(){};
     this.onTickerMessage = function(){};
     this.onChatMessage = function(){};
 }
@@ -30,9 +31,18 @@ Skeleton.prototype.gameStarted = function(gameId) {
   this.onGameStarted(gameId);
 }
 
-Skeleton.prototype.gameUpdate = function(gameData) {
-  this.onGameUpdate(gameData);
+Skeleton.prototype.gameFinished = function(gameId) {
+  this.onGameStarted(gameId);
 }
+
+Skeleton.prototype.gameUpdate = function(info) {
+  this.onGameUpdate(info.gameId, info.tileChanges);
+}
+
+Skeleton.prototype.gameTurnChange = function(info) {
+  this.onGameTurnChange(info.gameId, info.inTurnNumber);
+}
+
 
 Skeleton.prototype.tickerMessage = function(tickerMessage) {
   this.onTickerMessage(tickerMessage);

@@ -632,9 +632,8 @@ JSONFileDatabase.prototype.gameData = function(gameId, callback) {
     var players = [];
     
     for(var i = 0; i < database.tiles.length; ++i) {
-      var tile = database.tiles[i];
-      if(tile.gameId == gameId) {
-        var tile = tile.clone();
+      if(database.tiles[i].gameId == gameId) {
+        var tile = database.tiles[i].clone();
         tile.unit = null;
         if(tile.unitId !== null) {
           tile.unit = database.unit(tile.unitId).clone();
@@ -650,7 +649,58 @@ JSONFileDatabase.prototype.gameData = function(gameId, callback) {
       }
     }
 
-    callback({success: true, game: game, tiles: tiles, players: players});
+    game.tiles = tiles;
+    game.players = players;
+    
+    callback({success: true, game: game});
+  });
+}
+
+JSONFileDatabase.prototype.updateGameData = function(game, callback) {
+  var this_ = this;
+  this.loadDatabase(function(database) {
+    var tiles = game.tiles;
+    for(var i = 0; i < tiles.length; ++i) {
+      var tile = tiles[i];
+      var existingTile = database.tile(tile.tileId);
+      if(existingTile === null) {
+        callback({success: false, reason: "Tile does not exist!"});
+        return;
+      }
+      existingTile.cloneFrom(tile);
+      if(tile.unit === null) {
+        existingTile.unitId = null;
+      } else {
+        var existingUnit = database.unit(tile.unit.unitId);
+        if(existingUnit === null) {
+          callback({success: false, reason: "Unit does not exist!"});
+          return;
+        }
+        existingUnit.cloneFrom(tile.unit);
+      }
+    }
+    
+    var players = game.players;
+    for(var i = 0; i < players.length; ++i) {
+      var player = players[i];
+      var existingPlayer = database.player(player.playerId);
+      if(existingPlayer === null) {
+        callback({success: false, reason: "Player does not exist!"});
+        return;
+      }
+      existingPlayer.cloneFrom(player);
+    }
+    
+    var existingGame = database.game(game.gameId);
+    if(existingGame === null) {
+      callback({success: false, reason: "Game does not exist!"});
+      return;
+    }
+    existingGame.cloneFrom(game);
+    
+    this_.saveDatabase(function() {
+      callback({success: true});
+    });    
   });
 }
 
@@ -710,7 +760,7 @@ JSONFileDatabase.prototype.unit = function(unitId, callback) {
     if(unit === null) {
       callback({success: false, reason: "No such unit!"});
     } else {
-      callback({success: true, unit: unit});
+      callback({success: true, unit: unit.clone()});
     }
   });
 }
@@ -836,7 +886,7 @@ JSONFileDatabase.prototype.tile = function(tileId, callback) {
     if(tile === null) {
       callback({success: false, reason: "No such tile!"});
     } else {
-      callback({success: true, tile: tile});
+      callback({success: true, tile: tile.clone()});
     }
   });
 }
@@ -846,7 +896,7 @@ JSONFileDatabase.prototype.tileAt = function(gameId, x, y, callback) {
   this.loadDatabase(function(database) {
     for(var i = 0; i < database.tiles.length; ++i) {
       var tile = database.tiles[i];
-      if(tile.gameId == gameId && tile.x == x && tile.y = y) {
+      if(tile.gameId == gameId && tile.x == x && tile.y == y) {
         callback({success: true, tile: tile.clone()})
         return;
       }

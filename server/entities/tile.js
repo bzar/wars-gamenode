@@ -47,3 +47,14 @@ Tile.prototype.cloneFrom = function(other) {
 Tile.prototype.terrainType = function() {
   return settings.gameElements.terrains[this.type];
 }
+
+Tile.prototype.setUnit = function(unit) {
+  if(unit === null) {
+    this.unitId = null;
+    this.unit = null;
+  } else {
+    this.unitId = unit.unitId;
+    this.unit = unit;
+    unit.tileId = this.tileId;
+  }
+}
