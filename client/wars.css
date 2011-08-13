@@ -553,7 +553,7 @@ input[type=text], input[type=password] {
   list-style:
 }
 
-#buildMenu {
+#buildMenu, #actionMenu {
   background-color: transparent;
   position: absolute;
   display: none;
@@ -562,15 +562,25 @@ input[type=text], input[type=password] {
   opacity: 0.9;
 }
 
-.buildItem {
+.buildItem, .actionItem {
   display: inline-block;
   margin: 0;
-  width: 120px;
-  height: 120px;
-  background-color: #222;
   text-align: center;
   vertical-align: middle;
+}
+
+.buildItem {
+  width: 120px;
+  height: 120px;
   border: 4px solid #555;
+  background-color: #222;
+}
+
+.actionItem {
+  width: 44px;
+  height: 44px;
+  border: 2px solid #555;
+  background-color: #eee;
 }
 
 .buildItem.disabled {
@@ -582,6 +592,12 @@ input[type=text], input[type=password] {
   background-color: #444;
   border: 4px solid #777;
   cursor: pointer;
+}
+
+.actionItem:hover {
+  background-color: #fff;
+  border: 2px solid #999;
+  cursor: pointer;  
 }
 
 .buildItem.disabled:hover {
@@ -599,7 +615,6 @@ input[type=text], input[type=password] {
   display: block;
   color: #ddd;
   margin: auto;
-  width: 110px;
   vertical-align: middle;
 }
 
@@ -619,3 +634,4 @@ input[type=text], input[type=password] {
 .buildItem.disabled .price {
   color: #f88;
 }
+

@@ -872,9 +872,32 @@ JSONFileDatabase.prototype.updateUnits = function(units, callback) {
 JSONFileDatabase.prototype.deleteUnit = function(unitId, callback) {
   var this_ = this;
   this.loadDatabase(function(database) {
+    for(var i = 0; i < this.units.length; ++i) {
+      if(database.units[i].unitId == unitId) {
+        database.units.splice(i, 1);
+        break;
+      }
+    }
+    this_.saveDatabase(function() {
+      callback({success: true});
+    });
+  });
+}
+
+JSONFileDatabase.prototype.deleteUnits = function(units, callback) {
+  var this_ = this;
+  this.loadDatabase(function(database) {
+    for(var i = 0; i < units.length; ++i) {
+      for(var j = 0; j < database.units.length; ++j) {
+        if(database.units[j].unitId == units[i].unitId) {
+          database.units.splice(j, 1);
+          break;
+        }
+      }
+    }
     
     this_.saveDatabase(function() {
-      callback();
+      callback({success: true});
     });
   });
 }

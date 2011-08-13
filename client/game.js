@@ -1,5 +1,8 @@
+var gameClient = null;
+
 var wrap = function() {
   var client = new GameNodeClient(Skeleton);
+  gameClient = client;
   var session = null;
   var inTurn = false;
   var inTurnNumber = 0;
@@ -173,41 +176,70 @@ var wrap = function() {
             gameUIState = {
               stateName: "move",
               x: tilePosition.x,
-              y: tilePosition.y
+              y: tilePosition.y,
+              movementOptions: gameLogic.unitMovementOptions(tilePosition.x, tilePosition.y)
             };
-            var movementOptions = gameLogic.unitMovementOptions(tilePosition.x, tilePosition.y);
-            map.paintMovementMask(movementOptions);
+            map.paintMovementMask(gameUIState.movementOptions);
           } else if(gameLogic.tileCanBuild(playerNumber, tilePosition.x, tilePosition.y)) {
             var buildOptions = gameLogic.tileBuildOptions(tilePosition.x, tilePosition.y);
             showBuildMenu(buildOptions, canvasPosition, tilePosition);
           } else {
-
+            
           }
         } else if(gameUIState.stateName == "move") {
-          var unitId = map.getTile(gameUIState.x, gameUIState.y).unit.unitId;
-          var destination = {x: tilePosition.x, y: tilePosition.y};
-          client.stub.moveAndWait({gameId: gameId, unitId: unitId, destination: destination}, function(response) {
-            if(!response.success) {
-              alert(response.reason);
-              map.refresh();
+          var x = gameUIState.x;
+          var y = gameUIState.y;
+          var dx = tilePosition.x;
+          var dy = tilePosition.y;
+          var canMove = false;
+
+          map.paintMovementMask(gameUIState.movementOptions, true);
+          map.paintUnit(dx, dy, map.getTile(x, y).unit);
+          
+          for(var i = 0; i < gameUIState.movementOptions.length; ++i) {
+            var option = gameUIState.movementOptions[i];
+            if(option.pos.x == dx && option.pos.y == dy) {
+              canMove = true;
+              break;
             }
-          });
-          gameUIState = {stateName: "select"};
+          }
+          
+          if(!canMove) {
+            gameUIState = {stateName: "select"};
+          } else {
+            gameUIState = {
+              stateName: "action",
+              x: x,
+              y: y,
+              dx: dx,
+              dy: dy
+            }
+            var actions = [];
+            if(gameLogic.unitAttackOptions(x, y, dx, dy).length > 0)
+              actions.push("attack");
+            if(gameLogic.unitCanWait(x, y, dx, dy))
+              actions.push("wait");
+            if(gameLogic.unitCanCapture(x, y, dx, dy))
+              actions.push("capture");
+            if(gameLogic.unitCanDeploy(x, y, dx, dy))
+              actions.push("deploy");
+            if(gameLogic.unitCanUndeploy(x, y, dx, dy))
+              actions.push("undeploy");
+            /*if(gameLogic.unitCanLoadInto(x, y, dx, dy))
+              actions.push("load");
+            if(gameLogic.unitCanUnload(x, y, dx, dy))
+              actions.push("unload");*/
+            actions.push("cancel");
+            showActionMenu(actions, canvasPosition);  
+          }
         }
       }
-    });
+    });    
   }
   
-  function showBuildMenu(buildOptions, canvasPosition, tilePosition) {
-    var buildMenu = $("#buildMenu");
-    var content = $("#content");
-    var canvas = $("#mapCanvas");
-    
-    var gridOptimalWidth = Math.ceil(Math.sqrt(buildOptions.length));
-    var gridOptimalHeight = parseInt(buildOptions.length / gridOptimalWidth);
-    
-    var itemWidth = 128;
-    var itemHeight = 128;
+  function fitElement(numItems, itemWidth, itemHeight, content) {
+    var gridOptimalWidth = Math.ceil(Math.sqrt(numItems));
+    var gridOptimalHeight = Math.ceil(numItems / gridOptimalWidth);
     
     var optimalWidth = itemWidth * gridOptimalWidth;
     var optimalHeight = itemHeight * gridOptimalHeight;
@@ -220,20 +252,18 @@ var wrap = function() {
     
     if(width > maxWidth) {
       var gridWidth = parseInt(maxWidth/itemWidth);
-      var gridHeight = Math.ceil(buildOptions.length / gridWidth);
+      var gridHeight = Math.ceil(numItems / gridWidth);
       width = gridWidth * itemWidth;
       height = gridHeight * itemHeight;
     }
     if(height > maxHeight) {
       height = maxHeight;
     }
-
-    var optimalLeft = canvasPosition.x - width/2;
-    var optimalTop = canvasPosition.y - height/2;
     
-    var left = optimalLeft;
-    var top = optimalTop;
-    
+    return {width: width, height: height};
+  }
+  
+  function clampElement(left, top, width, height, content) {
     var minLeft = content.scrollLeft();
     var minTop = content.scrollTop();
     var maxRight = content.scrollLeft() + content.width();
@@ -251,14 +281,79 @@ var wrap = function() {
       top = maxBottom - height;
     }
     
-    var contentOffsetLeft = content.offset().left;
-    var contentOffsetTop = content.offset().top;
+    return {left: left, top: top};
+  }
+  
+  function showActionMenu(actions, canvasPosition) {
+    var actionMenu = $("#actionMenu");
+    var content = $("#content");
+    var size = fitElement(actions.length, 48, 48, content);
+    var optimalLeft = canvasPosition.x;
+    var optimalTop = canvasPosition.y;
+    var position = clampElement(optimalLeft, optimalTop, size.width, size.height, content);
+    actionMenu.empty();
+    actionMenu.width(size.width);
+    actionMenu.height(size.height);
+    actionMenu.css("left", position.left)
+    actionMenu.css("top", position.top)
+    actionMenu.show();
+    
+    var actionMap = {
+      attack: {img:"/img/themes/pixel/gui/action_attack.png", name:"Attack", action:"attack"}, 
+      deploy: {img:"/img/themes/pixel/gui/action_deploy.png", name:"Deploy", action:"deploy"}, 
+      undeploy: {img:"/img/themes/pixel/gui/action_undeploy.png", name:"Undeploy", action:"undeploy"}, 
+      capture: {img:"/img/themes/pixel/gui/action_capture.png", name:"Capture", action:"capture"}, 
+      wait: {img:"/img/themes/pixel/gui/action_wait.png", name:"Wait", action:"wait"}, 
+      load: {img:"/img/themes/pixel/gui/action_load.png", name:"Load", action:"load"}, 
+      unload: {img:"/img/themes/pixel/gui/action_unload.png", name:"Unload", action:"unload"}, 
+      cancel: {img:"/img/themes/pixel/gui/action_cancel.png", name:"Cancel", action:"cancel"}
+    }
+
+    for(var i = 0; i < actions.length; ++i) {
+      var action = actionMap[actions[i]];
+      var item = $("<img></img>");
+      item.addClass("actionItem");
+      item.attr("src", action.img);
+      item.attr("alt", action.name);
+      item.attr("action", action.action);
+      actionMenu.append(item);
+    }
+    
+    $(".actionItem").click(function(e) {
+      var action = $(this).attr("action");
+      if(action == "cancel") {
+        gameUIState = {stateName: "select"};
+        actionMenu.hide();
+        map.refresh();
+      } else if(action == "wait") {
+        actionMenu.hide();
+        var unitId = map.getTile(gameUIState.x, gameUIState.y).unit.unitId;
+        var destination = {x: gameUIState.dx, y: gameUIState.dy};
+        client.stub.moveAndWait({gameId: gameId, unitId: unitId, destination: destination}, function(response) {
+          if(!response.success) {
+            alert(response.reason);
+          }
+          gameUIState = {stateName: "select"};
+        });
+      }
+    });
+
+  }
+  
+  function showBuildMenu(buildOptions, canvasPosition, tilePosition) {
+    var buildMenu = $("#buildMenu");
+    var content = $("#content");
+    
+    var size = fitElement(buildOptions.length, 128, 128, content);
+    var optimalLeft = canvasPosition.x - size.width/2;
+    var optimalTop = canvasPosition.y - size.height/2;
+    var position = clampElement(optimalLeft, optimalTop, size.width, size.height, content);
     
     buildMenu.empty();
-    buildMenu.width(width);
-    buildMenu.height(height);
-    buildMenu.css("left", left)
-    buildMenu.css("top", top)
+    buildMenu.width(size.width);
+    buildMenu.height(size.height);
+    buildMenu.css("left", position.left)
+    buildMenu.css("top", position.top)
     buildMenu.show();
     
     for(var i = 0; i < buildOptions.length; ++i) {

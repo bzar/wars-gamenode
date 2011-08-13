@@ -423,8 +423,23 @@ Skeleton.prototype.move = function(info) {
   });
 }
 
-Skeleton.prototype.moveAndAttack = function(gameId, unitId, destination, targetId ) {
-  
+Skeleton.prototype.moveAndAttack = function(info) {
+  if(this.sessionId === null)
+    return {success: false, reason: "Not logged in"}
+    
+  var requestId = this.client.requestId;
+  var this_ = this;
+  var userId = this.session.userId;
+  this.server.gameActions.moveAndAttack(info.gameId, userId, info.unitId, info.destination, info.targetId, function(result) {
+    if(result.success) {
+      this_.server.subscriptions.forSubscribers(function(sub) {
+        sub.client.stub.gameUpdate({gameId: info.gameId, tileChanges: result.changedTiles});
+      }, "game-" + info.gameId);
+      this_.client.sendResponse(requestId, {success: true});
+    } else {
+      this_.client.sendResponse(requestId, {success: false, reason: result.reason});
+    }
+  });
 }
 
 Skeleton.prototype.moveAndWait = function(info) {
@@ -444,7 +459,6 @@ Skeleton.prototype.moveAndWait = function(info) {
       this_.client.sendResponse(requestId, {success: false, reason: result.reason});
     }
   });
-  
 }
 
 Skeleton.prototype.moveAndCapture = function(gameId, unitId, destination) {

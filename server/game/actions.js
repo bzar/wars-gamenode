@@ -34,8 +34,8 @@ function checkMove(database, gameId, userId, unitId, destination, callback) {
           callback({success: false, reason: "User not in turn!"}); return;
         }
         
-        var gamelogic = new GameLogic(game, settings.gameElements);
-        var canMove = gamelogic.unitCanMoveTo(sourceTile.x, sourceTile.y, destination.x, destination.y);
+        var gameLogic = new GameLogic(game, settings.gameElements);
+        var canMove = gameLogic.unitCanMoveTo(sourceTile.x, sourceTile.y, destination.x, destination.y);
         if(canMove === null) {
           callback({success: false, reason: "Error determining path!"}); return;
         } else if(canMove === false) {
@@ -44,7 +44,7 @@ function checkMove(database, gameId, userId, unitId, destination, callback) {
         
         var destinationTile = game.getTile(destination.x, destination.y);
         
-        callback({success: true}, game, playerInTurn, unit, sourceTile, destinationTile, gamelogic);
+        callback({success: true}, game, playerInTurn, unit, sourceTile, destinationTile, gameLogic);
       });
     });
   });
@@ -53,7 +53,7 @@ function checkMove(database, gameId, userId, unitId, destination, callback) {
 GameActions.prototype.move = function(gameId, userId, unitId, destination, callback) {
   var database = this.database;
   checkMove(database, gameId, userId, unitId, destination, 
-            function(result, game, player, unit, sourceTile, destinationTile, gamelogic) {
+            function(result, game, player, unit, sourceTile, destinationTile, gameLogic) {
     if(!result.success) {
       callback({success: false, reason: result.reason}); return;
     }
@@ -74,7 +74,74 @@ GameActions.prototype.move = function(gameId, userId, unitId, destination, callb
 }
 
 GameActions.prototype.moveAndAttack = function(gameId, userId, unitId, destination, targetId, callback) {
-  
+  var database = this.database;
+  checkMove(database, gameId, userId, unitId, destination, 
+            function(result, game, player, unit, sourceTile, destinationTile, gameLogic) {
+    if(!result.success) {
+      callback({success: false, reason: result.reason}); return;
+    }
+    
+    if(destinationTile.unit !== null) {
+      callback({success: false, reason: "Destination tile occupied!"}); return;
+    }
+    
+    database.unit(targetId, function(result) {
+      if(!result.success) {
+        callback({success: false, reason: result.reason}); return;
+      }
+      
+      var target = result.unit;
+      database.tile(target.tileId, function(result) {
+        var targetTile = result.tile;
+        targetTile.setUnit(target);
+        
+        if(target.owner == unit.owner) {
+          callback({success: false, reason: "Cannot attack own units!"}); return;
+        }
+        
+        var power = gameLogic.calculateDamage(unit, destinationTile, target, targetTile);
+        if(power === null) {
+          callback({success: false, reason: "Cannot attack target from destination!"}); return;
+        }
+
+        sourceTile.setUnit(null);
+        destinationTile.setUnit(unit);
+        target.health -= power;
+        
+        if(target.health > 0) {
+          power = gameLogic.calculateDamage(target, targetTile, unit, destinationTile);
+          if(power !== null) {
+            unit.health -= power;
+          }
+        }
+        
+        unit.moved = true;
+
+        var updatedUnits = [];
+        var deletedUnits = [];
+        if(unit.health <= 0) {
+          destinationTile.setUnit(null);
+          deletedUnits.push(unit);
+        } else {
+          updatedUnits.push(unit);
+        }
+        if(target.health <= 0) {
+          targetTile.setUnit(null);
+          deletedUnits.push(target);
+        } else {
+          updatedUnits.push(target);
+        }
+        database.deleteUnits(deletedUnits, function(result) {
+          database.updateUnits(updatedUnits, function(result) {
+            database.updateTiles([sourceTile, destinationTile, targetTile], function(result) {
+              callback({success: true, changedTiles: [sourceTile, destinationTile, targetTile]});
+            });
+          });
+        });
+        
+      });
+    });
+  });
 }
 
 GameActions.prototype.moveAndWait = function(gameId, userId, unitId, destination, callback) {
