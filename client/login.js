@@ -13,10 +13,6 @@ var wrap = function() {
   }
 
   client.onConnected = function() {
-    session.onAuthenticationFailure = function() {
-      console.log("no existing session");
-    }
-
     session.authenticate();
   }
 
