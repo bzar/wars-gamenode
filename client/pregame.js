@@ -35,7 +35,7 @@ var wrap = function() {
   
  
   function showGame(game, author) {
-    $("#gameName").text(response.game.name);
+    $("#gameName").text(game.name);
     if(author) {
       initalizeAuthorTools();
     } else {

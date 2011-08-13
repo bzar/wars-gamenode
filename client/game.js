@@ -86,9 +86,7 @@ var wrap = function() {
     $("#endTurn").click(function(e) {
       e.preventDefault();
       client.stub.endTurn(gameId, function(response) {
-        if(response.success) {
-          finalizeTurn();
-        } else {
+        if(!response.success) {
           alert(response.reason);
         }
       });
@@ -168,6 +166,7 @@ var wrap = function() {
                           y: parseInt(canvasPosition.y / (map.getScale() * map.tileH))};
       
       if(inTurn) {
+        buildMenu.hide();
         var playerNumber = parseInt($(".playerItem.inTurn").attr("playerNumber"));
         if(gameUIState.stateName == "select") {
           if(gameLogic.tileHasMovableUnit(playerNumber, tilePosition.x, tilePosition.y)) {

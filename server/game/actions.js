@@ -335,7 +335,8 @@ GameActions.prototype.nextTurn = function(gameId, userId, callback) {
         if(!result.success) {
           callback({success: false, reason: result.reason});
         } else {
-          callback({success: true, finished: result.finished, inTurnNumber: result.inTurnNumber, changedTiles: changedTiles});
+          callback({success: true, finished: result.finished, 
+                   inTurnNumber: result.inTurnNumber, changedTiles: result.changedTiles});
         }
       });      
     } else {
