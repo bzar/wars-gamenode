@@ -416,11 +416,11 @@ GameLogic.prototype.unitAttackOptions = function(x1, y1, x2, y2) {
     }
 
     var unitType = this.rules.units[unit.type];
-    var mapSize = this.map.getMapSize();
-
-    for(var ty = 0; ty < mapSize.h; ++ty) {
-        for(var tx = 0; tx < mapSize.w; ++tx) {
-            var targetTile = this.map.getTile(tx, ty);
+    var mapArray = this.map.getMapArray();
+    
+    for(var ty = 0; ty < mapArray.length; ++ty) {
+        for(var tx = 0; tx < mapArray[ty].length; ++tx) {
+            var targetTile = mapArray[ty][tx]
 
             if(targetTile.unit == null) {
                 continue;

@@ -25,6 +25,8 @@ function Map(canvas, scale, theme) {
                          2: [56,67,214],
                          3: [217,213,43],
                          4: [99,173,208]}
+                         
+    this.unitOffsetY = -12;
 }
 
 Map.prototype.getScale = function() {
@@ -131,7 +133,7 @@ Map.prototype.paintUnitTile = function(ctx, el, xPos, yPos) {
     if(coord) {
         ctx.drawImage(this.sprites,
                       coord.x*this.tileW, coord.y*this.tileH, this.tileW, this.tileH,
-                      xPos, yPos, this.tileW, this.tileH);
+                      xPos, yPos+this.unitOffsetY, this.tileW, this.tileH);
     } else {
         ctx.fillRect(xPos + 12, yPos - 12, this.tileW/2, this.tileH/2);
     }
@@ -147,7 +149,7 @@ Map.prototype.paintUnitTile = function(ctx, el, xPos, yPos) {
         var enY = yPos + this.tileH - 24;
         ctx.drawImage(this.sprites,
                       numCoord.x*this.tileW, numCoord.y*this.tileH, this.tileW/2, this.tileH/2,
-                      enX, enY, this.tileW/2, this.tileH/2);
+                      enX, enY+this.unitOffsetY, this.tileW/2, this.tileH/2);
     }
 
     if(el.unit.max_carry > 0) {
@@ -172,7 +174,7 @@ Map.prototype.paintUnit = function(x, y, unit) {
     if(coord) {
         ctx.drawImage(this.sprites,
                       coord.x*this.tileW, coord.y*this.tileH, this.tileW, this.tileH,
-                      this.tileW*x, this.tileH*y, this.tileW, this.tileH);
+                      this.tileW*x, this.tileH*y+this.unitOffsetY, this.tileW, this.tileH);
     } else {
         ctx.fillRect(this.tileW*x + 12, this.tileH*y + 12, this.tileW/2, this.tileH/2);
     }

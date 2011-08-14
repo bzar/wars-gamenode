@@ -60,3 +60,25 @@ Unit.prototype.heal = function(amount) {
     this.health = 100;
   }
 }
+
+Unit.prototype.capture = function(tile) {
+  tile.capturePoints -= this.health;
+  if(tile.capturePoints > 0) {
+    tile.beingCaptured = true;
+  } else {
+    tile.owner = this.owner;
+    tile.capturePoints = 1;
+  }
+  this.capturing = true;
+  this.moved = true;
+}
+
+Unit.prototype.deploy = function(amount) {
+  this.deployed = true;
+  this.moved = true;
+}
+
+Unit.prototype.undeploy = function(amount) {
+  this.deployed = false;
+  this.moved = true;
+}

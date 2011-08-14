@@ -35,14 +35,18 @@ function checkMove(database, gameId, userId, unitId, destination, callback) {
         }
         
         var gameLogic = new GameLogic(game, settings.gameElements);
-        var canMove = gameLogic.unitCanMoveTo(sourceTile.x, sourceTile.y, destination.x, destination.y);
-        if(canMove === null) {
-          callback({success: false, reason: "Error determining path!"}); return;
-        } else if(canMove === false) {
-          callback({success: false, reason: "Unit cannot move there!"}); return;
-        }
+        var destinationTile = null;
         
-        var destinationTile = game.getTile(destination.x, destination.y);
+        if(destination !== null) {
+          var canMove = gameLogic.unitCanMoveTo(sourceTile.x, sourceTile.y, destination.x, destination.y);
+          if(canMove === null) {
+            callback({success: false, reason: "Error determining path!"}); return;
+          } else if(canMove === false) {
+            callback({success: false, reason: "Unit cannot move there!"}); return;
+          }
+          
+          destinationTile = game.getTile(destination.x, destination.y);
+        }
         
         callback({success: true}, game, playerInTurn, unit, sourceTile, destinationTile, gameLogic);
       });
@@ -58,7 +62,7 @@ GameActions.prototype.move = function(gameId, userId, unitId, destination, callb
       callback({success: false, reason: result.reason}); return;
     }
             
-    if(destinationTile.unit !== null) {
+    if(destinationTile.unit !== null && destinationTile.unit.unitId != unitId) {
       callback({success: false, reason: "Destination tile occupied!"}); return;
     }
     
@@ -81,7 +85,7 @@ GameActions.prototype.moveAndAttack = function(gameId, userId, unitId, destinati
       callback({success: false, reason: result.reason}); return;
     }
     
-    if(destinationTile.unit !== null) {
+    if(destinationTile.unit !== null && destinationTile.unit.unitId != unitId) {
       callback({success: false, reason: "Destination tile occupied!"}); return;
     }
     
@@ -147,12 +151,12 @@ GameActions.prototype.moveAndAttack = function(gameId, userId, unitId, destinati
 GameActions.prototype.moveAndWait = function(gameId, userId, unitId, destination, callback) {
   var database = this.database;
   checkMove(database, gameId, userId, unitId, destination, 
-            function(result, game, player, unit, sourceTile, destinationTile, gamelogic) {
+            function(result, game, player, unit, sourceTile, destinationTile, gameLogic) {
     if(!result.success) {
       callback({success: false, reason: result.reason}); return;
     }
             
-    if(destinationTile.unit !== null) {
+    if(destinationTile.unit !== null && destinationTile.unit.unitId != unitId) {
       callback({success: false, reason: "Destination tile occupied!"}); return;
     }
     
@@ -169,15 +173,93 @@ GameActions.prototype.moveAndWait = function(gameId, userId, unitId, destination
 }
 
 GameActions.prototype.moveAndCapture = function(gameId, userId, unitId, destination, callback) {
-  
+  var database = this.database;
+  checkMove(database, gameId, userId, unitId, destination, 
+            function(result, game, player, unit, sourceTile, destinationTile, gameLogic) {
+    if(!result.success) {
+      callback({success: false, reason: result.reason}); return;
+    }
+            
+    if(destinationTile.unit !== null && destinationTile.unit.unitId != unitId) {
+      callback({success: false, reason: "Destination tile occupied!"}); return;
+    }
+    
+    var canCapture = gameLogic.unitCanCapture(sourceTile.x, sourceTile.y, destinationTile.x, destinationTile.y);
+    
+    if(canCapture === null) {
+      callback({success: false, reason: "Error determining if unit can capture!"}); return;
+    } else if(canCapture == false) {
+      callback({success: false, reason: "Unit cannot capture tile at destination!"}); return;
+    }
+    
+    sourceTile.setUnit(null);
+    destinationTile.setUnit(unit);
+    unit.capture(destinationTile);
+    
+    database.updateUnit(unit, function(result) {
+      database.updateTiles([sourceTile, destinationTile], function(result) {
+        callback({success: true, changedTiles: [sourceTile, destinationTile]});
+      });
+    });
+  });
 }
 
 GameActions.prototype.moveAndDeploy = function(gameId, userId, unitId, destination, callback) {
-  
+  var database = this.database;
+  checkMove(database, gameId, userId, unitId, destination, 
+            function(result, game, player, unit, sourceTile, destinationTile, gameLogic) {
+    if(!result.success) {
+      callback({success: false, reason: result.reason}); return;
+    }
+            
+    if(destinationTile.unit !== null && destinationTile.unit.unitId != unitId) {
+      callback({success: false, reason: "Destination tile occupied!"}); return;
+    }
+    
+    var canDeploy = gameLogic.unitCanDeploy(sourceTile.x, sourceTile.y, destinationTile.x, destinationTile.y);
+    
+    if(canDeploy === null) {
+      callback({success: false, reason: "Error determining if unit can deploy!"}); return;
+    } else if(canDeploy == false) {
+      callback({success: false, reason: "Unit cannot deploy!"}); return;
+    }
+    
+    sourceTile.setUnit(null);
+    destinationTile.setUnit(unit);
+    unit.deploy();
+    
+    database.updateUnit(unit, function(result) {
+      database.updateTiles([sourceTile, destinationTile], function(result) {
+        callback({success: true, changedTiles: [sourceTile, destinationTile]});
+      });
+    });
+  });
 }
 
 GameActions.prototype.undeploy = function(gameId, userId, unitId, callback) {
-  
+  var database = this.database;
+  checkMove(database, gameId, userId, unitId, null, 
+            function(result, game, player, unit, sourceTile, destinationTile, gameLogic) {
+    if(!result.success) {
+      callback({success: false, reason: result.reason}); return;
+    }
+    
+    var canUndeploy = gameLogic.unitCanUndeploy(sourceTile.x, sourceTile.y);
+    
+    if(canUndeploy === null) {
+      callback({success: false, reason: "Error determining if unit can undeploy!"}); return;
+    } else if(canUndeploy == false) {
+      callback({success: false, reason: "Unit cannot undeploy!"}); return;
+    }
+    
+    unit.undeploy();
+    
+    database.updateUnit(unit, function(result) {
+      database.updateTiles([sourceTile], function(result) {
+        callback({success: true, changedTiles: [sourceTile]});
+      });
+    });
+  });  
 }
 
 GameActions.prototype.load = function(gameId, userId, unitId, carrierId, callback) {

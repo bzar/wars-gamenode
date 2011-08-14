@@ -159,82 +159,117 @@ var wrap = function() {
       gameLogic = new GameLogic(map, rules);
     });
     
-    $("#mapCanvas").click(function(e) {
-      var buildMenu = $("#buildMenu");
-      var canvas = $(this);
-      var content = $("#content");
-      var canvasPosition = {x: e.offsetX, y: e.offsetY};
-      var windowPosition = {x: e.pageX, y: e.pageY};
-      var tilePosition = {x: parseInt(canvasPosition.x / (map.getScale() * map.tileW)),
-                          y: parseInt(canvasPosition.y / (map.getScale() * map.tileH))};
-      
-      if(inTurn) {
-        buildMenu.hide();
-        var playerNumber = parseInt($(".playerItem.inTurn").attr("playerNumber"));
-        if(gameUIState.stateName == "select") {
-          if(gameLogic.tileHasMovableUnit(playerNumber, tilePosition.x, tilePosition.y)) {
-            gameUIState = {
-              stateName: "move",
-              x: tilePosition.x,
-              y: tilePosition.y,
-              movementOptions: gameLogic.unitMovementOptions(tilePosition.x, tilePosition.y)
-            };
-            map.paintMovementMask(gameUIState.movementOptions);
-          } else if(gameLogic.tileCanBuild(playerNumber, tilePosition.x, tilePosition.y)) {
-            var buildOptions = gameLogic.tileBuildOptions(tilePosition.x, tilePosition.y);
-            showBuildMenu(buildOptions, canvasPosition, tilePosition);
-          } else {
-            
+    $("#mapCanvas").click(handleMapClick);    
+  }
+  
+  function handleMapClick(e) {
+    var buildMenu = $("#buildMenu");
+    var canvas = $(this);
+    var content = $("#content");
+    var canvasPosition = {x: e.offsetX, y: e.offsetY};
+    var windowPosition = {x: e.pageX, y: e.pageY};
+    var tilePosition = {x: parseInt(canvasPosition.x / (map.getScale() * map.tileW)),
+                        y: parseInt(canvasPosition.y / (map.getScale() * map.tileH))};
+    
+    if(inTurn) {
+      buildMenu.hide();
+      var playerNumber = parseInt($(".playerItem.inTurn").attr("playerNumber"));
+      if(gameUIState.stateName == "select") {
+        if(gameLogic.tileHasMovableUnit(playerNumber, tilePosition.x, tilePosition.y)) {
+          gameUIState = {
+            stateName: "move",
+            x: tilePosition.x,
+            y: tilePosition.y,
+            movementOptions: gameLogic.unitMovementOptions(tilePosition.x, tilePosition.y)
+          };
+          map.paintMovementMask(gameUIState.movementOptions);
+        } else if(gameLogic.tileCanBuild(playerNumber, tilePosition.x, tilePosition.y)) {
+          var buildOptions = gameLogic.tileBuildOptions(tilePosition.x, tilePosition.y);
+          showBuildMenu(buildOptions, canvasPosition, tilePosition);
+        } else {
+          
+        }
+      } else if(gameUIState.stateName == "move") {
+        var x = gameUIState.x;
+        var y = gameUIState.y;
+        var dx = tilePosition.x;
+        var dy = tilePosition.y;
+        var canMove = false;
+
+        for(var i = 0; i < gameUIState.movementOptions.length; ++i) {
+          var option = gameUIState.movementOptions[i];
+          if(option.pos.x == dx && option.pos.y == dy) {
+            canMove = true;
+            break;
           }
-        } else if(gameUIState.stateName == "move") {
-          var x = gameUIState.x;
-          var y = gameUIState.y;
-          var dx = tilePosition.x;
-          var dy = tilePosition.y;
-          var canMove = false;
+        }
+        
+        if(!canMove) {
+          gameUIState = {stateName: "select"};
+          map.refresh();
+        } else {
+          gameUIState = {
+            stateName: "action",
+            x: x,
+            y: y,
+            dx: dx,
+            dy: dy
+          }
 
           map.paintMovementMask(gameUIState.movementOptions, true);
           map.paintUnit(dx, dy, map.getTile(x, y).unit);
-          
-          for(var i = 0; i < gameUIState.movementOptions.length; ++i) {
-            var option = gameUIState.movementOptions[i];
-            if(option.pos.x == dx && option.pos.y == dy) {
-              canMove = true;
-              break;
-            }
-          }
-          
-          if(!canMove) {
-            gameUIState = {stateName: "select"};
-          } else {
-            gameUIState = {
-              stateName: "action",
-              x: x,
-              y: y,
-              dx: dx,
-              dy: dy
-            }
-            var actions = [];
-            if(gameLogic.unitAttackOptions(x, y, dx, dy).length > 0)
-              actions.push("attack");
-            if(gameLogic.unitCanWait(x, y, dx, dy))
-              actions.push("wait");
-            if(gameLogic.unitCanCapture(x, y, dx, dy))
-              actions.push("capture");
-            if(gameLogic.unitCanDeploy(x, y, dx, dy))
-              actions.push("deploy");
-            if(gameLogic.unitCanUndeploy(x, y, dx, dy))
-              actions.push("undeploy");
-            /*if(gameLogic.unitCanLoadInto(x, y, dx, dy))
-              actions.push("load");
-            if(gameLogic.unitCanUnload(x, y, dx, dy))
-              actions.push("unload");*/
-            actions.push("cancel");
-            showActionMenu(actions, canvasPosition);  
+        
+          var actions = [];
+          if(gameLogic.unitAttackOptions(x, y, dx, dy).length > 0)
+            actions.push("attack");
+          if(gameLogic.unitCanWait(x, y, dx, dy))
+            actions.push("wait");
+          if(gameLogic.unitCanCapture(x, y, dx, dy))
+            actions.push("capture");
+          if(gameLogic.unitCanDeploy(x, y, dx, dy))
+            actions.push("deploy");
+          if(gameLogic.unitCanUndeploy(x, y, dx, dy))
+            actions.push("undeploy");
+          /*if(gameLogic.unitCanLoadInto(x, y, dx, dy))
+            actions.push("load");
+          if(gameLogic.unitCanUnload(x, y, dx, dy))
+            actions.push("unload");*/
+          actions.push("cancel");
+          showActionMenu(actions, canvasPosition);  
+        }
+      } else if(gameUIState.stateName == "action") {
+        gameUIState = {stateName: "select"};
+        $("#actionMenu").hide();
+        map.refresh();
+      } else if(gameUIState.stateName == "attack") {
+        var tx = tilePosition.x;
+        var ty = tilePosition.y;
+        var canAttack = false;
+
+        for(var i = 0; i < gameUIState.attackOptions.length; ++i) {
+          var option = gameUIState.attackOptions[i];
+          if(option.pos.x == tx && option.pos.y == ty) {
+            canAttack = true;
+            break;
           }
         }
+        
+        if(!canAttack) {
+          gameUIState = {stateName: "select"};
+          map.refresh();
+        } else {
+          var unitId = map.getTile(gameUIState.x, gameUIState.y).unit.unitId;
+          var destination = {x: gameUIState.dx, y: gameUIState.dy};
+          var targetId = map.getTile(tx, ty).unit.unitId;
+          client.stub.moveAndAttack({gameId: gameId, unitId: unitId, destination: destination, targetId: targetId}, function(response) {
+            if(!response.success) {
+              alert(response.reason);
+            }
+            gameUIState = {stateName: "select"};
+          });
+        }
       }
-    });    
+    }
   }
   
   function fitElement(numItems, itemWidth, itemHeight, content) {
@@ -321,15 +356,51 @@ var wrap = function() {
     
     $(".actionItem").click(function(e) {
       var action = $(this).attr("action");
+      actionMenu.hide();
       if(action == "cancel") {
         gameUIState = {stateName: "select"};
-        actionMenu.hide();
         map.refresh();
+      } else if(action == "attack") {
+        gameUIState = {
+          stateName: "attack",
+          attackOptions: gameLogic.unitAttackOptions(gameUIState.x, gameUIState.y, gameUIState.dx, gameUIState.dy),
+          x: gameUIState.x,
+          y: gameUIState.y,
+          dx: gameUIState.dx,
+          dy: gameUIState.dy
+        };
+        map.paintAttackMask(gameUIState.attackOptions);
+        
       } else if(action == "wait") {
-        actionMenu.hide();
         var unitId = map.getTile(gameUIState.x, gameUIState.y).unit.unitId;
         var destination = {x: gameUIState.dx, y: gameUIState.dy};
         client.stub.moveAndWait({gameId: gameId, unitId: unitId, destination: destination}, function(response) {
+          if(!response.success) {
+            alert(response.reason);
+          }
+          gameUIState = {stateName: "select"};
+        });
+      } else if(action == "capture") {
+        var unitId = map.getTile(gameUIState.x, gameUIState.y).unit.unitId;
+        var destination = {x: gameUIState.dx, y: gameUIState.dy};
+        client.stub.moveAndCapture({gameId: gameId, unitId: unitId, destination: destination}, function(response) {
+          if(!response.success) {
+            alert(response.reason);
+          }
+          gameUIState = {stateName: "select"};
+        });
+      } else if(action == "deploy") {
+        var unitId = map.getTile(gameUIState.x, gameUIState.y).unit.unitId;
+        var destination = {x: gameUIState.dx, y: gameUIState.dy};
+        client.stub.moveAndDeploy({gameId: gameId, unitId: unitId, destination: destination}, function(response) {
+          if(!response.success) {
+            alert(response.reason);
+          }
+          gameUIState = {stateName: "select"};
+        });
+      } else if(action == "undeploy") {
+        var unitId = map.getTile(gameUIState.x, gameUIState.y).unit.unitId;
+        client.stub.undeploy({gameId: gameId, unitId: unitId}, function(response) {
           if(!response.success) {
             alert(response.reason);
           }
