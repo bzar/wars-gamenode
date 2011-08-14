@@ -433,7 +433,9 @@ GameLogic.prototype.unitAttackOptions = function(x1, y1, x2, y2) {
             }
 
             var power = this.calculateDamage(unit, attackFromTile, targetUnit, targetTile);
-            attackOptions.push({pos:{x:tx, y:ty}, power:power});
+            if(power !== null) {
+              attackOptions.push({pos:{x:tx, y:ty}, power:power});
+            }
         }
     }
 
@@ -526,15 +528,15 @@ GameLogic.prototype.unitCanLoadInto = function(x1, y1, x2, y2) {
     var targetTile = this.map.getTile(x2, y2);
     var otherUnit = targetTile.unit;
 
-    if(otherUnit == null) {
+    if(otherUnit == null || otherUnit.unitId == unit.unitId) {
         return false;
     }
 
     var otherUnitType = this.rules.units[otherUnit.type];
 
     if(otherUnit.owner == unit.owner &&
-        otherUnit.carry < otherUnit.max_carry &&
-        unitType["class"] in otherUnitType.carryClasses) {
+        otherUnit.carriedUnits.length < otherUnitType.carryNum &&
+        unitType.unitClass in otherUnitType.carryClasses) {
         return true;
     }
 
@@ -547,7 +549,7 @@ GameLogic.prototype.unitCanUnload = function(x1, y1, x2, y2) {
     var tile = mapArray[y1][x1];
     var unit = tile.unit;
 
-    if(unit.carry == 0) {
+    if(unit.carriedUnits === undefined || unit.carriedUnits.length == 0) {
         return false;
     }
 
@@ -591,7 +593,7 @@ GameLogic.prototype.unitUnloadOptions = function(x1, y1, x2, y2) {
     var tile = mapArray[y1][x1];
     var unit = tile.unit;
 
-    if(unit.carry == 0) {
+    if(unit.carriedUnits.length == 0) {
         return [];
     }
 
@@ -637,7 +639,7 @@ GameLogic.prototype.unitUnloadTargetOptions = function(x1, y1, x2, y2, unitId) {
     var tile = mapArray[y1][x1];
     var unit = tile.unit;
 
-    if(unit.carry == 0) {
+    if(unit.carriedUnits.length == 0) {
         return [];
     }
 
@@ -649,8 +651,8 @@ GameLogic.prototype.unitUnloadTargetOptions = function(x1, y1, x2, y2, unitId) {
     var carriedUnitType = undefined;
     var carriedUnitMovementType = undefined;
 
-    for(i in unit.carriedUnits) {
-        if(unit.carriedUnits[i].id == unitId) {
+    for(var i = 0; i < unit.carriedUnits.length; ++i) {
+        if(unit.carriedUnits[i].unitId == unitId) {
             carriedUnit = unit.carriedUnits[i];
             carriedUnitType = this.rules.units[carriedUnit.type];
             carriedUnitMovementType = this.rules.movementTypes[carriedUnitType.movementType];

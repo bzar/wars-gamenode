@@ -618,6 +618,22 @@ JSONFileDatabase.prototype.register = function(newUser, callback) {
 
 // GAME ENTITY MANAGEMENT
 
+function getCarriedUnits(database, unit) {
+  unit.carriedUnits = [];
+  console.log(JSON.stringify(unit.unitType()));
+  if(unit.unitType().carryNum > 0) {
+    for(var i = 0; i < database.units.length; ++i) {
+      var carriedUnit = database.units[i];
+      if(carriedUnit.carriedBy == unit.unitId) {
+        carriedUnit = carriedUnit.clone();
+        getCarriedUnits(database, carriedUnit);
+        unit.carriedUnits.push(carriedUnit);
+      }
+    }
+  }
+}
+
+
 JSONFileDatabase.prototype.gameData = function(gameId, callback) {
   var this_ = this;
   this.loadDatabase(function(database) {
@@ -637,6 +653,8 @@ JSONFileDatabase.prototype.gameData = function(gameId, callback) {
         tile.unit = null;
         if(tile.unitId !== null) {
           tile.unit = database.unit(tile.unitId).clone();
+          getCarriedUnits(database, tile.unit);
+          
         }
         tiles.push(tile);
       }
@@ -677,6 +695,15 @@ JSONFileDatabase.prototype.updateGameData = function(game, callback) {
           return;
         }
         existingUnit.cloneFrom(tile.unit);
+        
+        for(var j = 0; j < tile.unit.carriedUnits.length; ++j) {
+          var carriedUnit = database.unit(tile.unit.carriedUnits[j].unitId);
+          if(carriedUnit === null) {
+            callback({success: false, reason: "Unit does not exist!"});
+            return;
+          }
+          carriedUnit.cloneFrom(tile.unit.carriedUnits[j]);
+        }
       }
     }
     
@@ -760,7 +787,9 @@ JSONFileDatabase.prototype.unit = function(unitId, callback) {
     if(unit === null) {
       callback({success: false, reason: "No such unit!"});
     } else {
-      callback({success: true, unit: unit.clone()});
+      unit = unit.clone();
+      getCarriedUnits(database, unit);
+      callback({success: true, unit: unit});
     }
   });
 }
@@ -777,6 +806,7 @@ JSONFileDatabase.prototype.unitAt = function(gameId, x, y, callback) {
           var unit = database.unit(tile.unitId);
           if(unit !== null) {
             unit = unit.clone();
+            getCarriedUnits(database, unit);
           }
           callback({success: true, unit: unit})
           return;
@@ -794,8 +824,9 @@ JSONFileDatabase.prototype.units = function(gameId, callback) {
     for(var i = 0; i < database.tiles.length; ++i) {
       var tile = database.tiles[i];
       if(tile.gameId == gameId && tile.unitId !== null) {
-        var unit = database.unit(tile.unitId);
-        units.push(unit.clone());
+        var unit = database.unit(tile.unitId).clone();
+        getCarriedUnits(database, unit);
+        units.push(unit);
       }
     }
     
@@ -812,8 +843,25 @@ JSONFileDatabase.prototype.playerUnits = function(gameId, playerNumber, callback
       if(tile.gameId == gameId && tile.unitId !== null) {
         var unit = database.unit(tile.unitId);
         if(unit.owner == playerNumber) {
-          units.push(unit.clone());
+          unit = unit.clone();
+          getCarriedUnits(database, unit);
+          units.push(unit);
         }
+      }
+    }
+    
+    callback({success: true, units: units});
+  });
+}
+
+JSONFileDatabase.prototype.carriedUnits = function(carrierId, callback) {
+  var this_ = this;
+  this.loadDatabase(function(database) {
+    var units = [];
+    for(var i = 0; i < database.units.length; ++i) {
+      var unit = database.units[i];
+      if(unit.carriedBy == carrierId) {
+        units.push(unit.clone());
       }
     }
     
@@ -844,6 +892,17 @@ JSONFileDatabase.prototype.updateUnit = function(unit, callback) {
     }
     existingUnit.cloneFrom(unit);
     
+    if(unit.carriedUnits !== undefined) {
+      for(var j = 0; j < unit.carriedUnits.length; ++j) {
+        var carriedUnit = database.unit(unit.carriedUnits[j].unitId);
+        if(carriedUnit === null) {
+          callback({success: false, reason: "Unit does not exist!"});
+          return;
+        }
+        carriedUnit.cloneFrom(unit.carriedUnits[j]);
+      }
+    }
+    
     this_.saveDatabase(function() {
       callback({success: true});
     });    
@@ -862,6 +921,16 @@ JSONFileDatabase.prototype.updateUnits = function(units, callback) {
       }
       existingUnit.cloneFrom(unit);
     
+      if(unit.carriedUnits !== undefined) {
+        for(var j = 0; j < unit.carriedUnits.length; ++j) {
+          var carriedUnit = database.unit(unit.carriedUnits[j].unitId);
+          if(carriedUnit === null) {
+            callback({success: false, reason: "Unit does not exist!"});
+            return;
+          }
+          carriedUnit.cloneFrom(unit.carriedUnits[j]);
+        }
+      }
     }
     this_.saveDatabase(function() {
       callback({success: true});

@@ -1,5 +1,5 @@
 var gameClient = null;
-
+var gameMap = null;
 var wrap = function() {
   var client = new GameNodeClient(Skeleton);
   gameClient = client;
@@ -7,6 +7,8 @@ var wrap = function() {
   var inTurn = false;
   var inTurnNumber = 0;
   var gameLogic = null;
+  var map = new Map(undefined, 1.0, "pixel");
+  gameMap = map;
   var gameUIState = {
     stateName: "select"
   }
@@ -16,8 +18,6 @@ var wrap = function() {
     gameId = gameId[1];
   else
     document.location = "/";
-  
-  var map = new Map(undefined, 1.0, "pixel");
   
   $(document).ready(function() {
     var loginUrl = "login.html?next=" + document.location.pathname + document.location.search;
@@ -149,8 +149,12 @@ var wrap = function() {
         if(newTile.beingCaptured !== undefined)
           tile.beingCaptured = newTile.beingCaptured;
         
-        if(newTile.unit !== undefined)
+        if(newTile.unit !== undefined) {
+          if(newTile.unit !== null && newTile.unit.carriedUnits === undefined && tile.unit !== null) {
+            newTile.unit.carriedUnits = tile.unit.carriedUnits;
+          }
           tile.unit = newTile.unit;
+        }
       }
       map.refresh();
     }
@@ -159,18 +163,19 @@ var wrap = function() {
       gameLogic = new GameLogic(map, rules);
     });
     
-    $("#mapCanvas").click(handleMapClick);    
+    $("#mapCanvas").click(handleMapClick);
+//    $("#mapCanvas").click(function(e){console.log(e);});
   }
   
   function handleMapClick(e) {
     var buildMenu = $("#buildMenu");
-    var canvas = $(this);
+    var canvas = $("#mapCanvas");
     var content = $("#content");
     var canvasPosition = {x: e.offsetX, y: e.offsetY};
     var windowPosition = {x: e.pageX, y: e.pageY};
     var tilePosition = {x: parseInt(canvasPosition.x / (map.getScale() * map.tileW)),
                         y: parseInt(canvasPosition.y / (map.getScale() * map.tileH))};
-    
+    console.log(gameUIState);
     if(inTurn) {
       buildMenu.hide();
       var playerNumber = parseInt($(".playerItem.inTurn").attr("playerNumber"));
@@ -183,6 +188,7 @@ var wrap = function() {
             movementOptions: gameLogic.unitMovementOptions(tilePosition.x, tilePosition.y)
           };
           map.paintMovementMask(gameUIState.movementOptions);
+          map.paintUnit(tilePosition.x, tilePosition.y, map.getTile(tilePosition.x, tilePosition.y).unit);
         } else if(gameLogic.tileCanBuild(playerNumber, tilePosition.x, tilePosition.y)) {
           var buildOptions = gameLogic.tileBuildOptions(tilePosition.x, tilePosition.y);
           showBuildMenu(buildOptions, canvasPosition, tilePosition);
@@ -208,6 +214,9 @@ var wrap = function() {
           gameUIState = {stateName: "select"};
           map.refresh();
         } else {
+          map.paintMovementMask(gameUIState.movementOptions, true);
+          map.paintUnit(dx, dy, map.getTile(x, y).unit);
+        
           gameUIState = {
             stateName: "action",
             x: x,
@@ -216,9 +225,6 @@ var wrap = function() {
             dy: dy
           }
 
-          map.paintMovementMask(gameUIState.movementOptions, true);
-          map.paintUnit(dx, dy, map.getTile(x, y).unit);
-        
           var actions = [];
           if(gameLogic.unitAttackOptions(x, y, dx, dy).length > 0)
             actions.push("attack");
@@ -230,10 +236,10 @@ var wrap = function() {
             actions.push("deploy");
           if(gameLogic.unitCanUndeploy(x, y, dx, dy))
             actions.push("undeploy");
-          /*if(gameLogic.unitCanLoadInto(x, y, dx, dy))
+          if(gameLogic.unitCanLoadInto(x, y, dx, dy))
             actions.push("load");
           if(gameLogic.unitCanUnload(x, y, dx, dy))
-            actions.push("unload");*/
+            actions.push("unload");
           actions.push("cancel");
           showActionMenu(actions, canvasPosition);  
         }
@@ -262,6 +268,39 @@ var wrap = function() {
           var destination = {x: gameUIState.dx, y: gameUIState.dy};
           var targetId = map.getTile(tx, ty).unit.unitId;
           client.stub.moveAndAttack({gameId: gameId, unitId: unitId, destination: destination, targetId: targetId}, function(response) {
+            if(!response.success) {
+              alert(response.reason);
+            }
+            gameUIState = {stateName: "select"};
+          });
+        }
+      } else if(gameUIState.stateName == "unloadUnit") {
+        gameUIState = {stateName: "select"};
+        $("#actionMenu").hide();
+      } else if(gameUIState.stateName == "unloadTarget") {
+        var tx = tilePosition.x;
+        var ty = tilePosition.y;
+        var canUndeploy = false;
+
+        for(var i = 0; i < gameUIState.unloadTargetOptions.length; ++i) {
+          var option = gameUIState.unloadTargetOptions[i];
+          if(option.x == tx && option.y == ty) {
+            canUndeploy = true;
+            break;
+          }          
+        }
+        
+        if(!canUndeploy) {
+          gameUIState = {stateName: "select"};
+          map.refresh();
+        } else {
+          var unitId = map.getTile(gameUIState.x, gameUIState.y).unit.unitId;
+          var destination = {x: gameUIState.dx, y: gameUIState.dy};
+          var carriedUnitId = gameUIState.carriedUnitId;
+          var unloadDestination = {x: tx, y: ty};
+          client.stub.moveAndUnload({gameId: gameId, unitId: unitId, destination: destination, 
+                                    carriedUnitId: carriedUnitId, unloadDestination: unloadDestination}, 
+                                    function(response) {
             if(!response.success) {
               alert(response.reason);
             }
@@ -406,9 +445,68 @@ var wrap = function() {
           }
           gameUIState = {stateName: "select"};
         });
-      }
+      } else if(action == "load") {
+        var unitId = map.getTile(gameUIState.x, gameUIState.y).unit.unitId;
+        var carrierId = map.getTile(gameUIState.dx, gameUIState.dy).unit.unitId;
+        client.stub.moveAndLoadInto({gameId: gameId, unitId: unitId, carrierId: carrierId}, function(response) {
+          if(!response.success) {
+            alert(response.reason);
+          }
+          gameUIState = {stateName: "select"};
+        });
+      } else if(action == "unload") {
+        gameUIState = {
+          stateName: "unloadUnit",
+          unloadOptions: gameLogic.unitUnloadOptions(gameUIState.x, gameUIState.y, gameUIState.dx, gameUIState.dy),
+          x: gameUIState.x,
+          y: gameUIState.y,
+          dx: gameUIState.dx,
+          dy: gameUIState.dy
+        };
+        showUnloadMenu(gameUIState.unloadOptions, canvasPosition);
+      } 
     });
-
+  }
+  
+  function showUnloadMenu(units, canvasPosition) {
+    var unloadMenu = $("#unloadMenu");
+    var content = $("#content");
+    var size = fitElement(units.length, 48, 48, content);
+    var optimalLeft = canvasPosition.x;
+    var optimalTop = canvasPosition.y;
+    var position = clampElement(optimalLeft, optimalTop, size.width, size.height, content);
+    unloadMenu.empty();
+    unloadMenu.width(size.width);
+    unloadMenu.height(size.height);
+    unloadMenu.css("left", position.left)
+    unloadMenu.css("top", position.top)
+    unloadMenu.show();
+    
+    for(var i = 0; i < units.length; ++i) {
+      var unit = units[i];
+      var item = $("<img></img>");
+      item.addClass("unloadItem");
+      item.attr("src", "/img/themes/pixel/" + SPRITE_SHEET_MAP[SPRITE_UNIT][unit.type][inTurnNumber].img);
+      item.attr("unitId", unit.unitId);
+      unloadMenu.append(item);
+    }
+    
+    $(".unloadItem").click(function(e) {
+      var carriedUnitId = parseInt($(this).attr("unitId"));
+      var unloadTargetOptions = gameLogic.unitUnloadTargetOptions(gameUIState.x, gameUIState.y, gameUIState.dx, 
+                                                                  gameUIState.dy, carriedUnitId);
+      gameUIState = {
+        stateName: "unloadTarget",
+        unloadTargetOptions: unloadTargetOptions,
+        carriedUnitId: carriedUnitId,
+        x: gameUIState.x,
+        y: gameUIState.y,
+        dx: gameUIState.dx,
+        dy: gameUIState.dy
+      };
+      map.paintUnloadMask(unloadTargetOptions);
+      unloadMenu.hide();
+    });
   }
   
   function showBuildMenu(buildOptions, canvasPosition, tilePosition) {

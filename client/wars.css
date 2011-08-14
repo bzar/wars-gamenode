@@ -553,7 +553,7 @@ input[type=text], input[type=password] {
   list-style:
 }
 
-#buildMenu, #actionMenu {
+#buildMenu, #actionMenu, #unloadMenu {
   background-color: transparent;
   position: absolute;
   display: none;
@@ -562,7 +562,7 @@ input[type=text], input[type=password] {
   opacity: 0.9;
 }
 
-.buildItem, .actionItem {
+.buildItem, .actionItem, .unloadItem {
   display: inline-block;
   margin: 0;
   text-align: center;
@@ -576,7 +576,7 @@ input[type=text], input[type=password] {
   background-color: #222;
 }
 
-.actionItem {
+.actionItem, .unloadItem {
   width: 44px;
   height: 44px;
   border: 2px solid #555;
@@ -594,7 +594,7 @@ input[type=text], input[type=password] {
   cursor: pointer;
 }
 
-.actionItem:hover {
+.actionItem:hover, .unloadItem:hover {
   background-color: #fff;
   border: 2px solid #999;
   cursor: pointer;  

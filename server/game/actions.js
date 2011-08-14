@@ -262,12 +262,86 @@ GameActions.prototype.undeploy = function(gameId, userId, unitId, callback) {
   });  
 }
 
-GameActions.prototype.load = function(gameId, userId, unitId, carrierId, callback) {
-  
+GameActions.prototype.moveAndLoadInto = function(gameId, userId, unitId, carrierId, callback) {
+  var database = this.database;
+  database.unit(carrierId, function(result) {
+    if(!result.success) {
+      callback({success: false, reason: result.reason}); return;
+    }
+    
+    var carrier = result.unit;
+    database.tile(carrier.tileId, function(result) {
+      var carrierTile = result.tile;
+      carrierTile.setUnit(carrier);
+      checkMove(database, gameId, userId, unitId, {x:carrierTile.x, y:carrierTile.y}, 
+                function(result, game, player, unit, sourceTile, destinationTile, gameLogic) {
+        if(!result.success) {
+          callback({success: false, reason: result.reason}); return;
+        }
+    
+        var canLoad = gameLogic.unitCanLoadInto(sourceTile.x, sourceTile.y, carrierTile.x, carrierTile.y);
+        
+        if(canLoad === null) {
+          callback({success: false, reason: "Error determining if unit can load!"}); return;
+        } else if(canLoad == false) {
+          callback({success: false, reason: "Unit cannot load here!"}); return;
+        }
+        
+        sourceTile.setUnit(null);
+        unit.loadInto(carrier);
+        
+        database.updateUnits([unit, carrier], function(result) {
+          database.updateTiles([sourceTile], function(result) {
+            callback({success: true, changedTiles: [sourceTile, carrierTile]});
+          });
+        });
+      });
+    });
+  });
 }
 
-GameActions.prototype.unload = function(gameId, userId, carrierId, unitId, destination, callback) {
-  
+GameActions.prototype.moveAndUnload = function(gameId, userId, carrierId, destination, unitId, unloadDestination, callback) {
+  var database = this.database;
+  checkMove(database, gameId, userId, carrierId, destination, 
+            function(result, game, player, unit, sourceTile, destinationTile, gameLogic) {
+    database.unit(unitId, function(result) {
+      if(!result.success) {
+        callback({success: false, reason: result.reason}); return;
+      }
+      
+      var carriedUnit = result.unit;
+      var unloadTargetOptions = gameLogic.unitUnloadTargetOptions(sourceTile.x, sourceTile.y, 
+                                                              destinationTile.x, destinationTile.y, unitId);
+
+      if(unloadTargetOptions === null) {
+        callback({success: false, reason: "Error determining unload options!"}); return;
+      }
+
+      var canUnload = false;
+      
+      for(var i = 0; i < unloadTargetOptions.length; ++i) {
+        if(unloadTargetOptions[i].x == unloadDestination.x && unloadTargetOptions[i].y == unloadDestination.y) {
+          canUnload = true;
+        }
+      }
+      
+      if(canUnload == false) {
+        callback({success: false, reason: "Unit cannot be unloaded here!"}); return;
+      }
+      
+      sourceTile.setUnit(null);
+      destinationTile.setUnit(unit);
+      var unloadTile = game.getTile(unloadDestination.x, unloadDestination.y);
+      unit.unloadFrom(unit);
+      unloadTile.setUnit(carriedUnit);
+      
+      database.updateUnits([unit, carriedUnit], function(result) {
+        database.updateTiles([sourceTile, destinationTile, unloadTile], function(result) {
+          callback({success: true, changedTiles: [sourceTile, destinationTile, unloadTile]});
+        });
+      });
+    });
+  });
 }
 
 GameActions.prototype.build = function(gameId, userId, unitTypeId, destination, callback) {

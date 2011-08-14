@@ -151,10 +151,10 @@ Map.prototype.paintUnitTile = function(ctx, el, xPos, yPos) {
                       numCoord.x*this.tileW, numCoord.y*this.tileH, this.tileW/2, this.tileH/2,
                       enX, enY+this.unitOffsetY, this.tileW/2, this.tileH/2);
     }
-
+    /*
     if(el.unit.max_carry > 0) {
         for(var i = 0; i < el.unit.max_carry; ++i) {
-            if(i < el.unit.carry) {
+            if(i < el.unit.carried_units.length) {
                 ctx.fillStyle = "white";
                 ctx.fillRect(xPos + 2, yPos + this.tileH - (i+1)*7 - 2, 5, 5);
             } else {
@@ -162,7 +162,7 @@ Map.prototype.paintUnitTile = function(ctx, el, xPos, yPos) {
                 ctx.strokeRect(xPos + 2, yPos + this.tileH - (i+1)*7 - 2, 5, 5);
             }
         }
-    }
+    }*/
 };
 
 Map.prototype.paintUnit = function(x, y, unit) {

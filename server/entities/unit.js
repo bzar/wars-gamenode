@@ -10,6 +10,7 @@ function Unit(unitId, tileId, type, owner, carriedBy, health, deployed, moved, c
   this.deployed = deployed;
   this.moved = moved;
   this.capturing = capturing;
+  this.carriedUnits = [];
 };
 
 exports.Unit = Unit;
@@ -76,9 +77,36 @@ Unit.prototype.capture = function(tile) {
 Unit.prototype.deploy = function(amount) {
   this.deployed = true;
   this.moved = true;
+  this.capturing = false;
 }
 
 Unit.prototype.undeploy = function(amount) {
   this.deployed = false;
   this.moved = true;
+  this.capturing = false;
 }
+
+Unit.prototype.loadInto = function(unit) {
+  this.carriedBy = unit.unitId;
+  this.tileId = null;
+  if(unit.carriedUnits === undefined)
+    unit.carriedUnits = [];
+  unit.carriedUnits.push(this);
+  this.moved = true;
+  this.capturing = false;
+}
+
+Unit.prototype.unloadFrom = function(unit) {
+  this.carriedBy = null;
+  this.tileId = null;
+  for(var i = 0; i < unit.carriedUnits.length; ++i) {
+    if(unit.carriedUnits[i].unitId == this.unitId) {
+      unit.carriedUnits.splice(i, 1);
+      break;
+    }
+  }
+  this.moved = true;
+}
+
+
+
