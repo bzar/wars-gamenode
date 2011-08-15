@@ -93,7 +93,7 @@ Map.prototype.getTile = function(x, y) {
 };
 
 Map.prototype.capturedPercentage = function(el) {
-    return el.capturepoints / 200;
+    return el.capturePoints / 200;
 };
 
 Map.prototype.clear = function() {
@@ -109,7 +109,7 @@ Map.prototype.paintTerrainTile = function(ctx, el, xPos, yPos) {
         ctx.drawImage(this.sprites,
                       coord.x*this.tileW, coord.y*this.tileH, this.tileW, this.tileH,
                       xPos, yPos, this.tileW, this.tileH);
-        if(el.capturepoints<200) {
+        if(el.capturePoints<200) {
             // draw capture bar
             if(el.beingcaptured) {
                 ctx.fillStyle = "red";

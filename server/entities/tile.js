@@ -58,3 +58,10 @@ Tile.prototype.setUnit = function(unit) {
     unit.tileId = this.tileId;
   }
 }
+
+Tile.prototype.regenerateCapturePoints = function() {
+  this.capturePoints += settings.capturePointRegenerationRate;
+  if(this.capturePoints > settings.maxCapturePoints) {
+    this.capturePoints = settings.maxCapturePoints
+  }
+}

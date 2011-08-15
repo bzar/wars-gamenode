@@ -15,7 +15,11 @@ function checkMove(database, gameId, userId, unitId, destination, callback) {
     }
     
     var unit = result.unit;
+    console.log(unit);
     database.tile(unit.tileId, function(result) {
+      if(!result.success) {
+        callback({success: false, reason: result.reason}); return;
+      }
       var sourceTile = result.tile;
       sourceTile.setUnit(unit);
       
@@ -332,8 +336,9 @@ GameActions.prototype.moveAndUnload = function(gameId, userId, carrierId, destin
       sourceTile.setUnit(null);
       destinationTile.setUnit(unit);
       var unloadTile = game.getTile(unloadDestination.x, unloadDestination.y);
-      unit.unloadFrom(unit);
+      carriedUnit.unloadFrom(unit);
       unloadTile.setUnit(carriedUnit);
+      unit.moved = true;
       
       database.updateUnits([unit, carriedUnit], function(result) {
         database.updateTiles([sourceTile, destinationTile, unloadTile], function(result) {
@@ -522,12 +527,14 @@ GameActions.prototype.startTurn = function(game, callback) {
                   // Handle capturing
                   if(!unit.capturing) {
                     tile.beingCaptured = false;
+                    tile.regenerateCapturePoints();
                   }
                   break;
                 }
               }
             } else {
               tile.beingCaptured = false;
+              tile.regenerateCapturePoints();
             }
           }
           

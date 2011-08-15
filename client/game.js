@@ -175,20 +175,25 @@ var wrap = function() {
     var windowPosition = {x: e.pageX, y: e.pageY};
     var tilePosition = {x: parseInt(canvasPosition.x / (map.getScale() * map.tileW)),
                         y: parseInt(canvasPosition.y / (map.getScale() * map.tileH))};
-    console.log(gameUIState);
     if(inTurn) {
       buildMenu.hide();
       var playerNumber = parseInt($(".playerItem.inTurn").attr("playerNumber"));
       if(gameUIState.stateName == "select") {
         if(gameLogic.tileHasMovableUnit(playerNumber, tilePosition.x, tilePosition.y)) {
-          gameUIState = {
-            stateName: "move",
-            x: tilePosition.x,
-            y: tilePosition.y,
-            movementOptions: gameLogic.unitMovementOptions(tilePosition.x, tilePosition.y)
-          };
-          map.paintMovementMask(gameUIState.movementOptions);
+          var movementOptions = gameLogic.unitMovementOptions(tilePosition.x, tilePosition.y);
+          map.paintMovementMask(movementOptions);
           map.paintUnit(tilePosition.x, tilePosition.y, map.getTile(tilePosition.x, tilePosition.y).unit);
+          
+          if(movementOptions.length > 1) {
+            gameUIState = {
+              stateName: "move",
+              x: tilePosition.x,
+              y: tilePosition.y,
+              movementOptions: movementOptions
+            };
+          } else {
+            switchToActionState(tilePosition.x, tilePosition.y, tilePosition.x, tilePosition.y, movementOptions, canvasPosition);
+          }
         } else if(gameLogic.tileCanBuild(playerNumber, tilePosition.x, tilePosition.y)) {
           var buildOptions = gameLogic.tileBuildOptions(tilePosition.x, tilePosition.y);
           showBuildMenu(buildOptions, canvasPosition, tilePosition);
@@ -214,34 +219,7 @@ var wrap = function() {
           gameUIState = {stateName: "select"};
           map.refresh();
         } else {
-          map.paintMovementMask(gameUIState.movementOptions, true);
-          map.paintUnit(dx, dy, map.getTile(x, y).unit);
-        
-          gameUIState = {
-            stateName: "action",
-            x: x,
-            y: y,
-            dx: dx,
-            dy: dy
-          }
-
-          var actions = [];
-          if(gameLogic.unitAttackOptions(x, y, dx, dy).length > 0)
-            actions.push("attack");
-          if(gameLogic.unitCanWait(x, y, dx, dy))
-            actions.push("wait");
-          if(gameLogic.unitCanCapture(x, y, dx, dy))
-            actions.push("capture");
-          if(gameLogic.unitCanDeploy(x, y, dx, dy))
-            actions.push("deploy");
-          if(gameLogic.unitCanUndeploy(x, y, dx, dy))
-            actions.push("undeploy");
-          if(gameLogic.unitCanLoadInto(x, y, dx, dy))
-            actions.push("load");
-          if(gameLogic.unitCanUnload(x, y, dx, dy))
-            actions.push("unload");
-          actions.push("cancel");
-          showActionMenu(actions, canvasPosition);  
+          switchToActionState(x, y, dx, dy, gameUIState.movementOptions, canvasPosition)
         }
       } else if(gameUIState.stateName == "action") {
         gameUIState = {stateName: "select"};
@@ -309,6 +287,37 @@ var wrap = function() {
         }
       }
     }
+  }
+  
+  function switchToActionState(x, y, dx, dy, movementOptions, canvasPosition) {
+    map.paintMovementMask(movementOptions, true);
+    map.paintUnit(dx, dy, map.getTile(x, y).unit);
+  
+    gameUIState = {
+      stateName: "action",
+      x: x,
+      y: y,
+      dx: dx,
+      dy: dy
+    }
+
+    var actions = [];
+    if(gameLogic.unitAttackOptions(x, y, dx, dy).length > 0)
+      actions.push("attack");
+    if(gameLogic.unitCanWait(x, y, dx, dy))
+      actions.push("wait");
+    if(gameLogic.unitCanCapture(x, y, dx, dy))
+      actions.push("capture");
+    if(gameLogic.unitCanDeploy(x, y, dx, dy))
+      actions.push("deploy");
+    if(gameLogic.unitCanUndeploy(x, y, dx, dy))
+      actions.push("undeploy");
+    if(gameLogic.unitCanLoadInto(x, y, dx, dy))
+      actions.push("load");
+    if(gameLogic.unitCanUnload(x, y, dx, dy))
+      actions.push("unload");
+    actions.push("cancel");
+    showActionMenu(actions, canvasPosition);  
   }
   
   function fitElement(numItems, itemWidth, itemHeight, content) {
