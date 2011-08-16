@@ -6,7 +6,9 @@ var wrap = function() {
   if(mapId !== null)
     mapId = parseInt(mapId[1]);
   
-  var mapPainter = new Map(undefined, 1.0, "pixel");
+  var theme = localStorage.getItem("theme");
+  theme = theme ? theme : "pixel";
+  var mapPainter = new Map(undefined, 1.0, theme);
 
   var mouseDown = false;
   var lastX = null;
@@ -33,13 +35,13 @@ var wrap = function() {
     if(terrainSelection.hasClass("selected")) {
       unitPalette.hide();
       terrainPalette.show();
-      var terrainType = $("#terrainTypePalette img.selected").attr("type");
+      var terrainType = $("#terrainTypePalette .sprite.selected").attr("type");
       var terrainSubtypePalette = $("#terrainSubtypePalette");
       
       playerItems.each(function(ii, el) {
         var option = $(el);
         var owner = option.attr("value");
-        var disabled = $('img[type="' + terrainType + '"][owner="' + owner + '"]', terrainSubtypePalette).length == 0;
+        var disabled = $('.sprite[type="' + terrainType + '"][owner="' + owner + '"]', terrainSubtypePalette).length == 0;
         if(disabled)
           option.addClass("disabled");
         else {
@@ -56,11 +58,11 @@ var wrap = function() {
       
       var selectedOwner = $(".playerSelection.selected").attr("value");
 
-      $("img", terrainSubtypePalette).hide();
-      $('img[type="' + terrainType + '"][owner="' + selectedOwner + '"]', terrainSubtypePalette).show();
+      $(".sprite", terrainSubtypePalette).hide();
+      $('.sprite[type="' + terrainType + '"][owner="' + selectedOwner + '"]', terrainSubtypePalette).show();
       
       if($(".selected:visible", terrainSubtypePalette).length == 0) {
-        $("img", terrainSubtypePalette).removeClass("selected");
+        $(".sprite", terrainSubtypePalette).removeClass("selected");
         $($(":visible", terrainSubtypePalette)[0]).addClass("selected");
       }
     } else {
@@ -71,7 +73,7 @@ var wrap = function() {
       playerItems.each(function(ii, el) {
         var option = $(el);
         var owner = option.attr("value");
-        var disabled = $('img[owner="' + owner + '"]', unitPalette).length == 0;
+        var disabled = $('.sprite[owner="' + owner + '"]', unitPalette).length == 0;
         if(disabled)
           option.addClass("disabled");
         else {
@@ -88,13 +90,13 @@ var wrap = function() {
       
       var selectedOwner = $(".playerSelection.selected").attr("value");
       
-      $("img", unitPalette).hide();
-      $('img[owner="' + selectedOwner + '"]', unitPalette).show();
+      $(".sprite", unitPalette).hide();
+      $('.sprite[owner="' + selectedOwner + '"]', unitPalette).show();
       
       $('[type="null"]', unitPalette).show();
 
       if($(".selected:visible", unitPalette).length == 0) {
-        $("img", unitPalette).removeClass("selected");
+        $(".sprite", unitPalette).removeClass("selected");
         $($(":visible", unitPalette)[0]).addClass("selected");
       }
       
@@ -414,59 +416,75 @@ var wrap = function() {
     var terrains = SPRITE_SHEET_MAP[0];
     for(var terrainType = 0; terrainType < terrains.length; ++terrainType) {
       var terrain = terrains[terrainType][0][0];
-      var terrainTypeItem = $("<img></img>");
-      terrainTypeItem.attr("src", "/img/themes/pixel/" + terrain.img);
+      var terrainTypeItem = $("<span></span>");
+      terrainTypeItem.css("background-image", "url('/img/themes/" + theme + "/sprite_sheet.png')");
+      terrainTypeItem.addClass("sprite");
+      var pos = SPRITE_SHEET_MAP[SPRITE_TERRAIN][terrainType][0][0];
+      var imageX = pos.x * mapPainter.tileW;
+      var imageY = pos.y * mapPainter.tileH;
+      terrainTypeItem.css("background-position", -imageX + "px " + -imageY + "px")
       terrainTypeItem.attr("type", terrainType);
       terrainTypePalette.append(terrainTypeItem);
             
       for(var terrainSubtype = 0; terrainSubtype < terrains[terrainType].length; ++terrainSubtype) {
         for(var terrainOwner = 0; terrainOwner < terrains[terrainType][terrainSubtype].length; ++terrainOwner) {
           var terrain = terrains[terrainType][terrainSubtype][terrainOwner];
-          var terrainSubtypeItem = $("<img></img>");
+          var terrainSubtypeItem = $("<span></span>");
+          terrainSubtypeItem.css("background-image", "url('/img/themes/" + theme + "/sprite_sheet.png')");
+          terrainSubtypeItem.addClass("sprite");
+          var pos = SPRITE_SHEET_MAP[SPRITE_TERRAIN][terrainType][terrainSubtype][terrainOwner];
+          var imageX = pos.x * mapPainter.tileW;
+          var imageY = pos.y * mapPainter.tileH;
+          terrainSubtypeItem.css("background-position", -imageX + "px " + -imageY + "px")
           terrainSubtypeItem.attr("type", terrainType);
           terrainSubtypeItem.attr("subtype", terrainSubtype);
           terrainSubtypeItem.attr("owner", terrainOwner);
-          terrainSubtypeItem.attr("src", "/img/themes/pixel/" + terrain.img);
           terrainSubtypePalette.append(terrainSubtypeItem);
         }
       }
     }
     
-    $("#terrainTypePalette img").click(function() {
-      $("#terrainTypePalette img.selected").removeClass("selected");
+    $("#terrainTypePalette .sprite").click(function() {
+      $("#terrainTypePalette .sprite.selected").removeClass("selected");
       $(this).addClass("selected");
       updatePalette();
     });
 
-    $("#terrainSubtypePalette img").click(function() {
-      $("#terrainSubtypePalette img.selected").removeClass("selected");
+    $("#terrainSubtypePalette .sprite").click(function() {
+      $("#terrainSubtypePalette .sprite.selected").removeClass("selected");
       $(this).addClass("selected");
       updatePalette();
     });
     
     var units = SPRITE_SHEET_MAP[1];
     
-    var unitEraserItem = $("<img></img>");
+    var unitEraserItem = $("<span></span>");
     unitEraserItem.attr("type", "null");
     unitEraserItem.attr("owner", "null");
-    unitEraserItem.attr("src", "/img/themes/pixel/nothing.png");
+    unitEraserItem.css("background-image", "url(/img/themes/" + theme + "/nothing.png)");
+    unitEraserItem.addClass('image');
     unitPalette.append(unitEraserItem);
     
     for(var unitType = 0; unitType < units.length; ++unitType) {
       for(var unitOwner = 0; unitOwner < units[unitType].length; ++unitOwner) {
         var unit = units[unitType][unitOwner];
-        var unitItem = $("<img></img>");
+        var unitItem = $("<span></span>");
         if(unit === null)
           continue;
         unitItem.attr("type", unitType);
         unitItem.attr("owner", unitOwner);
-        unitItem.attr("src", "/img/themes/pixel/" + unit.img);
+        unitItem.css("background-image", "url('/img/themes/" + theme + "/sprite_sheet.png')");
+        unitItem.addClass('image');
+        var pos = SPRITE_SHEET_MAP[SPRITE_UNIT][unitType][unitOwner];
+        var imageX = pos.x * mapPainter.tileW;
+        var imageY = pos.y * mapPainter.tileH;
+        unitItem.css("background-position", -imageX + "px " + -imageY + "px")
         unitPalette.append(unitItem);
       }
     }
     
-    $("#unitPalette img").click(function() {
-      $("#unitPalette img.selected").removeClass("selected");
+    $("#unitPalette .sprite").click(function() {
+      $("#unitPalette .sprite.selected").removeClass("selected");
       $(this).addClass("selected");
       updatePalette();
     });

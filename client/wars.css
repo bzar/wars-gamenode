@@ -307,12 +307,13 @@ input[type=text], input[type=password] {
   width: 100%;
 }
 
-#palette img {
+#palette .sprite {
   margin: 2px;
   cursor: pointer;
 }
 
-#palette img.selected {
+
+#palette .sprite.selected {
   margin: 0px;
   border: 2px solid #ddf;
 }
@@ -562,7 +563,7 @@ input[type=text], input[type=password] {
   opacity: 0.9;
 }
 
-.buildItem, .actionItem, .unloadItem {
+.buildItem, .actionItem {
   display: inline-block;
   margin: 0;
   text-align: center;
@@ -576,11 +577,20 @@ input[type=text], input[type=password] {
   background-color: #222;
 }
 
-.actionItem, .unloadItem {
+.actionItem {
   width: 44px;
-  height: 44px;
+  height: 44px;  
+}
+
+.actionItem, .unloadItem {
   border: 2px solid #555;
   background-color: #eee;
+}
+
+.sprite {
+  width: 48px;
+  height: 48px;
+  display: inline-block;
 }
 
 .buildItem.disabled {
@@ -606,10 +616,9 @@ input[type=text], input[type=password] {
   cursor: default;
 }
 
-.buildItem img {
-  display: block;
+
+.buildItem .sprite {
   margin: auto;
-  height: 48px;
 }
 .buildItem span {
   display: block;

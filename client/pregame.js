@@ -8,7 +8,9 @@ var wrap = function() {
   else
     document.location = "/";
   
-  var mapPainter = new Map(undefined, 1.0, "pixel");
+  var theme = localStorage.getItem("theme");
+  theme = theme ? theme : "pixel";
+  var mapPainter = new Map(undefined, 1.0, theme);
   
   $(document).ready(function() {
     var loginUrl = "login.html?next=" + document.location.pathname + document.location.search;

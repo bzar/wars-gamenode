@@ -7,7 +7,9 @@ var wrap = function() {
   if(mapId !== null)
     mapId = mapId[1];
   
-  var mapPainter = new Map(undefined, undefined, "pixel");
+  var theme = localStorage.getItem("theme");
+  theme = theme ? theme : "pixel";
+  var mapPainter = new Map(undefined, undefined, theme);
   
   $(document).ready(function() {
     var loginUrl = "login.html?next=" + document.location.pathname + document.location.search;
@@ -222,8 +224,13 @@ var wrap = function() {
         for(tileType in stats) {
           if(rules.terrains[tileType].flags.indexOf(captureFlagId) != -1) {
             var item = $("<li></li>");
-            var image = $("<img></img>");
-            image.attr("src", "/img/themes/pixel/" + SPRITE_SHEET_MAP[0][tileType][0][0].img)
+            var image = $("<span></span>");
+            image.css("background-image", "url('/img/themes/" + theme + "/sprite_sheet.png')");
+            image.addClass("sprite");
+            var pos = SPRITE_SHEET_MAP[SPRITE_TERRAIN][tileType][0][0];
+            var imageX = pos.x * mapPainter.tileW;
+            var imageY = pos.y * mapPainter.tileH;
+            image.css("background-position", -imageX + "px " + -imageY + "px")
             var text = $("<span></span");
             text.text("x" + stats[tileType]);
             item.append(image);

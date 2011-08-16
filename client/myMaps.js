@@ -2,7 +2,9 @@ var wrap = function() {
   var client = new GameNodeClient(Skeleton);
   var session = null;
 
-  var mapPainter = new Map(undefined, undefined, "pixel");
+  var theme = localStorage.getItem("theme");
+  theme = theme ? theme : "pixel";
+  var mapPainter = new Map(undefined, undefined, theme);
   
   $(document).ready(function() {
     var loginUrl = "login.html?next=" + document.location.pathname + document.location.search;

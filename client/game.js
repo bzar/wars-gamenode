@@ -7,7 +7,9 @@ var wrap = function() {
   var inTurn = false;
   var inTurnNumber = 0;
   var gameLogic = null;
-  var map = new Map(undefined, 1.0, "pixel");
+  var theme = localStorage.getItem("theme");
+  theme = theme ? theme : "pixel";
+  var map = new Map(undefined, 1.0, theme);
   gameMap = map;
   var gameUIState = {
     stateName: "select"
@@ -380,14 +382,14 @@ var wrap = function() {
     actionMenu.show();
     
     var actionMap = {
-      attack: {img:"/img/themes/pixel/gui/action_attack.png", name:"Attack", action:"attack"}, 
-      deploy: {img:"/img/themes/pixel/gui/action_deploy.png", name:"Deploy", action:"deploy"}, 
-      undeploy: {img:"/img/themes/pixel/gui/action_undeploy.png", name:"Undeploy", action:"undeploy"}, 
-      capture: {img:"/img/themes/pixel/gui/action_capture.png", name:"Capture", action:"capture"}, 
-      wait: {img:"/img/themes/pixel/gui/action_wait.png", name:"Wait", action:"wait"}, 
-      load: {img:"/img/themes/pixel/gui/action_load.png", name:"Load", action:"load"}, 
-      unload: {img:"/img/themes/pixel/gui/action_unload.png", name:"Unload", action:"unload"}, 
-      cancel: {img:"/img/themes/pixel/gui/action_cancel.png", name:"Cancel", action:"cancel"}
+      attack: {img:"/img/themes/" + theme + "/gui/action_attack.png", name:"Attack", action:"attack"}, 
+      deploy: {img:"/img/themes/" + theme + "/gui/action_deploy.png", name:"Deploy", action:"deploy"}, 
+      undeploy: {img:"/img/themes/" + theme + "/gui/action_undeploy.png", name:"Undeploy", action:"undeploy"}, 
+      capture: {img:"/img/themes/" + theme + "/gui/action_capture.png", name:"Capture", action:"capture"}, 
+      wait: {img:"/img/themes/" + theme + "/gui/action_wait.png", name:"Wait", action:"wait"}, 
+      load: {img:"/img/themes/" + theme + "/gui/action_load.png", name:"Load", action:"load"}, 
+      unload: {img:"/img/themes/" + theme + "/gui/action_unload.png", name:"Unload", action:"unload"}, 
+      cancel: {img:"/img/themes/" + theme + "/gui/action_cancel.png", name:"Cancel", action:"cancel"}
     }
 
     for(var i = 0; i < actions.length; ++i) {
@@ -478,7 +480,7 @@ var wrap = function() {
   function showUnloadMenu(units, canvasPosition) {
     var unloadMenu = $("#unloadMenu");
     var content = $("#content");
-    var size = fitElement(units.length, 48, 48, content);
+    var size = fitElement(units.length, 52, 52, content);
     var optimalLeft = canvasPosition.x;
     var optimalTop = canvasPosition.y;
     var position = clampElement(optimalLeft, optimalTop, size.width, size.height, content);
@@ -491,9 +493,14 @@ var wrap = function() {
     
     for(var i = 0; i < units.length; ++i) {
       var unit = units[i];
-      var item = $("<img></img>");
+      var item = $('<span></span>');
+      item.css("background-image", "url('/img/themes/" + theme + "/sprite_sheet.png')");
+      item.addClass("sprite");
+      var pos = SPRITE_SHEET_MAP[SPRITE_UNIT][unit.type][inTurnNumber];
+      var unitImageX = pos.x * map.tileW;
+      var unitImageY = pos.y * map.tileH;
+      item.css("background-position", -unitImageX + "px " + -unitImageY + "px")
       item.addClass("unloadItem");
-      item.attr("src", "/img/themes/pixel/" + SPRITE_SHEET_MAP[SPRITE_UNIT][unit.type][inTurnNumber].img);
       item.attr("unitId", unit.unitId);
       unloadMenu.append(item);
     }
@@ -546,10 +553,13 @@ var wrap = function() {
       unitName.text(unitType.name);
       unitName.addClass('name');
 
-      var unitImage = $('<img></img>');
-      unitImage.attr("src", "/img/themes/pixel/" + SPRITE_SHEET_MAP[SPRITE_UNIT][unitType.id][inTurnNumber].img);
-      unitImage.addClass('image');
-
+      var unitImage = $('<div></div>');
+      unitImage.css("background-image", "url('/img/themes/" + theme + "/sprite_sheet.png')");
+      unitImage.addClass("sprite");
+      var pos = SPRITE_SHEET_MAP[SPRITE_UNIT][unitType.id][inTurnNumber];
+      var unitImageX = pos.x * map.tileW;
+      var unitImageY = pos.y * map.tileH;
+      unitImage.css("background-position", -unitImageX + "px " + -unitImageY + "px")
       buildItem.append(unitPrice);
       buildItem.append(unitImage);
       buildItem.append(unitName);
