@@ -86,13 +86,13 @@ var wrap = function() {
       var hack = function(playerNumber) {
         joinButton.click(function() {
           if($(this).hasClass("notJoined")) {
-            client.stub.joinGame({gameId: gameId, playerNumber: playerNumber}, function(response) {
+            client.stub.joinGame(gameId, playerNumber, function(response) {
               if(!response.success) {
                 alert("Error joining game!" + response.reason);
               }
             });
           } else {
-            client.stub.leaveGame({gameId: gameId, playerNumber: playerNumber}, function(response) {
+            client.stub.leaveGame(gameId, playerNumber, function(response) {
               if(!response.success) {
                 alert("Error leaving game!" + response.reason);
               }
@@ -117,13 +117,12 @@ var wrap = function() {
     }
     
     
-    client.skeleton.playerJoined = function(playerInfo) {
-      var playerName = $('.playerItem[playerNumber="' + playerInfo.number + '"] .playerName');
-      var playerNumber = $('.playerItem[playerNumber="' + playerInfo.number + '"] .joinButton');
-      var joinButton = $('.playerItem[playerNumber="' + playerInfo.number + '"] .joinButton');
-      playerName.text(playerInfo.name)
+    client.skeleton.playerJoined = function(playerNumber, playerName, isMe) {
+      var nameLabel = $('.playerItem[playerNumber="' + playerNumber + '"] .playerName');
+      var joinButton = $('.playerItem[playerNumber="' + playerNumber + '"] .joinButton');
+      nameLabel.text(playerName)
       joinButton.removeClass("notJoined");
-      if(playerInfo.isMe || authorMode) {
+      if(isMe || authorMode) {
           joinButton.addClass("joined");
           joinButton.text("X");        
       } else {
@@ -131,18 +130,17 @@ var wrap = function() {
       }
     }
     
-    client.skeleton.playerLeft = function(playerInfo) {
-      var playerName = $('.playerItem[playerNumber="' + playerInfo.number + '"] .playerName');
-      var playerNumber = $('.playerItem[playerNumber="' + playerInfo.number + '"] .joinButton');
-      var joinButton = $('.playerItem[playerNumber="' + playerInfo.number + '"] .joinButton');
+    client.skeleton.playerLeft = function(playerNumber) {
+      var nameLabel = $('.playerItem[playerNumber="' + playerNumber + '"] .playerName');
+      var joinButton = $('.playerItem[playerNumber="' + playerNumber + '"] .joinButton');
       joinButton.removeClass("joined");
-      playerName.text("")
+      nameLabel.text("");
       joinButton.addClass("notJoined");
       joinButton.text("Click to join!");
       joinButton.show();
     }
     
-    client.skeleton.onGameStarted = function(gameId) {
+    client.skeleton.gameStarted = function(gameId) {
       document.location = "game.html?gameId=" + gameId;
     }
   }

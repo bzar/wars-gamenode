@@ -69,7 +69,7 @@ var wrap = function() {
         turnLength = (hourLimit * 60 + minuteLimit) * 60 + secondLimit;
         turnLength = turnLength ? turnLength : null;
       }
-      client.stub.createGame({name: name, turnLength: turnLength, mapId: mapId, public: publicGame}, function(response) {
+      client.stub.createGame(name, mapId, publicGame, turnLength, function(response) {
         if(response.success) {
           document.location = "/pregame.html?gameId=" + response.gameId;
         } else {

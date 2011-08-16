@@ -40,21 +40,21 @@ function initializeChat(client, gameId) {
     client.stub.subscribeLobbyChat();
   }
   
-  client.skeleton.chatMessage = function(messageInfo) {
+  client.skeleton.chatMessage = function(time, sender, content) {
     var messages = $("#chatMessages");
     var messageItem = $("<li></li>");
     var messageTime = $("<span></span>");
     var messageSender = $("<span></span>");
     var messageContent = $("<span></span>");
     
-    var time = new Date(Date.parse(messageInfo.time));
-    messageTime.text(zeroPad(time.getHours(), 2) + ":" + zeroPad(time.getMinutes(), 2));
+    var t = new Date(Date.parse(time));
+    messageTime.text(zeroPad(t.getHours(), 2) + ":" + zeroPad(t.getMinutes(), 2));
     messageTime.addClass("messageTime");
     
-    messageSender.text(messageInfo.sender);
+    messageSender.text(sender);
     messageSender.addClass("messageSender");
     
-    messageContent.text(messageInfo.content);
+    messageContent.text(content);
     messageContent.addClass("messageContent");
     
     messageItem.append(messageTime);
@@ -92,7 +92,7 @@ function initializeChat(client, gameId) {
       if(gameId === undefined) {
         client.stub.lobbyChat(message);
       } else {
-        client.stub.chat({gameId: gameId, message: message});
+        client.stub.chat(gameId, message);
       }
     }
   });

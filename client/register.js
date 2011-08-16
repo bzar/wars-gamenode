@@ -23,7 +23,7 @@ var wrap = function() {
         return;
       }
       
-      client.stub.register({username: username, password: password, email: email}, function(params) {
+      client.stub.register(username, password, email, function(params) {
         if(params.success) {
           session.authenticate(username, password);
         } else {

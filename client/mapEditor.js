@@ -225,7 +225,7 @@ var wrap = function() {
   function saveMap(name, funds) {
     var mapData = mapPainter.currentTiles;
     if(mapId === null) {
-      client.stub.createMap({name: name, initialFunds: funds, mapData: mapData}, function(response) {
+      client.stub.createMap(name, funds, mapData, function(response) {
         if(response.success) {
           mapId = parseInt(response.mapId);
           history.pushState(undefined, undefined, document.location.pathname + "?mapId=" + mapId);
@@ -237,7 +237,7 @@ var wrap = function() {
         }
       });
     } else {
-     client.stub.updateMap({mapId: mapId, name: name, initialFunds: funds, mapData: mapData}, function(response) {
+     client.stub.updateMap(mapId, name, funds, mapData, function(response) {
         if(response.success) {
           var message = $("#mapSavedMessage")
           message.show();

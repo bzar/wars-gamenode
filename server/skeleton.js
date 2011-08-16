@@ -16,12 +16,12 @@ exports.Skeleton = Skeleton;
 
 // GAME MANAGEMENT
 
-Skeleton.prototype.createGame = function(info) {
+Skeleton.prototype.createGame = function(name, mapId, public, turnLength) {
   if(this.sessionId === null)
     return {success: false, reason: "Not logged in"}
     
-  var game = new entities.Game(null, this.session.userId, info.name, info.mapId, "pregame", 0, 0, 0, 0, 
-                               {public: info.public, turnLength: info.turnLength});
+  var game = new entities.Game(null, this.session.userId, name, mapId, "pregame", 0, 0, 0, 0, 
+                               {public: public, turnLength: turnLength});
   var requestId = this.client.requestId;
   var this_ = this;
   this.server.gameManagement.createGame(game, function(result) {
@@ -33,20 +33,20 @@ Skeleton.prototype.createGame = function(info) {
   });
 }
 
-Skeleton.prototype.joinGame = function(info) {
+Skeleton.prototype.joinGame = function(gameId, playerNumber) {
   if(this.sessionId === null)
     return {success: false, reason: "Not logged in"}
     
   var requestId = this.client.requestId;
   var this_ = this;
   var userId = this.session.userId;
-  this.server.gameManagement.joinGame(userId, info.gameId, info.playerNumber, function(result) {
+  this.server.gameManagement.joinGame(userId, gameId, playerNumber, function(result) {
     if(result.success) {
       this_.server.database.user(userId, function(result) {
         this_.server.subscriptions.forSubscribers(function(sub) {
           var isMe = result.user.userId == sub.session.userId;
-          sub.client.stub.playerJoined({number:info.playerNumber, name: result.user.username, isMe: isMe});
-        }, "game-" + info.gameId);
+          sub.client.stub.playerJoined(playerNumber, result.user.username, isMe);
+        }, "game-" + gameId);
       });
       this_.client.sendResponse(requestId, {success: true});
     } else {
@@ -55,18 +55,18 @@ Skeleton.prototype.joinGame = function(info) {
   });
 }
 
-Skeleton.prototype.leaveGame = function(info) {
+Skeleton.prototype.leaveGame = function(gameId, playerNumber) {
   if(this.sessionId === null)
     return {success: false, reason: "Not logged in"}
     
   var requestId = this.client.requestId;
   var this_ = this;
   var userId = this.session.userId;
-  this.server.gameManagement.leaveGame(userId, info.gameId, info.playerNumber, function(result) {
+  this.server.gameManagement.leaveGame(userId, gameId, playerNumber, function(result) {
     if(result.success) {
       this_.server.subscriptions.forSubscribers(function(sub) {
-        sub.client.stub.playerLeft({number:info.playerNumber});
-      }, "game-" + info.gameId);
+        sub.client.stub.playerLeft(playerNumber);
+      }, "game-" + gameId);
       this_.client.sendResponse(requestId, {success: true});
     } else {
       this_.client.sendResponse(requestId, {success: false, reason: result.reason});
@@ -159,11 +159,11 @@ Skeleton.prototype.emailSetting = function(gameId) {
 
 // MAP MANAGEMENT
 
-Skeleton.prototype.createMap = function(mapInfo) {
+Skeleton.prototype.createMap = function(name, initialFunds, mapData) {
   if(this.sessionId === null)
     return {success: false, reason: "Not logged in"}
     
-  var map = new entities.Map(null, this.session.userId, mapInfo.name, mapInfo.initialFunds, mapInfo.mapData);
+  var map = new entities.Map(null, this.session.userId, name, initialFunds, mapData);
   var requestId = this.client.requestId;
   var this_ = this;
   this.server.database.createMap(map, function(result) {
@@ -175,13 +175,13 @@ Skeleton.prototype.createMap = function(mapInfo) {
   });
 }
 
-Skeleton.prototype.updateMap = function(mapInfo) {
+Skeleton.prototype.updateMap = function(mapId, name, initialFunds, mapData) {
   if(this.sessionId === null)
     return {success: false, reason: "Not logged in"}
 
   var requestId = this.client.requestId;
   var this_ = this;
-  var map = new entities.Map(mapInfo.mapId, this.session.userId, mapInfo.name, mapInfo.initialFunds, mapInfo.mapData);
+  var map = new entities.Map(mapId, this.session.userId, name, initialFunds, mapData);
   this.server.database.updateMap(map, function(result) {
     if(result.success) {
       this_.client.sendResponse(requestId, {success: true});
@@ -289,9 +289,9 @@ Skeleton.prototype.closeSession = function() {
   return {success: success};
 }
 
-Skeleton.prototype.register = function(userInfo) {
-  var user = new entities.User(null, userInfo.username, userInfo.password, userInfo.email, 
-                               {emailNotifications: true, gameTheme: "default"});
+Skeleton.prototype.register = function(username, password, email) {
+  var user = new entities.User(null, username, password, email, 
+                               {emailNotifications: true, gameTheme: "pixel"});
   var requestId = this.client.requestId;
   var this_ = this;
   this.server.database.register(user, function(userId) {
@@ -404,18 +404,18 @@ Skeleton.prototype.unsubscribeGame = function(gameId) {
   return {success: true};
 }
 
-Skeleton.prototype.move = function(info) {
+Skeleton.prototype.move = function(gameId, unitId, destination) {
   if(this.sessionId === null)
     return {success: false, reason: "Not logged in"}
     
   var requestId = this.client.requestId;
   var this_ = this;
   var userId = this.session.userId;
-  this.server.gameActions.move(info.gameId, userId, info.unitId, info.destination, function(result) {
+  this.server.gameActions.move(gameId, userId, unitId, destination, function(result) {
     if(result.success) {
       this_.server.subscriptions.forSubscribers(function(sub) {
-        sub.client.stub.gameUpdate({gameId: info.gameId, tileChanges: result.changedTiles});
-      }, "game-" + info.gameId);
+        sub.client.stub.gameUpdate(gameId, result.changedTiles);
+      }, "game-" + gameId);
       this_.client.sendResponse(requestId, {success: true});
     } else {
       this_.client.sendResponse(requestId, {success: false, reason: result.reason});
@@ -423,18 +423,18 @@ Skeleton.prototype.move = function(info) {
   });
 }
 
-Skeleton.prototype.moveAndAttack = function(info) {
+Skeleton.prototype.moveAndAttack = function(gameId, unitId, destination, targetId) {
   if(this.sessionId === null)
     return {success: false, reason: "Not logged in"}
     
   var requestId = this.client.requestId;
   var this_ = this;
   var userId = this.session.userId;
-  this.server.gameActions.moveAndAttack(info.gameId, userId, info.unitId, info.destination, info.targetId, function(result) {
+  this.server.gameActions.moveAndAttack(gameId, userId, unitId, destination, targetId, function(result) {
     if(result.success) {
       this_.server.subscriptions.forSubscribers(function(sub) {
-        sub.client.stub.gameUpdate({gameId: info.gameId, tileChanges: result.changedTiles});
-      }, "game-" + info.gameId);
+        sub.client.stub.gameUpdate(gameId, result.changedTiles);
+      }, "game-" + gameId);
       this_.client.sendResponse(requestId, {success: true});
     } else {
       this_.client.sendResponse(requestId, {success: false, reason: result.reason});
@@ -442,18 +442,18 @@ Skeleton.prototype.moveAndAttack = function(info) {
   });
 }
 
-Skeleton.prototype.moveAndWait = function(info) {
+Skeleton.prototype.moveAndWait = function(gameId, unitId, destination) {
   if(this.sessionId === null)
     return {success: false, reason: "Not logged in"}
     
   var requestId = this.client.requestId;
   var this_ = this;
   var userId = this.session.userId;
-  this.server.gameActions.moveAndWait(info.gameId, userId, info.unitId, info.destination, function(result) {
+  this.server.gameActions.moveAndWait(gameId, userId, unitId, destination, function(result) {
     if(result.success) {
       this_.server.subscriptions.forSubscribers(function(sub) {
-        sub.client.stub.gameUpdate({gameId: info.gameId, tileChanges: result.changedTiles});
-      }, "game-" + info.gameId);
+        sub.client.stub.gameUpdate(gameId, result.changedTiles);
+      }, "game-" + gameId);
       this_.client.sendResponse(requestId, {success: true});
     } else {
       this_.client.sendResponse(requestId, {success: false, reason: result.reason});
@@ -461,18 +461,18 @@ Skeleton.prototype.moveAndWait = function(info) {
   });
 }
 
-Skeleton.prototype.moveAndCapture = function(info) {
+Skeleton.prototype.moveAndCapture = function(gameId, unitId, destination) {
   if(this.sessionId === null)
     return {success: false, reason: "Not logged in"}
     
   var requestId = this.client.requestId;
   var this_ = this;
   var userId = this.session.userId;
-  this.server.gameActions.moveAndCapture(info.gameId, userId, info.unitId, info.destination, function(result) {
+  this.server.gameActions.moveAndCapture(gameId, userId, unitId, destination, function(result) {
     if(result.success) {
       this_.server.subscriptions.forSubscribers(function(sub) {
-        sub.client.stub.gameUpdate({gameId: info.gameId, tileChanges: result.changedTiles});
-      }, "game-" + info.gameId);
+        sub.client.stub.gameUpdate(gameId, result.changedTiles);
+      }, "game-" + gameId);
       this_.client.sendResponse(requestId, {success: true});
     } else {
       this_.client.sendResponse(requestId, {success: false, reason: result.reason});
@@ -480,18 +480,18 @@ Skeleton.prototype.moveAndCapture = function(info) {
   });
 }
 
-Skeleton.prototype.moveAndDeploy = function(info) {
+Skeleton.prototype.moveAndDeploy = function(gameId, unitId, destination) {
   if(this.sessionId === null)
     return {success: false, reason: "Not logged in"}
     
   var requestId = this.client.requestId;
   var this_ = this;
   var userId = this.session.userId;
-  this.server.gameActions.moveAndDeploy(info.gameId, userId, info.unitId, info.destination, function(result) {
+  this.server.gameActions.moveAndDeploy(gameId, userId, unitId, destination, function(result) {
     if(result.success) {
       this_.server.subscriptions.forSubscribers(function(sub) {
-        sub.client.stub.gameUpdate({gameId: info.gameId, tileChanges: result.changedTiles});
-      }, "game-" + info.gameId);
+        sub.client.stub.gameUpdate(gameId, result.changedTiles);
+      }, "game-" + gameId);
       this_.client.sendResponse(requestId, {success: true});
     } else {
       this_.client.sendResponse(requestId, {success: false, reason: result.reason});
@@ -499,18 +499,18 @@ Skeleton.prototype.moveAndDeploy = function(info) {
   });
 }
 
-Skeleton.prototype.undeploy = function(info) {
+Skeleton.prototype.undeploy = function(gameId, unitId) {
   if(this.sessionId === null)
     return {success: false, reason: "Not logged in"}
     
   var requestId = this.client.requestId;
   var this_ = this;
   var userId = this.session.userId;
-  this.server.gameActions.undeploy(info.gameId, userId, info.unitId, function(result) {
+  this.server.gameActions.undeploy(gameId, userId, unitId, function(result) {
     if(result.success) {
       this_.server.subscriptions.forSubscribers(function(sub) {
-        sub.client.stub.gameUpdate({gameId: info.gameId, tileChanges: result.changedTiles});
-      }, "game-" + info.gameId);
+        sub.client.stub.gameUpdate(gameId, result.changedTiles);
+      }, "game-" + gameId);
       this_.client.sendResponse(requestId, {success: true});
     } else {
       this_.client.sendResponse(requestId, {success: false, reason: result.reason});
@@ -518,18 +518,18 @@ Skeleton.prototype.undeploy = function(info) {
   });
 }
 
-Skeleton.prototype.moveAndLoadInto = function(info) {
+Skeleton.prototype.moveAndLoadInto = function(gameId, unitId, carrierId) {
   if(this.sessionId === null)
     return {success: false, reason: "Not logged in"}
     
   var requestId = this.client.requestId;
   var this_ = this;
   var userId = this.session.userId;
-  this.server.gameActions.moveAndLoadInto(info.gameId, userId, info.unitId, info.carrierId, function(result) {
+  this.server.gameActions.moveAndLoadInto(gameId, userId, unitId, carrierId, function(result) {
     if(result.success) {
       this_.server.subscriptions.forSubscribers(function(sub) {
-        sub.client.stub.gameUpdate({gameId: info.gameId, tileChanges: result.changedTiles});
-      }, "game-" + info.gameId);
+        sub.client.stub.gameUpdate(gameId, result.changedTiles);
+      }, "game-" + gameId);
       this_.client.sendResponse(requestId, {success: true});
     } else {
       this_.client.sendResponse(requestId, {success: false, reason: result.reason});
@@ -537,19 +537,19 @@ Skeleton.prototype.moveAndLoadInto = function(info) {
   });
 }
 
-Skeleton.prototype.moveAndUnload = function(info) {
+Skeleton.prototype.moveAndUnload = function(gameId, unitId, destination, carriedUnitId, unloadDestination) {
   if(this.sessionId === null)
     return {success: false, reason: "Not logged in"}
     
   var requestId = this.client.requestId;
   var this_ = this;
   var userId = this.session.userId;
-  this.server.gameActions.moveAndUnload(info.gameId, userId, info.unitId, info.destination, 
-                                      info.carriedUnitId, info.unloadDestination, function(result) {
+  this.server.gameActions.moveAndUnload(gameId, userId, unitId, destination, 
+                                        carriedUnitId, unloadDestination, function(result) {
     if(result.success) {
       this_.server.subscriptions.forSubscribers(function(sub) {
-        sub.client.stub.gameUpdate({gameId: info.gameId, tileChanges: result.changedTiles});
-      }, "game-" + info.gameId);
+        sub.client.stub.gameUpdate(gameId, result.changedTiles);
+      }, "game-" + gameId);
       this_.client.sendResponse(requestId, {success: true});
     } else {
       this_.client.sendResponse(requestId, {success: false, reason: result.reason});
@@ -557,18 +557,18 @@ Skeleton.prototype.moveAndUnload = function(info) {
   });
 }
 
-Skeleton.prototype.build = function(info) {
+Skeleton.prototype.build = function(gameId, unitTypeId, destination) {
   if(this.sessionId === null)
     return {success: false, reason: "Not logged in"}
     
   var requestId = this.client.requestId;
   var this_ = this;
   var userId = this.session.userId;
-  this.server.gameActions.build(info.gameId, userId, info.unitTypeId, info.destination, function(result) {
+  this.server.gameActions.build(gameId, userId, unitTypeId, destination, function(result) {
     if(result.success) {
       this_.server.subscriptions.forSubscribers(function(sub) {
-        sub.client.stub.gameUpdate({gameId: info.gameId, tileChanges: result.changedTiles});
-      }, "game-" + info.gameId);
+        sub.client.stub.gameUpdate(gameId, result.changedTiles);
+      }, "game-" + gameId);
       this_.client.sendResponse(requestId, {success: true});
     } else {
       this_.client.sendResponse(requestId, {success: false, reason: result.reason});
@@ -586,11 +586,11 @@ Skeleton.prototype.endTurn = function(gameId) {
   this.server.gameActions.nextTurn(gameId, userId, function(result) {
     if(result.success) {
       this_.server.subscriptions.forSubscribers(function(sub) {
-        sub.client.stub.gameUpdate({gameId: gameId, tileChanges: result.changedTiles});
+        sub.client.stub.gameUpdate(gameId, result.changedTiles);
         if(result.finished) {
-          sub.client.stub.gameFinished({gameId: gameId});
+          sub.client.stub.gameFinished(gameId);
         } else {
-          sub.client.stub.gameTurnChange({gameId: gameId, inTurnNumber: result.inTurnNumber});
+          sub.client.stub.gameTurnChange(gameId, result.inTurnNumber);
         }
       }, "game-" + gameId);
       this_.client.sendResponse(requestId, {success: true});
@@ -620,19 +620,19 @@ Skeleton.prototype.lobbyChat = function(message) {
   this.server.database.user(this.session.userId, function(result) {
     var sender = result.user.username;
     this_.server.subscriptions.forSubscribers(function(sub) {
-      sub.client.stub.chatMessage({time: time, sender: sender, content: message});
+      sub.client.stub.chatMessage(time, sender, message);
     }, "lobbyChat");
   });
 }
 
-Skeleton.prototype.chat = function(info) {
+Skeleton.prototype.chat = function(gameId, message) {
   var this_ = this;
   var time = (new Date()).toUTCString();
   this.server.database.user(this.session.userId, function(result) {
     var sender = result.user.username;
     this_.server.subscriptions.forSubscribers(function(sub) {
-      sub.client.stub.chatMessage({time: time, sender: sender, content: info.message});
-    }, "game-" + info.gameId);
+      sub.client.stub.chatMessage(time, sender, message);
+    }, "game-" + gameId);
   });
 }
 
