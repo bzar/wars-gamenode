@@ -452,6 +452,10 @@ var terrainList = [
   new TerrainType(10, 'Beach', 0,
               [],
               [],
+              []),
+  new TerrainType(11, 'Bridge', 0,
+              [],
+              [],
               [])
 ];
 var terrainByName = makeObj("name", terrainList);
@@ -483,9 +487,9 @@ var movementTypeList = [
                 {}),
   new MovementType(5, 'Ship',
                 makeMap(terrainList.map(function(t){
-                  var canMove = ['Water', 'Port', 'Beach'].indexOf(t.name) != -1;
+                  var canMove = ['Water', 'Port', 'Beach', 'Bridge'].indexOf(t.name) != -1;
                   return [t.name, canMove ? 1 : null];                  
-                }))) // Moves only on water and port;
+                }))) // Moves only on water, port and bridge;
 ];
 var movementTypesByName = makeObj("name", movementTypeList);
 var movementTypes = makeObj("id", movementTypeList);
