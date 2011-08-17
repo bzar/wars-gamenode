@@ -173,7 +173,8 @@ var wrap = function() {
     var buildMenu = $("#buildMenu");
     var canvas = $("#mapCanvas");
     var content = $("#content");
-    var canvasPosition = {x: e.offsetX, y: e.offsetY};
+    var canvasPosition = {x: e.offsetX !== undefined ? e.offsetX : e.layerX, 
+                          y: e.offsetY !== undefined ? e.offsetY : e.layerY};
     var windowPosition = {x: e.pageX, y: e.pageY};
     var tilePosition = {x: parseInt(canvasPosition.x / (map.getScale() * map.tileW)),
                         y: parseInt(canvasPosition.y / (map.getScale() * map.tileH))};
