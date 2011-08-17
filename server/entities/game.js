@@ -100,7 +100,7 @@ Game.prototype.getMapArray = function() {
       var tile = this.tiles[i];
       if(tile.y >= mapArray.length) {
         var difference = tile.y - mapArray.length + 1;
-        for(var i = 0; i < difference; ++i) {
+        for(var j = 0; j < difference; ++j) {
           mapArray.push([]);
         }
       }

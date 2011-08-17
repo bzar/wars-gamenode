@@ -620,7 +620,6 @@ JSONFileDatabase.prototype.register = function(newUser, callback) {
 
 function getCarriedUnits(database, unit) {
   unit.carriedUnits = [];
-  console.log(JSON.stringify(unit.unitType()));
   if(unit.unitType().carryNum > 0) {
     for(var i = 0; i < database.units.length; ++i) {
       var carriedUnit = database.units[i];

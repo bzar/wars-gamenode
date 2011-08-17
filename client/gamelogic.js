@@ -157,7 +157,7 @@ GameLogic.prototype.unitCanMoveTo = function(x, y, dx, dy) {
     var neighbors = this.getNeighborTiles(mapArray, current.tile.x, current.tile.y);
     for(var i = 0; i < neighbors.length; ++i) {
       var tile = mapArray[neighbors[i].y][neighbors[i].x];
-      
+
       // Reject if does not exist
       if(tile === undefined) {
         continue;

@@ -15,7 +15,6 @@ function checkMove(database, gameId, userId, unitId, destination, callback) {
     }
     
     var unit = result.unit;
-    console.log(unit);
     database.tile(unit.tileId, function(result) {
       if(!result.success) {
         callback({success: false, reason: result.reason}); return;
@@ -487,8 +486,6 @@ GameActions.prototype.startTurn = function(game, callback) {
             nextPlayer = player;
           }
         }
-        
-        console.log("next: " + nextPlayer.playerNumber + " previous: " + game.inTurnNumber);
         
         // Change turn
         if(nextPlayer.playerNumber == game.inTurnNumber) {
