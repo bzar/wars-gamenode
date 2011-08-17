@@ -50,7 +50,8 @@ if(config.enableFileServer) {
     "home.html", "home.js", "myMaps.html", "myMaps.js",
     "mapEditor.html", "mapEditor.js", "map.js", "image_map.js",
     "createGame.html", "createGame.js", "pregame.html", "pregame.js",
-    "join.html", "join.js", "game.html", "game.js", "gamelogic.js"
+    "join.html", "join.js", "game.html", "game.js", "gamelogic.js",
+    "profile.html", "profile.js"
     ], 
     { 
       gamenode: "../lib/gamenode/web", 

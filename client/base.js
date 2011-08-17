@@ -5,6 +5,7 @@ function populateNavigation(session) {
     {title: "Create a game", href: "createGame.html"},
     {title: "Join a game", href: "join.html"},
     {title: "Spectate", href: "spectate.html"},
+    {title: "My profile", href: "profile.html"},
     {title: "Logout", href: "#", id: "logout"},
   ]
   
