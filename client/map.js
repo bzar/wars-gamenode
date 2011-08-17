@@ -26,7 +26,7 @@ function Map(canvas, scale, theme) {
                          3: [217,213,43],
                          4: [99,173,208]}
                          
-    this.unitOffsetY = -12;
+    this.unitOffsetY = 0;
 }
 
 Map.prototype.getScale = function() {
