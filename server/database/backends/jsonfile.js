@@ -608,13 +608,20 @@ JSONFileDatabase.prototype.user = function(userId, callback) {
   });
 }
 
-JSONFileDatabase.prototype.updateUser = function(userId, user, callback) {
+JSONFileDatabase.prototype.updateUser = function(user, callback) {
   var this_ = this;
   this.loadDatabase(function(database) {
     var existingUser = database.user(user.userId);
     if(existingUser === null) {
       callback({success: false, reason: "User does not exist!"});
       return;
+    }
+    
+    for(var i = 0; i < database.users.length; ++i) {
+      if(database.users[i].userId != user.userId && database.users[i].username == user.username) {
+        callback({success: false, reason: "Username already exists!"});
+        return;
+      }
     }
     existingUser.cloneFrom(user);
     

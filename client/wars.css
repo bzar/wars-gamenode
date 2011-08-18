@@ -95,7 +95,7 @@ h2 {
 .columnForm {
   min-height: 50%;
   border-right: 1px solid #ddd;
-  width: 300px;
+  width: 500px;
   float: left;
   padding: 8px;
   margin-right: 8px;
@@ -112,7 +112,7 @@ h2 {
   clear: both;
 }
 
-.centeredForm input, .columnForm input {
+.centeredForm input, .columnForm input, .columnForm select {
   float: right;
 }
 

@@ -263,11 +263,47 @@ Skeleton.prototype.myMaps = function() {
 // PROFILE MANAGEMENT
 
 Skeleton.prototype.saveProfile = function(username, password, email, theme, defaultEmailSetting) {
-  
+  if(this.sessionId === null)
+    return {success: false, reason: "Not logged in"}
+
+  var requestId = this.client.requestId;
+  var this_ = this;
+  this.server.database.user(this.session.userId, function(result) {
+    if(result.success) {
+      result.user.username = username;
+      if(password !== null) 
+        result.user.password = password;
+      result.user.email = email;
+      result.user.settings.emailNotifications = defaultEmailSetting;
+      result.user.settings.gameTheme = theme;
+      result.user.password = undefined;
+      this_.server.database.updateUser(result.user, function(success) {
+        if(result.success) {
+          this_.client.sendResponse(requestId, {success: true, profile: result.user});
+        } else {
+          this_.client.sendResponse(requestId, {success: false, reason: result.reason});
+        }
+      });
+    } else {
+      this_.client.sendResponse(requestId, {success: false, reason: result.reason});
+    }
+  });
 }
 
 Skeleton.prototype.profile = function() {
-  
+  if(this.sessionId === null)
+    return {success: false, reason: "Not logged in"}
+
+  var requestId = this.client.requestId;
+  var this_ = this;
+  this.server.database.user(this.session.userId, function(result) {
+    if(result.success) {
+      result.user.password = undefined;
+      this_.client.sendResponse(requestId, {success: true, profile: result.user});
+    } else {
+      this_.client.sendResponse(requestId, {success: false, reason: result.reason});
+    }
+  });
 }
 
 // USER MANAGEMENT

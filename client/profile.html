@@ -23,14 +23,40 @@
 
     <div id="content">
       <h2>My profile</h2>
-      <form class="columnForm">
+      <form id="profileForm" class="columnForm">
         <ul>
+          <li>
+            <label for="username">Username</label>
+            <input id="username" name="username" type="text" />
+          </li>
+          <li>
+            <label for="password">Password</label>
+            <input id="password" name="password" type="password" />
+          </li>
+          <li>
+            <label for="password2">Password again</label>
+            <input id="password2" name="password2" type="password" />
+          </li>
+          <li>
+            <label for="email">Email</label>
+            <input id="email" name="email" type="text" />
+          </li>
           <li>
             <label for="theme">Theme</label>
             <select id="theme" name="theme">
               <option>pixel</option>
               <option>fusion</option>
             </select>
+          </li>
+          <li>
+            <label for="emailNotifications">Email notifications</label>
+            <input id="emailNotifications" name="emailNotifications" type="checkbox" />
+          </li>
+          <li class="alignRight">
+            <input type="submit" value="Save changes"/>
+          </li>
+          <li class="alignRight">
+            <span id="profileSavedMessage" style="display:none">Profile saved successfully!</span>
           </li>
         </ul>
       </form>
