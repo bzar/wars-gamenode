@@ -6,9 +6,8 @@ var wrap = function() {
   if(mapId !== null)
     mapId = parseInt(mapId[1]);
   
-  var theme = localStorage.getItem("theme");
-  theme = theme ? theme : "pixel";
-  var mapPainter = new Map(undefined, 1.0, theme);
+  var theme = null;
+  var mapPainter = null;
 
   var mouseDown = false;
   var lastX = null;
@@ -17,8 +16,12 @@ var wrap = function() {
   $(document).ready(function() {
     var loginUrl = "login.html?next=" + document.location.pathname + document.location.search;
     session = resumeSessionOrRedirect(client, undefined, loginUrl, function() {
-      populateNavigation(session);
-      initializeMapEditor(client);
+      client.stub.profile(function(response) {
+        theme = response.profile.settings.gameTheme;
+        mapPainter = new Map(undefined, 1.0, theme);
+        populateNavigation(session);
+        initializeMapEditor(client);
+      });
     });
   });
   
@@ -462,7 +465,7 @@ var wrap = function() {
     unitEraserItem.attr("type", "null");
     unitEraserItem.attr("owner", "null");
     unitEraserItem.css("background-image", "url(/img/themes/" + theme + "/nothing.png)");
-    unitEraserItem.addClass('image');
+    unitEraserItem.addClass('sprite');
     unitPalette.append(unitEraserItem);
     
     for(var unitType = 0; unitType < units.length; ++unitType) {
@@ -474,7 +477,7 @@ var wrap = function() {
         unitItem.attr("type", unitType);
         unitItem.attr("owner", unitOwner);
         unitItem.css("background-image", "url('/img/themes/" + theme + "/sprite_sheet.png')");
-        unitItem.addClass('image');
+        unitItem.addClass('sprite');
         var pos = SPRITE_SHEET_MAP[SPRITE_UNIT][unitType][unitOwner];
         var imageX = pos.x * mapPainter.tileW;
         var imageY = pos.y * mapPainter.tileH;

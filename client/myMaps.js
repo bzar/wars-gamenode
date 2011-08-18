@@ -2,15 +2,18 @@ var wrap = function() {
   var client = new GameNodeClient(Skeleton);
   var session = null;
 
-  var theme = localStorage.getItem("theme");
-  theme = theme ? theme : "pixel";
-  var mapPainter = new Map(undefined, undefined, theme);
+  var theme = null;
+  var mapPainter = null;
   
   $(document).ready(function() {
     var loginUrl = "login.html?next=" + document.location.pathname + document.location.search;
     session = resumeSessionOrRedirect(client, undefined, loginUrl, function() {
-      populateNavigation(session);
-      populateMyMaps(client);
+      client.stub.profile(function(response) {
+        theme = response.profile.settings.gameTheme;
+        mapPainter = new Map(undefined, undefined, theme);
+        populateNavigation(session);
+        populateMyMaps(client);
+      });
     });
   });
   

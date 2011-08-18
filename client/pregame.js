@@ -8,9 +8,8 @@ var wrap = function() {
   else
     document.location = "/";
   
-  var theme = localStorage.getItem("theme");
-  theme = theme ? theme : "pixel";
-  var mapPainter = new Map(undefined, 1.0, theme);
+  var theme = null;
+  var mapPainter = null;
   
   $(document).ready(function() {
     var loginUrl = "login.html?next=" + document.location.pathname + document.location.search;
@@ -18,20 +17,24 @@ var wrap = function() {
       client.stub.subscribeGame(gameId);
   
       populateNavigation(session);
-      mapPainter.canvas = $("#mapCanvas")[0];
-      if(gameId !== null) {
-        client.stub.gameData(gameId, function(response) {
-          if(response.success) {
-            if(response.game.state != "pregame") {
-              document.location = "game.html?gameId=" + gameId;
+      client.stub.profile(function(response) {
+        theme = response.profile.settings.gameTheme;
+        mapPainter = new Map(undefined, 1.0, theme);
+        mapPainter.canvas = $("#mapCanvas")[0];
+        if(gameId !== null) {
+          client.stub.gameData(gameId, function(response) {
+            if(response.success) {
+              if(response.game.state != "pregame") {
+                document.location = "game.html?gameId=" + gameId;
+              }
+              initializeChat(client, gameId);
+              showGame(response.game, response.author);
+            } else {
+              alert("Error loading game!" + response.reason);
             }
-            initializeChat(client, gameId);
-            showGame(response.game, response.author);
-          } else {
-            alert("Error loading game!" + response.reason);
-          }
-        });
-      }
+          });
+        }
+      });
     });
   });
   

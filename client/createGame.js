@@ -7,22 +7,25 @@ var wrap = function() {
   if(mapId !== null)
     mapId = mapId[1];
   
-  var theme = localStorage.getItem("theme");
-  theme = theme ? theme : "pixel";
-  var mapPainter = new Map(undefined, undefined, theme);
+  var theme = null;
+  var mapPainter = null;
   
   $(document).ready(function() {
     var loginUrl = "login.html?next=" + document.location.pathname + document.location.search;
     session = resumeSessionOrRedirect(client, undefined, loginUrl, function() {
-      initializeControls();
-      populateNavigation(session);
-      
-      mapPainter.doPreload(function() {
-        if(mapId === null) {
-          showMaps();
-        } else {
-          showFullMapPreview();
-        }
+      client.stub.profile(function(response) {
+        theme = response.profile.settings.gameTheme;
+        mapPainter = new Map(undefined, undefined, theme);
+        initializeControls();
+        populateNavigation(session);
+        
+        mapPainter.doPreload(function() {
+          if(mapId === null) {
+            showMaps();
+          } else {
+            showFullMapPreview();
+          }
+        });
       });
     });
   });

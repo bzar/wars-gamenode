@@ -1,5 +1,6 @@
 var gameClient = null;
 var gameMap = null;
+
 var wrap = function() {
   var client = new GameNodeClient(Skeleton);
   gameClient = client;
@@ -7,10 +8,8 @@ var wrap = function() {
   var inTurn = false;
   var inTurnNumber = 0;
   var gameLogic = null;
-  var theme = localStorage.getItem("theme");
-  theme = theme ? theme : "pixel";
-  var map = new Map(undefined, 1.0, theme);
-  gameMap = map;
+  var theme = null;
+  var map = null;
   var gameUIState = {
     stateName: "select"
   }
@@ -27,7 +26,6 @@ var wrap = function() {
       client.stub.subscribeGame(gameId);
   
       populateNavigation(session);
-      map.canvas = $("#mapCanvas")[0];
       if(gameId !== null) {
         client.stub.gameData(gameId, function(response) {
           if(response.success) {
@@ -589,19 +587,26 @@ var wrap = function() {
   
   function showGame(game, author) {
     $("#gameName").text(game.name);
-    map.doPreload(function() {
-      inTurnNumber = game.inTurnNumber;
-      initializePlayers(game.players);
-      refreshFunds();
-      map.currentTiles = game.tiles;
-      var mapSize = map.getMapSize();
-      var width = mapSize.w * map.tileW
-      var height = mapSize.h * map.tileH
-      map.canvas.width = width;
-      map.canvas.height = height;
-      map.refresh();
-    });
+    client.stub.profile(function(response) {
+      theme = response.profile.settings.gameTheme;
+      map = new Map(undefined, 1.0, theme);
+      map.canvas = $("#mapCanvas")[0];
+      gameMap = map;
+      
+      map.doPreload(function() {
+        inTurnNumber = game.inTurnNumber;
+        initializePlayers(game.players);
+        refreshFunds();
+        map.currentTiles = game.tiles;
+        var mapSize = map.getMapSize();
+        var width = mapSize.w * map.tileW
+        var height = mapSize.h * map.tileH
+        map.canvas.width = width;
+        map.canvas.height = height;
+        map.refresh();
+      });
     
+    });
   }
   
   function initializePlayers(players) {
