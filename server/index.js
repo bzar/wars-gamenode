@@ -51,7 +51,7 @@ if(config.enableFileServer) {
     "mapEditor.html", "mapEditor.js", "map.js", "image_map.js",
     "createGame.html", "createGame.js", "pregame.html", "pregame.js",
     "join.html", "join.js", "game.html", "game.js", "gamelogic.js",
-    "profile.html", "profile.js"
+    "profile.html", "profile.js", "spectate.html", "spectate.js"
     ], 
     { 
       gamenode: "../lib/gamenode/web", 

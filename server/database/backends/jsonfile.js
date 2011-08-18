@@ -344,6 +344,36 @@ JSONFileDatabase.prototype.openGames = function(callback) {
   });
 }
 
+JSONFileDatabase.prototype.publicGames = function(callback) {
+  var this_ = this;
+  this.loadDatabase(function(database) {
+    var publicGames = [];
+    for(var i = 0; i < database.games.length; ++i) {
+      var game = database.games[i];
+      if(game.settings.public && game.state == "inProgress") {
+        var numPlayers = 0;
+        for(var j = 0; j < database.players.length; ++j) {
+          var player = database.players[j];
+          if(player.gameId == game.gameId) {
+            if(player.userId !== null) {
+              numPlayers += 1;
+            }
+          }
+        }
+
+        var map = database.map(game.mapId);
+        var publicGame = game.clone();
+        publicGame.map = map.clone();
+        publicGame.map.mapData = undefined;
+        publicGame.numPlayers = numPlayers;
+        publicGames.push(publicGame);
+      }
+    }
+    
+    callback({success: true, games: publicGames});
+  });
+}
+
 JSONFileDatabase.prototype.myGames = function(userId, callback) {
   var this_ = this;
   this.loadDatabase(function(database) {

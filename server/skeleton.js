@@ -130,6 +130,21 @@ Skeleton.prototype.openGames = function() {
   });
 }
 
+Skeleton.prototype.publicGames = function() {
+  if(this.sessionId === null)
+    return {success: false, reason: "Not logged in"}
+
+  var requestId = this.client.requestId;
+  var this_ = this;
+  this.server.gameManagement.publicGames(function(result) {
+    if(result.success) {
+      this_.client.sendResponse(requestId, {success: true, games: result.games});
+    } else {
+      this_.client.sendResponse(requestId, {success: false, reason: result.reason});
+    }
+  });
+}
+
 Skeleton.prototype.myGames = function() {
   if(this.sessionId === null)
     return {success: false, reason: "Not logged in"}

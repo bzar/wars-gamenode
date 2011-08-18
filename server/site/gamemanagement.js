@@ -215,6 +215,16 @@ GameManagement.prototype.openGames = function(callback) {
   });
 }
 
+GameManagement.prototype.publicGames = function(callback) {
+  this.database.publicGames(function(result) {
+    if(!result.success) {
+      callback({success: false, reason: result.reason});
+    } else {
+      callback({success: true, games: result.games});
+    }
+  });
+}
+
 GameManagement.prototype.myGames = function(userId, callback) {
   this.database.myGames(userId, function(result) {
     if(!result.success) {
