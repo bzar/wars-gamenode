@@ -57,29 +57,6 @@ function checkMove(database, gameId, userId, unitId, destination, callback) {
   });
 }
 
-GameActions.prototype.move = function(gameId, userId, unitId, destination, callback) {
-  var database = this.database;
-  checkMove(database, gameId, userId, unitId, destination, 
-            function(result, game, player, unit, sourceTile, destinationTile, gameLogic) {
-    if(!result.success) {
-      callback({success: false, reason: result.reason}); return;
-    }
-            
-    if(destinationTile.unit !== null && destinationTile.unit.unitId != unitId) {
-      callback({success: false, reason: "Destination tile occupied!"}); return;
-    }
-    
-    sourceTile.setUnit(null);
-    destinationTile.setUnit(unit);
-    
-    database.updateUnit(unit, function(result) {
-      database.updateTiles([sourceTile, destinationTile], function(result) {
-        callback({success: true, changedTiles: [sourceTile, destinationTile]});
-      });
-    });
-  });
-}
-
 GameActions.prototype.moveAndAttack = function(gameId, userId, unitId, destination, targetId, callback) {
   var database = this.database;
   checkMove(database, gameId, userId, unitId, destination, 

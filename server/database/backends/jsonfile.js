@@ -603,7 +603,7 @@ JSONFileDatabase.prototype.user = function(userId, callback) {
     if(user === null) {
       callback({success: false, reason: "No such user!"});
     } else {
-      callback({success: true, user: user});
+      callback({success: true, user: user.clone()});
     }
   });
 }

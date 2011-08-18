@@ -276,7 +276,6 @@ Skeleton.prototype.saveProfile = function(username, password, email, theme, defa
       result.user.email = email;
       result.user.settings.emailNotifications = defaultEmailSetting;
       result.user.settings.gameTheme = theme;
-      result.user.password = undefined;
       this_.server.database.updateUser(result.user, function(success) {
         if(result.success) {
           this_.client.sendResponse(requestId, {success: true, profile: result.user});
@@ -453,25 +452,6 @@ Skeleton.prototype.subscribeGame = function(gameId) {
 Skeleton.prototype.unsubscribeGame = function(gameId) {
   this.server.subscriptions.removeSubscription(this, "game-" + gameId);
   return {success: true};
-}
-
-Skeleton.prototype.move = function(gameId, unitId, destination) {
-  if(this.sessionId === null)
-    return {success: false, reason: "Not logged in"}
-    
-  var requestId = this.client.requestId;
-  var this_ = this;
-  var userId = this.session.userId;
-  this.server.gameActions.move(gameId, userId, unitId, destination, function(result) {
-    if(result.success) {
-      this_.server.subscriptions.forSubscribers(function(sub) {
-        sub.client.stub.gameUpdate(gameId, result.changedTiles);
-      }, "game-" + gameId);
-      this_.client.sendResponse(requestId, {success: true});
-    } else {
-      this_.client.sendResponse(requestId, {success: false, reason: result.reason});
-    }
-  });
 }
 
 Skeleton.prototype.moveAndAttack = function(gameId, unitId, destination, targetId) {
