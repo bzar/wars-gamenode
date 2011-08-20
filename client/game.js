@@ -159,10 +159,6 @@ var wrap = function() {
       map.refresh();
     }
     
-    client.stub.gameRules(gameId, function(rules) {
-      gameLogic = new GameLogic(map, rules);
-    });
-    
     $("#mapCanvas").click(handleMapClick);
 //    $("#mapCanvas").click(function(e){console.log(e);});
   }
@@ -590,6 +586,11 @@ var wrap = function() {
     client.stub.profile(function(response) {
       theme = response.profile.settings.gameTheme;
       map = new Map(undefined, 1.0, theme);
+      
+      client.stub.gameRules(gameId, function(rules) {
+        gameLogic = new GameLogic(map, rules);
+      });
+      
       map.canvas = $("#mapCanvas")[0];
       gameMap = map;
       
