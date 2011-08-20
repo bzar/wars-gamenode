@@ -36,41 +36,54 @@ function zeroPad(str, len) {
   return s;
 }
 
+function addChatMessage(time, sender, content) {
+  var messages = $("#chatMessages");
+  var messageItem = $("<li></li>");
+  var messageTime = $("<span></span>");
+  var messageSender = $("<span></span>");
+  var messageContent = $("<span></span>");
+  
+  var t = new Date(Date.parse(time));
+  messageTime.text(zeroPad(t.getHours(), 2) + ":" + zeroPad(t.getMinutes(), 2));
+  messageTime.addClass("messageTime");
+  
+  messageSender.text(sender);
+  messageSender.addClass("messageSender");
+  
+  messageContent.text(content);
+  messageContent.addClass("messageContent");
+  
+  messageItem.append(messageTime);
+  messageItem.append(messageSender);
+  messageItem.append(messageContent);
+  
+  messages.append(messageItem);
+  messages.scrollTop(messages[0].scrollHeight);
+  
+  var chat = $("#chat");
+  if(chat.css("display") == "none") {
+    $("#showChat").addClass("highlight");
+  }
+}
+
 function initializeChat(client, gameId) {
   if(gameId === undefined) {
     client.stub.subscribeLobbyChat();
+  } else {
+    client.stub.chatMessages(gameId, function(response) {
+      if(!response.success) {
+        alert("Could not get chat messages! " + response.reason);
+        return;
+      }
+      
+      for(var i = 0; i < response.chatMessages.length; ++i) {
+        var message = response.chatMessages[i];
+        addChatMessage(message.time, message.sender, message.content);
+      }
+    });
   }
   
-  client.skeleton.chatMessage = function(time, sender, content) {
-    var messages = $("#chatMessages");
-    var messageItem = $("<li></li>");
-    var messageTime = $("<span></span>");
-    var messageSender = $("<span></span>");
-    var messageContent = $("<span></span>");
-    
-    var t = new Date(Date.parse(time));
-    messageTime.text(zeroPad(t.getHours(), 2) + ":" + zeroPad(t.getMinutes(), 2));
-    messageTime.addClass("messageTime");
-    
-    messageSender.text(sender);
-    messageSender.addClass("messageSender");
-    
-    messageContent.text(content);
-    messageContent.addClass("messageContent");
-    
-    messageItem.append(messageTime);
-    messageItem.append(messageSender);
-    messageItem.append(messageContent);
-    
-    messages.append(messageItem);
-    messages.scrollTop(messages[0].scrollHeight);
-    
-    var chat = $("#chat");
-    if(chat.css("display") == "none") {
-      $("#showChat").addClass("highlight");
-    }
-    
-  }
+  client.skeleton.chatMessage = addChatMessage;
   
   $("#showHideChat").click(function(e) {
     e.preventDefault();

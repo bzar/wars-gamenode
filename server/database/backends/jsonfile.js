@@ -26,6 +26,8 @@ var Database = function() {
   this.tileIdCounter = 0;
   this.units = new Array();
   this.unitIdCounter = 0;
+  this.chatMessages = new Array();
+  this.chatMessageIdCounter = 0;
 };
 
 Database.prototype.user = function(userId) {
@@ -144,6 +146,12 @@ JSONFileDatabase.prototype.loadDatabase = function(callback) {
           this_.database.games.push(game);
         }
         
+        this_.database.chatMessageIdCounter = databaseContent.chatMessageIdCounter;
+        for(var i = 0; i < databaseContent.games.length; ++i) {
+          var item = databaseContent.chatMessages[i];
+          var chatMessage = new entities.ChatMessage(item.chatMessageId, item.gameId, item.userId, item.time, item.content);
+          this_.database.chatMessages.push(chatMessage);
+        }
         callback(this_.database);
       }
     });
@@ -1100,12 +1108,15 @@ JSONFileDatabase.prototype.updateTiles = function(tiles, callback) {
 
 // CHAT
 
-JSONFileDatabase.prototype.createChatMessage = function(gameId, chatMessage, callback) {
+JSONFileDatabase.prototype.createChatMessage = function(newChatMessage, callback) {
   var this_ = this;
   this.loadDatabase(function(database) {
-    
+    var chatMessage = newChatMessage.clone();
+    chatMessage.chatMessageId = database.chatMessageIdCounter;
+    database.chatMessageIdCounter += 1;
+    database.chatMessages.push(chatMessage);
     this_.saveDatabase(function() {
-      callback();
+      callback({success: true, chatMessageId: chatMessage.chatMessageId});
     });
   });
 }
@@ -1113,10 +1124,17 @@ JSONFileDatabase.prototype.createChatMessage = function(gameId, chatMessage, cal
 JSONFileDatabase.prototype.chatMessages = function(gameId, callback) {
   var this_ = this;
   this.loadDatabase(function(database) {
+    var chatMessages = [];
+    for(var i = 0; i < database.chatMessages.length; ++i) {
+      var chatMessage = database.chatMessages[i];
+      if(chatMessage.gameId == gameId) {
+        chatMessage = chatMessage.clone();
+        chatMessage.sender = database.user(chatMessage.userId).username;
+        chatMessages.push(chatMessage);
+      }
+    }
     
-    this_.saveDatabase(function() {
-      callback();
-    });
+    callback({success: true, chatMessages: chatMessages});
   });
 }
 

@@ -638,7 +638,23 @@ Skeleton.prototype.surrender = function(gameId) {
 // CHAT
 
 Skeleton.prototype.chatMessages = function(gameId) {
-  
+  if(this.sessionId === null)
+    return {success: false, reason: "Not logged in"}
+
+  var requestId = this.client.requestId;
+  var this_ = this;
+  this.server.database.chatMessages(gameId, function(result) {
+    if(result.success) {
+      for(var i = 0; i < result.chatMessages.length; ++i) {
+        var time = new Date();
+        time.setTime(result.chatMessages[i].time);
+        result.chatMessages[i].time = time.toUTCString();
+      }
+      this_.client.sendResponse(requestId, {success: true, chatMessages: result.chatMessages});
+    } else {
+      this_.client.sendResponse(requestId, {success: false, reason: result.reason});
+    }
+  });
 }
 
 Skeleton.prototype.subscribeLobbyChat = function() {
@@ -658,12 +674,19 @@ Skeleton.prototype.lobbyChat = function(message) {
 
 Skeleton.prototype.chat = function(gameId, message) {
   var this_ = this;
-  var time = (new Date()).toUTCString();
-  this.server.database.user(this.session.userId, function(result) {
-    var sender = result.user.username;
-    this_.server.subscriptions.forSubscribers(function(sub) {
-      sub.client.stub.chatMessage(time, sender, message);
-    }, "game-" + gameId);
+  var time = new Date();
+  var chatMessage = new entities.ChatMessage(undefined, gameId, this.session.userId, time.getTime(), message);
+  this.server.database.createChatMessage(chatMessage, function(result) {
+    if(!result.success) {
+      this_.client.sendResponse(requestId, {success: false, reason: result.reason});
+    } else {
+      this_.server.database.user(this_.session.userId, function(result) {
+        var sender = result.user.username;
+        this_.server.subscriptions.forSubscribers(function(sub) {
+          sub.client.stub.chatMessage(time.toUTCString(), sender, message);
+        }, "game-" + gameId);
+      });
+    }
   });
 }
 

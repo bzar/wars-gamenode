@@ -15,7 +15,7 @@ var wrap = function() {
     var loginUrl = "login.html?next=" + document.location.pathname + document.location.search;
     session = resumeSessionOrRedirect(client, undefined, loginUrl, function() {
       client.stub.subscribeGame(gameId);
-  
+
       populateNavigation(session);
       client.stub.profile(function(response) {
         theme = response.profile.settings.gameTheme;
