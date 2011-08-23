@@ -3,7 +3,7 @@ SPRITE_TERRAIN = 0;
 SPRITE_UNIT = 1;
 SPRITE_GUI = 2;
 
-function Map(canvas, scale, theme) {
+function Map(canvas, scale, theme, rules) {
     this.theme = theme ? theme : "default";
     this.autoscale = !scale;
     this.scale = scale;
@@ -14,7 +14,8 @@ function Map(canvas, scale, theme) {
     this.unitmap = null;
     this.guimap = null;
     this.currentTiles = null;
-
+    this.rules = rules;
+    
     this.powerMap = null;
     this.showPowerMap = false;
     this.showBorders = false;
@@ -126,59 +127,54 @@ Map.prototype.paintTerrainTile = function(ctx, el, xPos, yPos) {
     }
 };
 
-Map.prototype.paintUnitTile = function(ctx, el, xPos, yPos) {
-    // fetch unit graphics
-    var coord = SPRITE_SHEET_MAP[SPRITE_UNIT][el.unit.type][el.unit.owner];
-    if(el.unit.moved) ctx.globalAlpha = 0.5;
-    if(coord) {
-        ctx.drawImage(this.sprites,
-                      coord.x*this.tileW, coord.y*this.tileH, this.tileW, this.tileH,
-                      xPos, yPos+this.unitOffsetY, this.tileW, this.tileH);
-    } else {
-        ctx.fillRect(xPos + 12, yPos - 12, this.tileW/2, this.tileH/2);
-    }
-    ctx.globalAlpha = 1.0;
-    if(el.unit.deployed) {
-        ctx.strokeStyle = "white";
-        ctx.strokeRect(xPos, yPos, this.tileW-1, this.tileH-1);
-    }
-    var en = Math.ceil(parseInt(el.unit.health)/10);
-    if(en<10) {
-        var numCoord = SPRITE_SHEET_MAP[SPRITE_GUI][GUI_IMAGES_HEALTH][en];
-        var enX = xPos + this.tileW - 24;
-        var enY = yPos + this.tileH - 24;
-        ctx.drawImage(this.sprites,
-                      numCoord.x*this.tileW, numCoord.y*this.tileH, this.tileW/2, this.tileH/2,
-                      enX, enY+this.unitOffsetY, this.tileW/2, this.tileH/2);
-    }
-    /*
-    if(el.unit.max_carry > 0) {
-        for(var i = 0; i < el.unit.max_carry; ++i) {
-            if(i < el.unit.carried_units.length) {
-                ctx.fillStyle = "white";
-                ctx.fillRect(xPos + 2, yPos + this.tileH - (i+1)*7 - 2, 5, 5);
-            } else {
-                ctx.strokeStyle = "white";
-                ctx.strokeRect(xPos + 2, yPos + this.tileH - (i+1)*7 - 2, 5, 5);
-            }
-        }
-    }*/
-};
-
-Map.prototype.paintUnit = function(x, y, unit) {
-    var ctx = this.canvas.getContext("2d");
+Map.prototype.paintUnit = function(x, y, unit, ctx) {
+    var ctx = ctx ? ctx : this.canvas.getContext("2d");
+    var xPos = this.tileW*x;
+    var yPos = this.tileH*y + this.unitOffsetY;
     ctx.save();
+    if(unit.moved) ctx.globalAlpha = 0.5;
     ctx.scale(this.getScale(), this.getScale());
 
     var coord = unit ? SPRITE_SHEET_MAP[SPRITE_UNIT][unit.type][unit.owner] : null;
     if(coord) {
         ctx.drawImage(this.sprites,
                       coord.x*this.tileW, coord.y*this.tileH, this.tileW, this.tileH,
-                      this.tileW*x, this.tileH*y+this.unitOffsetY, this.tileW, this.tileH);
-    } else {
-        ctx.fillRect(this.tileW*x + 12, this.tileH*y + 12, this.tileW/2, this.tileH/2);
-    }
+                      xPos, yPos, this.tileW, this.tileH);
+    } 
 
+    ctx.globalAlpha = 1.0;
+    if(unit.deployed) {
+        ctx.strokeStyle = "white";
+        ctx.strokeRect(xPos, yPos, this.tileW-1, this.tileH-1);
+    }
+    var en = Math.ceil(parseInt(unit.health)/10);
+    if(en<10) {
+        var numCoord = SPRITE_SHEET_MAP[SPRITE_GUI][GUI_IMAGES_HEALTH][en];
+        var enX = xPos + this.tileW - 24;
+        var enY = yPos + this.tileH - 24;
+        ctx.drawImage(this.sprites,
+                      numCoord.x*this.tileW, numCoord.y*this.tileH, this.tileW/2, this.tileH/2,
+                      enX, enY, this.tileW/2, this.tileH/2);
+    }
+    
+    if(this.rules) {
+        var unitType = this.rules.units[unit.type];
+        if(unitType.carryNum > 0) {
+            for(var i = 0; i < unitType.carryNum; ++i) {
+                if(i < unit.carriedUnits.length) {
+                    ctx.strokeStyle = "white";
+                    ctx.fillStyle = "#111";
+                    ctx.strokeRect(xPos + 2, yPos + this.tileH - (i+1)*7, 5, 5);
+                    ctx.fillRect(xPos + 2, yPos + this.tileH - (i+1)*7, 5, 5);
+                } else {
+                    ctx.strokeStyle = "#111";
+                    ctx.fillStyle = "white";
+                    ctx.strokeRect(xPos + 2, yPos + this.tileH - (i+1)*7, 5, 5);
+                    ctx.fillRect(xPos + 2, yPos + this.tileH - (i+1)*7, 5, 5);
+                }
+            }
+        }
+    }
     ctx.restore();
 };
 
@@ -197,7 +193,7 @@ Map.prototype.paint = function(tiles) {
         this_.paintTerrainTile(ctx, el, xPos, yPos);
 
         if(el.unit) {
-            this_.paintUnitTile(ctx, el, xPos, yPos);
+            this_.paintUnit(el.x, el.y, el.unit, ctx);
         }
     });
 

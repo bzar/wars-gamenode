@@ -585,28 +585,25 @@ var wrap = function() {
     $("#gameName").text(game.name);
     client.stub.profile(function(response) {
       theme = response.profile.settings.gameTheme;
-      map = new Map(undefined, 1.0, theme);
-      
       client.stub.gameRules(gameId, function(rules) {
+        map = new Map(undefined, 1.0, theme, rules);
         gameLogic = new GameLogic(map, rules);
-      });
-      
-      map.canvas = $("#mapCanvas")[0];
-      gameMap = map;
-      
-      map.doPreload(function() {
-        inTurnNumber = game.inTurnNumber;
-        initializePlayers(game.players);
-        refreshFunds();
-        map.currentTiles = game.tiles;
-        var mapSize = map.getMapSize();
-        var width = mapSize.w * map.tileW
-        var height = mapSize.h * map.tileH
-        map.canvas.width = width;
-        map.canvas.height = height;
-        map.refresh();
-      });
-    
+        map.canvas = $("#mapCanvas")[0];
+        gameMap = map;
+        
+        map.doPreload(function() {
+          inTurnNumber = game.inTurnNumber;
+          initializePlayers(game.players);
+          refreshFunds();
+          map.currentTiles = game.tiles;
+          var mapSize = map.getMapSize();
+          var width = mapSize.w * map.tileW
+          var height = mapSize.h * map.tileH
+          map.canvas.width = width;
+          map.canvas.height = height;
+          map.refresh();
+        });
+      });    
     });
   }
   
