@@ -1,58 +1,57 @@
 var entities = require("../entities");
 var settings = require("../settings").settings;
 var GameLogic = require("../../client/gamelogic").GameLogic;
+var GameProcedures = require("./procedures").GameProcedures;
+var GameInformation = require("./information").GameInformation;
 
 function GameActions(database) {
   this.database = database;
+  this.gameProcedures = new GameProcedures(database);
+  this.gameInformation = new GameInformation(database);
 }
 
 exports.GameActions = GameActions;
 
 function checkMove(database, gameId, userId, unitId, destination, callback) {
-  database.unit(unitId, function(result) {
+  database.unitWithTile(unitId, function(result) {
     if(!result.success) {
       callback({success: false, reason: result.reason}); return;
     }
     
     var unit = result.unit;
-    database.tile(unit.tileId, function(result) {
+    var sourceTile = result.tile;
+    
+    var gameInformation = new GameInformation(database);
+    gameInformation.gameData(gameId, function(result) {
       if(!result.success) {
         callback({success: false, reason: result.reason}); return;
-      }
-      var sourceTile = result.tile;
-      sourceTile.setUnit(unit);
+      } 
       
-      database.gameData(gameId, function(result) {
-        if(!result.success) {
-          callback({success: false, reason: result.reason}); return;
-        } 
-        
-        var game = result.game;
-        if(game.state != "inProgress") {
-          callback({success: false, reason: "Game not in progress!"}); return;
-        } 
-        
-        var playerInTurn = game.playerInTurn();
-        if(playerInTurn.userId != userId) {
-          callback({success: false, reason: "User not in turn!"}); return;
+      var game = result.game;
+      if(game.state != "inProgress") {
+        callback({success: false, reason: "Game not in progress!"}); return;
+      } 
+      
+      var playerInTurn = game.playerInTurn();
+      if(playerInTurn.userId != userId) {
+        callback({success: false, reason: "User not in turn!"}); return;
+      }
+      
+      var gameLogic = new GameLogic(game, settings.gameElements);
+      var destinationTile = null;
+      
+      if(destination !== null) {
+        var canMove = gameLogic.unitCanMoveTo(sourceTile.x, sourceTile.y, destination.x, destination.y);
+        if(canMove === null) {
+          callback({success: false, reason: "Error determining path!"}); return;
+        } else if(canMove === false) {
+          callback({success: false, reason: "Unit cannot move there!"}); return;
         }
         
-        var gameLogic = new GameLogic(game, settings.gameElements);
-        var destinationTile = null;
-        
-        if(destination !== null) {
-          var canMove = gameLogic.unitCanMoveTo(sourceTile.x, sourceTile.y, destination.x, destination.y);
-          if(canMove === null) {
-            callback({success: false, reason: "Error determining path!"}); return;
-          } else if(canMove === false) {
-            callback({success: false, reason: "Unit cannot move there!"}); return;
-          }
-          
-          destinationTile = game.getTile(destination.x, destination.y);
-        }
-        
-        callback({success: true}, game, playerInTurn, unit, sourceTile, destinationTile, gameLogic);
-      });
+        destinationTile = game.getTile(destination.x, destination.y);
+      }
+      
+      callback({success: true}, game, playerInTurn, unit, sourceTile, destinationTile, gameLogic);
     });
   });
 }
@@ -122,7 +121,6 @@ GameActions.prototype.moveAndAttack = function(gameId, userId, unitId, destinati
             });
           });
         });
-        
       });
     });
   });
@@ -244,36 +242,33 @@ GameActions.prototype.undeploy = function(gameId, userId, unitId, callback) {
 
 GameActions.prototype.moveAndLoadInto = function(gameId, userId, unitId, carrierId, callback) {
   var database = this.database;
-  database.unit(carrierId, function(result) {
+  database.unitWithTile(carrierId, function(result) {
     if(!result.success) {
       callback({success: false, reason: result.reason}); return;
     }
     
     var carrier = result.unit;
-    database.tile(carrier.tileId, function(result) {
-      var carrierTile = result.tile;
-      carrierTile.setUnit(carrier);
-      checkMove(database, gameId, userId, unitId, {x:carrierTile.x, y:carrierTile.y}, 
-                function(result, game, player, unit, sourceTile, destinationTile, gameLogic) {
-        if(!result.success) {
-          callback({success: false, reason: result.reason}); return;
-        }
-    
-        var canLoad = gameLogic.unitCanLoadInto(sourceTile.x, sourceTile.y, carrierTile.x, carrierTile.y);
-        
-        if(canLoad === null) {
-          callback({success: false, reason: "Error determining if unit can load!"}); return;
-        } else if(canLoad == false) {
-          callback({success: false, reason: "Unit cannot load here!"}); return;
-        }
-        
-        sourceTile.setUnit(null);
-        unit.loadInto(carrier);
-        
-        database.updateUnits([unit, carrier], function(result) {
-          database.updateTiles([sourceTile], function(result) {
-            callback({success: true, changedTiles: [sourceTile, carrierTile]});
-          });
+    var carrierTile = result.tile;
+    checkMove(database, gameId, userId, unitId, {x:carrierTile.x, y:carrierTile.y}, 
+              function(result, game, player, unit, sourceTile, destinationTile, gameLogic) {
+      if(!result.success) {
+        callback({success: false, reason: result.reason}); return;
+      }
+  
+      var canLoad = gameLogic.unitCanLoadInto(sourceTile.x, sourceTile.y, carrierTile.x, carrierTile.y);
+      
+      if(canLoad === null) {
+        callback({success: false, reason: "Error determining if unit can load!"}); return;
+      } else if(canLoad == false) {
+        callback({success: false, reason: "Unit cannot load here!"}); return;
+      }
+      
+      sourceTile.setUnit(null);
+      unit.loadInto(carrier);
+      
+      database.updateUnits([unit, carrier], function(result) {
+        database.updateTiles([sourceTile], function(result) {
+          callback({success: true, changedTiles: [sourceTile, carrierTile]});
         });
       });
     });
@@ -329,56 +324,55 @@ GameActions.prototype.build = function(gameId, userId, unitTypeId, destination, 
   var database = this.database;
   database.game(gameId, function(result) {
     if(!result.success) {
-      callback({success: false, reason: result.reason});
+      callback({success: false, reason: result.reason}); return;
     } else if(result.game.state != "inProgress") {
-      callback({success: false, reason: "Game not in progress!"});
-    } else {
-      var game = result.game;
-      database.userPlayerInTurn(gameId, userId, function(result) {
-        if(!result.success) {
-          callback({success: false, reason: result.reason});
-        } else {
-          var player = result.player;
-          database.tileAt(gameId, destination.x, destination.y, function(result) {
-            if(!result.success) {
-              callback({success: false, reason: result.reason});
-            } else {
-              var tile = result.tile;
-              var tileType = tile.terrainType();
-              if(tile.owner != player.playerNumber) {
-                callback({success: false, reason: "Tile not owned by player!"});
-              } else if(!tileType.canBuild(unitTypeId)) {
-                callback({success: false, reason: "Tile cannot build that unit type!"});
-              } else if(tile.unitId !== null) {
-                callback({success: false, reason: "Tile is occupied!"});
-              } else {
-                var unitType = settings.gameElements.units[unitTypeId];
-                if(unitType === undefined) {
-                  callback({success: false, reason: "Unknown unit type!"});
-                } else if(player.funds < unitType.price) {
-                  callback({success: false, reason: "Not enough funds!"});
-                } else {
-                  var unit = new entities.Unit(null, tile.tileId, unitType.id, 
-                                               player.playerNumber, null, 100, 
-                                               false, true, false);
-                  player.funds -= unitType.price;
-                  database.updatePlayer(player, function(result) {
-                    database.createUnit(unit, function(result) {
-                      tile.unitId = result.unitId;
-                      unit.unitId = result.unitId;
-                      tile.unit = unit;
-                      database.updateTile(tile, function(result) {
-                        callback({success: true, changedTiles: [tile]});
-                      });
-                    });
-                  });
-                }
-              }
-            }
-          });
-        }
-      });
+      callback({success: false, reason: "Game not in progress!"}); return;
     }
+    
+    var game = result.game;
+    database.userPlayerInTurn(gameId, userId, function(result) {
+      if(!result.success) {
+        callback({success: false, reason: result.reason}); return;
+      }
+      
+      var player = result.player;
+      database.tileAt(gameId, destination.x, destination.y, function(result) {
+        if(!result.success) {
+          callback({success: false, reason: result.reason}); return;
+        }
+        
+        var tile = result.tile;
+        var tileType = tile.terrainType();
+        var unitType = settings.gameElements.units[unitTypeId];
+        
+        if(tile.owner != player.playerNumber) {
+          callback({success: false, reason: "Tile not owned by player!"}); return;
+        } else if(!tileType.canBuild(unitTypeId)) {
+          callback({success: false, reason: "Tile cannot build that unit type!"}); return;
+        } else if(tile.unitId !== null) {
+          callback({success: false, reason: "Tile is occupied!"}); return;
+        } else if(unitType === undefined) {
+          callback({success: false, reason: "Unknown unit type!"}); return;
+        } else if(player.funds < unitType.price) {
+          callback({success: false, reason: "Not enough funds!"}); return;
+        }
+        
+        var unit = new entities.Unit(null, tile.tileId, unitType.id, 
+                                      player.playerNumber, null, 100, 
+                                      false, true, false);
+        player.funds -= unitType.price;
+        database.updatePlayer(player, function(result) {
+          database.createUnit(unit, function(result) {
+            tile.unitId = result.unitId;
+            unit.unitId = result.unitId;
+            tile.unit = unit;
+            database.updateTile(tile, function(result) {
+              callback({success: true, changedTiles: [tile]});
+            });
+          });
+        });
+      });
+    });
   });
 }
 
@@ -516,7 +510,9 @@ GameActions.prototype.startTurn = function(game, callback) {
           database.updateUnits(units, function(result) {
             database.updateTiles(nextPlayerTiles, function(result) {
               database.updateGame(game, function(result) {
-                callback({success: true, finished: false, inTurnNumber: game.inTurnNumber, changedTiles: nextPlayerTiles});
+                database.updatePlayer(nextPlayer, function(result) {
+                  callback({success: true, finished: false, inTurnNumber: game.inTurnNumber, changedTiles: nextPlayerTiles});
+                });
               });
             });
           });
@@ -537,33 +533,45 @@ GameActions.prototype.nextTurn = function(gameId, userId, callback) {
     } else if(result.game.inTurnNumber == 0) {
       this_.startTurn(result.game, function(result) {
         if(!result.success) {
-          callback({success: false, reason: result.reason});
-        } else {
-          callback({success: true, finished: result.finished, 
-                   inTurnNumber: result.inTurnNumber, changedTiles: result.changedTiles});
+          callback({success: false, reason: result.reason}); return;
         }
+        callback({success: true, finished: result.finished, 
+                  inTurnNumber: result.inTurnNumber, changedTiles: result.changedTiles});
       });      
     } else {
       var game = result.game;
       this_.endTurn(game, userId, function(result) {
         if(!result.success) {
-          callback({success: false, reason: result.reason});
-        } else {
-          var firstChangedTiles = result.changedTiles;
-          this_.startTurn(game, function(result) {
-            if(!result.success) {
-              callback({success: false, reason: result.reason});
-            } else {
-              var changedTiles = firstChangedTiles.concat(result.changedTiles);
-              callback({success: true, finished: result.finished, inTurnNumber: result.inTurnNumber, changedTiles: changedTiles});
-            }
-          });
-        }
+          callback({success: false, reason: result.reason}); return;
+        } 
+        var firstChangedTiles = result.changedTiles;
+        this_.startTurn(game, function(result) {
+          if(!result.success) {
+            callback({success: false, reason: result.reason}); return;
+          } 
+          
+          var changedTiles = firstChangedTiles.concat(result.changedTiles);
+          callback({success: true, finished: result.finished, inTurnNumber: result.inTurnNumber, changedTiles: changedTiles});
+        });
       });
     }
   });
 }
 
-GameActions.prototype.surrender = function(gameId, userId) {
-  
+GameActions.prototype.surrender = function(gameId, userId, callback) {
+  var this_ = this;
+  var database = this.database;
+  database.game(gameId, function(result) {
+    if(!result.success) {
+      callback({success: false, reason: result.reason}); return;
+    } else if(result.game.state != "inProgress") {
+      callback({success: false, reason: "Game not in progress!"}); return;
+    } 
+    database.userPlayerInTurn(gameId, userId, function(result) {
+      if(!result.success) {
+        callback({success: false, reason: result.reason}); return;
+      }
+      this_.nextTurn(gameId, userId, callback);
+    });
+  });
 }

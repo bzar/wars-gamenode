@@ -1,4 +1,5 @@
 var entities = require("./entities");
+var utils = require("./utils");
 
 function Skeleton(client) {
   this.client = client;
@@ -12,7 +13,6 @@ function Skeleton(client) {
 }
 
 exports.Skeleton = Skeleton;
-
 
 // GAME MANAGEMENT
 
@@ -158,18 +158,6 @@ Skeleton.prototype.myGames = function() {
       this_.client.sendResponse(requestId, {success: false, reason: result.reason});
     }
   });
-}
-
-Skeleton.prototype.players = function(gameId) {
-  
-}
-
-Skeleton.prototype.setEmailSetting = function(gameId, value) {
-  
-}
-
-Skeleton.prototype.emailSetting = function(gameId) {
-  
 }
 
 // MAP MANAGEMENT
@@ -376,13 +364,14 @@ Skeleton.prototype.gameRules = function(gameId) {
 }
 
 Skeleton.prototype.gameData = function(gameId) {
+  var timer = new utils.Timer("gameData");
   if(this.sessionId === null)
     return {success: false, reason: "Not logged in"}
 
   var requestId = this.client.requestId;
   var this_ = this;
   var userId = this.session.userId;
-  this.server.database.gameData(gameId, function(result) {
+  this.server.gameActions.gameInformation.gameData(gameId, function(result) {
     if(result.success) {
       var author = result.game.authorId == userId;
       var game = result.game;
@@ -390,6 +379,7 @@ Skeleton.prototype.gameData = function(gameId) {
         game.players[i].isMe = game.players[i].userId == userId;
       }
       this_.client.sendResponse(requestId, {success: true, game: game, author: author});
+      timer.end();
     } else {
       this_.client.sendResponse(requestId, {success: false, reason: result.reason});
     }
@@ -455,6 +445,7 @@ Skeleton.prototype.unsubscribeGame = function(gameId) {
 }
 
 Skeleton.prototype.moveAndAttack = function(gameId, unitId, destination, targetId) {
+  var timer = new utils.Timer("moveAndAttack");
   if(this.sessionId === null)
     return {success: false, reason: "Not logged in"}
     
@@ -467,6 +458,7 @@ Skeleton.prototype.moveAndAttack = function(gameId, unitId, destination, targetI
         sub.client.stub.gameUpdate(gameId, result.changedTiles);
       }, "game-" + gameId);
       this_.client.sendResponse(requestId, {success: true});
+      timer.end();
     } else {
       this_.client.sendResponse(requestId, {success: false, reason: result.reason});
     }
@@ -608,6 +600,7 @@ Skeleton.prototype.build = function(gameId, unitTypeId, destination) {
 }
 
 Skeleton.prototype.endTurn = function(gameId) {
+  var timer = new utils.Timer("endTurn");
   if(this.sessionId === null)
     return {success: false, reason: "Not logged in"}
     
@@ -625,6 +618,7 @@ Skeleton.prototype.endTurn = function(gameId) {
         }
       }, "game-" + gameId);
       this_.client.sendResponse(requestId, {success: true});
+      timer.end();
     } else {
       this_.client.sendResponse(requestId, {success: false, reason: result.reason});
     }

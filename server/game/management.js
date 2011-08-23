@@ -1,5 +1,7 @@
 var entities = require("../entities");
 var settings = require("../settings").settings;
+var GameProcedures = require("./procedures").GameProcedures;
+var GameInformation = require("./information").GameInformation;
 
 function GameManagement(database) {
   this.database = database;
@@ -142,7 +144,8 @@ GameManagement.prototype.leaveGame = function(userId, gameId, playerNumber, call
 
 GameManagement.prototype.startGame = function(userId, gameId, callback) {
   var database = this.database;
-  database.game(gameId, function(result) {
+  var gameInformation = new GameInformation(database);
+  gameInformation.gameData(gameId, function(result) {
     if(!result.success) {
       callback({success: false, reason: result.reason});
     } else if(result.game.authorId != userId) {

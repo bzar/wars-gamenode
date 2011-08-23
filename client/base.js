@@ -59,11 +59,6 @@ function addChatMessage(time, sender, content) {
   
   messages.append(messageItem);
   messages.scrollTop(messages[0].scrollHeight);
-  
-  var chat = $("#chat");
-  if(chat.css("display") == "none") {
-    $("#showChat").addClass("highlight");
-  }
 }
 
 function initializeChat(client, gameId) {
@@ -83,8 +78,13 @@ function initializeChat(client, gameId) {
     });
   }
   
-  client.skeleton.chatMessage = addChatMessage;
-  
+  client.skeleton.chatMessage = function(time, sender, content) {
+    addChatMessage(time, sender, content);
+    if($("#chat").css("display") == "none") {
+      $("#showChat").addClass("highlight");
+    }
+  }
+
   $("#showHideChat").click(function(e) {
     e.preventDefault();
     

@@ -7,13 +7,13 @@ var Server = require("../lib/gamenode/server/gameNodeServer").GameNodeServer,
     settings = require("./settings").settings,
     database = require("./database");
 
-var GameManagement = require("./site").GameManagement;
+var GameManagement = require("./game").GameManagement;
 var GameActions = require("./game").GameActions;
 
-/*process.on('uncaughtException', function (err) {
+process.on('uncaughtException', function (err) {
+  console.log("*** ERROR! ***");
   console.error(err);
-  console.log("Node NOT Exiting...");
-});*/
+});
 
 function WarsServer() {
   this.sessionStorage = new SessionStorage();
@@ -32,7 +32,7 @@ var server = new WarsServer();
 server.listen(8888,"0.0.0.0");
 
 server.io.configure(null, function(){
-  server.io.set('log level', 3);
+  server.io.set('log level', 0);
 
   server.io.set('transports', [
     //    'websocket'

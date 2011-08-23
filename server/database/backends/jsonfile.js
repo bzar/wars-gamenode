@@ -2,6 +2,7 @@ var fs = require('fs');
 
 var entities = require("../../entities");
 var settings = require("../../settings").settings;
+var utils = require("../../utils");
 var DummyDatabase = require("./dummy").implementation;
 
 var JSONFileDatabase = function() {
@@ -147,7 +148,7 @@ JSONFileDatabase.prototype.loadDatabase = function(callback) {
         }
         
         this_.database.chatMessageIdCounter = databaseContent.chatMessageIdCounter;
-        for(var i = 0; i < databaseContent.games.length; ++i) {
+        for(var i = 0; i < databaseContent.chatMessages.length; ++i) {
           var item = databaseContent.chatMessages[i];
           var chatMessage = new entities.ChatMessage(item.chatMessageId, item.gameId, item.userId, item.time, item.content);
           this_.database.chatMessages.push(chatMessage);
@@ -424,6 +425,31 @@ JSONFileDatabase.prototype.players = function(gameId, callback) {
     for(var i = 0; i < database.players.length; ++i) {
       var player = database.players[i];
       if(player.gameId == gameId) {
+        players.push(player.clone());
+      }
+    }
+    
+    if(players.length != 0) {
+      callback({success: true, players: players});
+    } else {
+      callback({success: false, reason: "No players for such game!"});
+    }
+  });
+}
+
+JSONFileDatabase.prototype.playersWithUsers = function(gameId, callback) {
+  var this_ = this;
+  this.loadDatabase(function(database) {
+    var players = [];
+    for(var i = 0; i < database.players.length; ++i) {
+      var player = database.players[i];
+      if(player.gameId == gameId) {
+        player = player.clone();
+        if(player.userId === null) {
+          player.user = null;
+        } else {
+          player.user = database.user(player.userId).clone();
+        }
         players.push(player);
       }
     }
@@ -677,104 +703,6 @@ function getCarriedUnits(database, unit) {
   }
 }
 
-
-JSONFileDatabase.prototype.gameData = function(gameId, callback) {
-  var this_ = this;
-  this.loadDatabase(function(database) {
-    var game = database.game(gameId);
-    if(game === null) {
-      callback({success: false, reason: "No such game!"});
-      return;
-    }
-    
-    game = game.clone();
-    var tiles = [];
-    var players = [];
-    
-    for(var i = 0; i < database.tiles.length; ++i) {
-      if(database.tiles[i].gameId == gameId) {
-        var tile = database.tiles[i].clone();
-        tile.unit = null;
-        if(tile.unitId !== null) {
-          tile.unit = database.unit(tile.unitId).clone();
-          getCarriedUnits(database, tile.unit);
-          
-        }
-        tiles.push(tile);
-      }
-    }
-    
-    for(var i = 0; i < database.players.length; ++i) {
-      var player = database.players[i];
-      if(player.gameId == gameId) {
-        players.push(player.clone());
-      }
-    }
-
-    game.tiles = tiles;
-    game.players = players;
-    
-    callback({success: true, game: game});
-  });
-}
-
-JSONFileDatabase.prototype.updateGameData = function(game, callback) {
-  var this_ = this;
-  this.loadDatabase(function(database) {
-    var tiles = game.tiles;
-    for(var i = 0; i < tiles.length; ++i) {
-      var tile = tiles[i];
-      var existingTile = database.tile(tile.tileId);
-      if(existingTile === null) {
-        callback({success: false, reason: "Tile does not exist!"});
-        return;
-      }
-      existingTile.cloneFrom(tile);
-      if(tile.unit === null) {
-        existingTile.unitId = null;
-      } else {
-        var existingUnit = database.unit(tile.unit.unitId);
-        if(existingUnit === null) {
-          callback({success: false, reason: "Unit does not exist!"});
-          return;
-        }
-        existingUnit.cloneFrom(tile.unit);
-        
-        for(var j = 0; j < tile.unit.carriedUnits.length; ++j) {
-          var carriedUnit = database.unit(tile.unit.carriedUnits[j].unitId);
-          if(carriedUnit === null) {
-            callback({success: false, reason: "Unit does not exist!"});
-            return;
-          }
-          carriedUnit.cloneFrom(tile.unit.carriedUnits[j]);
-        }
-      }
-    }
-    
-    var players = game.players;
-    for(var i = 0; i < players.length; ++i) {
-      var player = players[i];
-      var existingPlayer = database.player(player.playerId);
-      if(existingPlayer === null) {
-        callback({success: false, reason: "Player does not exist!"});
-        return;
-      }
-      existingPlayer.cloneFrom(player);
-    }
-    
-    var existingGame = database.game(game.gameId);
-    if(existingGame === null) {
-      callback({success: false, reason: "Game does not exist!"});
-      return;
-    }
-    existingGame.cloneFrom(game);
-    
-    this_.saveDatabase(function() {
-      callback({success: true});
-    });    
-  });
-}
-
 JSONFileDatabase.prototype.surrender = function(players, callback) {
   // Wrap in an array if surrendering a single player
   players = typeof(players) == "object" ? players : [players];
@@ -821,7 +749,6 @@ JSONFileDatabase.prototype.surrender = function(players, callback) {
       callback({success: true});
     });
   });
-  
 }
 
 JSONFileDatabase.prototype.unit = function(unitId, callback) {
@@ -834,6 +761,26 @@ JSONFileDatabase.prototype.unit = function(unitId, callback) {
       unit = unit.clone();
       getCarriedUnits(database, unit);
       callback({success: true, unit: unit});
+    }
+  });
+}
+
+JSONFileDatabase.prototype.unitWithTile = function(unitId, callback) {
+  var this_ = this;
+  this.loadDatabase(function(database) {
+    var unit = database.unit(unitId);
+    if(unit === null) {
+      callback({success: false, reason: "No such unit!"});
+    } else {
+      unit = unit.clone();
+      getCarriedUnits(database, unit);
+      var tile = null;
+      if(unit.tileId !== null) {
+        tile = database.tile(unit.tileId).clone();
+        tile.setUnit(unit);
+      }
+      
+      callback({success: true, unit: unit, tile: tile});
     }
   });
 }
@@ -927,34 +874,12 @@ JSONFileDatabase.prototype.createUnit = function(newUnit, callback) {
 }
 
 JSONFileDatabase.prototype.updateUnit = function(unit, callback) {
-  var this_ = this;
-  this.loadDatabase(function(database) {
-    var existingUnit = database.unit(unit.unitId);
-    if(existingUnit === null) {
-      callback({success: false, reason: "Unit does not exist!"});
-      return;
-    }
-    existingUnit.cloneFrom(unit);
-    
-    if(unit.carriedUnits !== undefined) {
-      for(var j = 0; j < unit.carriedUnits.length; ++j) {
-        var carriedUnit = database.unit(unit.carriedUnits[j].unitId);
-        if(carriedUnit === null) {
-          callback({success: false, reason: "Unit does not exist!"});
-          return;
-        }
-        carriedUnit.cloneFrom(unit.carriedUnits[j]);
-      }
-    }
-    
-    this_.saveDatabase(function() {
-      callback({success: true});
-    });    
-  });
+  return this.updateUnits([unit], callback);
 }
 
 JSONFileDatabase.prototype.updateUnits = function(units, callback) {
   var this_ = this;
+  var timer = new utils.Timer("updateUnits");
   this.loadDatabase(function(database) {
     for(var i = 0; i < units.length; ++i) {
       var unit = units[i];
@@ -978,33 +903,45 @@ JSONFileDatabase.prototype.updateUnits = function(units, callback) {
     }
     this_.saveDatabase(function() {
       callback({success: true});
+      timer.end();
     });    
   });
 }
 
 JSONFileDatabase.prototype.deleteUnit = function(unitId, callback) {
-  var this_ = this;
-  this.loadDatabase(function(database) {
-    for(var i = 0; i < this.units.length; ++i) {
-      if(database.units[i].unitId == unitId) {
-        database.units.splice(i, 1);
-        break;
-      }
-    }
-    this_.saveDatabase(function() {
-      callback({success: true});
-    });
-  });
+  return this.deleteUnits([unitId], callback);
 }
 
 JSONFileDatabase.prototype.deleteUnits = function(units, callback) {
   var this_ = this;
   this.loadDatabase(function(database) {
-    for(var i = 0; i < units.length; ++i) {
-      for(var j = 0; j < database.units.length; ++j) {
-        if(database.units[j].unitId == units[i].unitId) {
-          database.units.splice(j, 1);
-          break;
+    function d(unitId, ids) {
+      if(ids === undefined)
+        ids = [];
+      
+      for(var i = 0; i < this.units.length; ++i) {
+        if(database.units[i].unitId == unitId) {
+          ids.push(database.units[i].unitId)
+        } else if(database.units[i].carriedBy == unitId) {
+          d(database.units[i].unitId, ids);
+        }
+      }
+      return ids;
+    }
+    
+    for(var k = 0; k < units.length; ++k) {
+      d(units[k].unitId);
+      
+      if(ids.length == 0) {
+        callback({success: false, reason: "No such unit!"}); return;
+      } 
+      
+      for(var i = 0; i < ids.length; ++i) {
+        for(var j = 0; j < this.units.length; ++j) {
+          if(ids[i] == this.units[j].unitId) {
+            this.units.splice(j, 1);
+            j -= 1;
+          }
         }
       }
     }
@@ -1056,6 +993,29 @@ JSONFileDatabase.prototype.tiles = function(gameId, callback) {
   });
 }
 
+JSONFileDatabase.prototype.tilesWithUnits = function(gameId, callback) {
+  var this_ = this;
+  var timer = new utils.Timer("tilesWithUnits");
+  this.loadDatabase(function(database) {
+    var tiles = [];
+    
+    for(var i = 0; i < database.tiles.length; ++i) {
+      if(database.tiles[i].gameId == gameId) {
+        var tile = database.tiles[i].clone();
+        tile.unit = null;
+        if(tile.unitId !== null) {
+          tile.unit = database.unit(tile.unitId).clone();
+          getCarriedUnits(database, tile.unit);
+          
+        }
+        tiles.push(tile);
+      }
+    }
+    timer.end();
+    callback({success: true, tiles: tiles});
+  });
+}
+
 JSONFileDatabase.prototype.playerTiles = function(gameId, playerNumber, callback) {
   var this_ = this;
   this.loadDatabase(function(database) {
@@ -1072,23 +1032,12 @@ JSONFileDatabase.prototype.playerTiles = function(gameId, playerNumber, callback
 }
 
 JSONFileDatabase.prototype.updateTile = function(tile, callback) {
-  var this_ = this;
-  this.loadDatabase(function(database) {
-    var existingTile = database.tile(tile.tileId);
-    if(existingTile === null) {
-      callback({success: false, reason: "Tile does not exist!"});
-      return;
-    }
-    existingTile.cloneFrom(tile);
-    
-    this_.saveDatabase(function() {
-      callback({success: true});
-    });    
-  });
+  return this.updateTiles([tile], callback);
 }
 
 JSONFileDatabase.prototype.updateTiles = function(tiles, callback) {
   var this_ = this;
+  var timer = new utils.Timer("updateTiles");
   this.loadDatabase(function(database) {
     for(var i = 0; i < tiles.length; ++i) {
       var tile = tiles[i];
@@ -1101,6 +1050,7 @@ JSONFileDatabase.prototype.updateTiles = function(tiles, callback) {
     }
     
     this_.saveDatabase(function() {
+      timer.end();
       callback({success: true});
     });    
   });
