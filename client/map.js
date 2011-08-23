@@ -190,6 +190,7 @@ Map.prototype.paint = function(tiles) {
     ctx.scale(this.getScale(), this.getScale());
 
     var this_ = this;
+    tiles = tiles.sort(function(a, b){return a.y - b.y});
     tiles.forEach(function(el){
         var xPos = this_.tileW*el.x+offset.x;
         var yPos = this_.tileH*el.y+offset.y;
