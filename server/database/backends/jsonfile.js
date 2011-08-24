@@ -177,18 +177,21 @@ JSONFileDatabase.prototype.saveDatabase = function(callback) {
 // GAME MANAGEMENT
 
 JSONFileDatabase.prototype.game = function(gameId, callback) {
+  var timer = new utils.Timer("JSONFileDatabase.game");
   var this_ = this;
   this.loadDatabase(function(database) {
     var game = database.game(gameId);
     if(game === null) {
       callback({success: false, reason: "No such game!"});
     } else {
+      timer.end();
       callback({success: true, game: game.clone()});
     }
   });
 }
 
 JSONFileDatabase.prototype.createGame = function(game, gameData, players, callback) {
+  var timer = new utils.Timer("JSONFileDatabase.createGame");
   var this_ = this;
   this.loadDatabase(function(database) {
     var newGame = game.clone();
@@ -223,12 +226,14 @@ JSONFileDatabase.prototype.createGame = function(game, gameData, players, callba
     }
     
     this_.saveDatabase(function() {
+      timer.end();
       callback({success: true, gameId: newGame.gameId});
     });
   });
 }
 
 JSONFileDatabase.prototype.updateGame = function(game, callback) {
+  var timer = new utils.Timer("JSONFileDatabase.updateGame");
   var this_ = this;
   this.loadDatabase(function(database) {
     var existingGame = database.game(game.gameId);
@@ -239,11 +244,13 @@ JSONFileDatabase.prototype.updateGame = function(game, callback) {
     existingGame.cloneFrom(game);
     
     this_.saveDatabase(function() {
+      timer.end();
       callback({success: true});
     });    
   });
 }
 JSONFileDatabase.prototype.deleteGame = function(gameId, callback) {
+  var timer = new utils.Timer("JSONFileDatabase.deleteGame");
   var this_ = this;
   this.loadDatabase(function(database) {
     var game = database.game(gameId);
@@ -316,12 +323,14 @@ JSONFileDatabase.prototype.deleteGame = function(gameId, callback) {
     }
     
     this_.saveDatabase(function() {
+      timer.end();
       callback({success: true});
     });
   });
 }
 
 JSONFileDatabase.prototype.openGames = function(callback) {
+  var timer = new utils.Timer("JSONFileDatabase.openGames");
   var this_ = this;
   this.loadDatabase(function(database) {
     var openGames = [];
@@ -349,11 +358,13 @@ JSONFileDatabase.prototype.openGames = function(callback) {
       }
     }
     
+    timer.end();
     callback({success: true, games: openGames});
   });
 }
 
 JSONFileDatabase.prototype.publicGames = function(callback) {
+  var timer = new utils.Timer("JSONFileDatabase.publicGames");
   var this_ = this;
   this.loadDatabase(function(database) {
     var publicGames = [];
@@ -379,11 +390,13 @@ JSONFileDatabase.prototype.publicGames = function(callback) {
       }
     }
     
+    timer.end();
     callback({success: true, games: publicGames});
   });
 }
 
 JSONFileDatabase.prototype.myGames = function(userId, callback) {
+  var timer = new utils.Timer("JSONFileDatabase.myGames");
   var this_ = this;
   this.loadDatabase(function(database) {
     var myGames = [];
@@ -414,11 +427,13 @@ JSONFileDatabase.prototype.myGames = function(userId, callback) {
       }
     }
     
+    timer.end();
     callback({success: true, games: myGames});
   });
 }
 
 JSONFileDatabase.prototype.players = function(gameId, callback) {
+  var timer = new utils.Timer("JSONFileDatabase.players");
   var this_ = this;
   this.loadDatabase(function(database) {
     var players = [];
@@ -430,6 +445,7 @@ JSONFileDatabase.prototype.players = function(gameId, callback) {
     }
     
     if(players.length != 0) {
+      timer.end();
       callback({success: true, players: players});
     } else {
       callback({success: false, reason: "No players for such game!"});
@@ -438,6 +454,7 @@ JSONFileDatabase.prototype.players = function(gameId, callback) {
 }
 
 JSONFileDatabase.prototype.playersWithUsers = function(gameId, callback) {
+  var timer = new utils.Timer("JSONFileDatabase.playersWithUsers");
   var this_ = this;
   this.loadDatabase(function(database) {
     var players = [];
@@ -455,6 +472,7 @@ JSONFileDatabase.prototype.playersWithUsers = function(gameId, callback) {
     }
     
     if(players.length != 0) {
+      timer.end();
       callback({success: true, players: players});
     } else {
       callback({success: false, reason: "No players for such game!"});
@@ -463,11 +481,13 @@ JSONFileDatabase.prototype.playersWithUsers = function(gameId, callback) {
 }
 
 JSONFileDatabase.prototype.gamePlayer = function(gameId, playerNumber, callback) {
+  var timer = new utils.Timer("JSONFileDatabase.gamePlayer");
   var this_ = this;
   this.loadDatabase(function(database) {
     for(var i = 0; i < database.players.length; ++i) {
       var player = database.players[i];
       if(player.gameId == gameId && player.playerNumber == playerNumber) {
+        timer.end();
         callback({success: true, player: player.clone()});
         return;
       }
@@ -477,6 +497,7 @@ JSONFileDatabase.prototype.gamePlayer = function(gameId, playerNumber, callback)
 }
 
 JSONFileDatabase.prototype.userPlayerInTurn = function(gameId, userId, callback) {
+  var timer = new utils.Timer("JSONFileDatabase.userPlayerInTurn");
   var this_ = this;
   this.loadDatabase(function(database) {
     var game = this_.database.game(gameId);
@@ -488,6 +509,7 @@ JSONFileDatabase.prototype.userPlayerInTurn = function(gameId, userId, callback)
     for(var i = 0; i < database.players.length; ++i) {
       var player = database.players[i];
       if(player.gameId == gameId && player.userId == userId && player.playerNumber == game.inTurnNumber) {
+        timer.end();
         callback({success: true, player: player.clone()});
         return;
       }
@@ -497,12 +519,14 @@ JSONFileDatabase.prototype.userPlayerInTurn = function(gameId, userId, callback)
 }
 
 JSONFileDatabase.prototype.player = function(playerId, callback) {
+  var timer = new utils.Timer("JSONFileDatabase.player");
   var this_ = this;
   this.loadDatabase(function(database) {
     var player = database.player(playerId);
     if(player === null) {
       callback({success: false, reason: "No such player!"});
     } else {
+      timer.end();
       callback({success: true, player: player});
     }
   });
@@ -510,6 +534,7 @@ JSONFileDatabase.prototype.player = function(playerId, callback) {
 
 
 JSONFileDatabase.prototype.updatePlayer = function(player, callback) {
+  var timer = new utils.Timer("JSONFileDatabase.updatePlayer");
   var this_ = this;
   this.loadDatabase(function(database) {
     var existingPlayer = database.player(player.playerId);
@@ -520,6 +545,7 @@ JSONFileDatabase.prototype.updatePlayer = function(player, callback) {
     existingPlayer.cloneFrom(player);
     
     this_.saveDatabase(function() {
+      timer.end();
       callback({success: true});
     });    
   });
@@ -528,6 +554,7 @@ JSONFileDatabase.prototype.updatePlayer = function(player, callback) {
 // MAP MANAGEMENT
 
 JSONFileDatabase.prototype.createMap = function(newMap, callback) {
+  var timer = new utils.Timer("JSONFileDatabase.createMap");
   var this_ = this;
   this.loadDatabase(function(database) {
     var map = newMap.clone();
@@ -535,12 +562,14 @@ JSONFileDatabase.prototype.createMap = function(newMap, callback) {
     database.mapIdCounter += 1;
     database.maps.push(map);
     this_.saveDatabase(function() {
+      timer.end();
       callback({success: true, mapId: map.mapId});
     });
   });
 }
 
 JSONFileDatabase.prototype.updateMap = function(map, callback) {
+  var timer = new utils.Timer("JSONFileDatabase.updateMap");
   var this_ = this;
   this.loadDatabase(function(database) {
     var existingMap = database.map(map.mapId);
@@ -551,12 +580,14 @@ JSONFileDatabase.prototype.updateMap = function(map, callback) {
     existingMap.cloneFrom(map);
     
     this_.saveDatabase(function() {
+      timer.end();
       callback({success: true});
     });    
   });
 }
 
 JSONFileDatabase.prototype.map = function(mapId, callback) {
+  var timer = new utils.Timer("JSONFileDatabase.map");
   var this_ = this;
   this.loadDatabase(function(database) {
     var map = database.map(mapId);
@@ -565,12 +596,14 @@ JSONFileDatabase.prototype.map = function(mapId, callback) {
     } else {
       var resultMap = map.clone();
       resultMap.mapData = undefined;
+      timer.end();
       callback({success: true, map: resultMap});
     }
   });
 }
 
 JSONFileDatabase.prototype.mapData = function(mapId, callback) {
+  var timer = new utils.Timer("JSONFileDatabase.mapData");
   var this_ = this;
   this.loadDatabase(function(database) {
     var map = database.map(mapId);
@@ -578,12 +611,14 @@ JSONFileDatabase.prototype.mapData = function(mapId, callback) {
       callback({success: false, reason: "No such map!"});
     } else {
       var mapData = map.clone().mapData;
+      timer.end();
       callback({success: true, mapData: mapData});
     }
   });
 }
 
 JSONFileDatabase.prototype.maps = function(callback) {
+  var timer = new utils.Timer("JSONFileDatabase.maps");
   var this_ = this;
   this.loadDatabase(function(database) {
     var maps = []
@@ -593,11 +628,13 @@ JSONFileDatabase.prototype.maps = function(callback) {
       maps.push(map);
     }
     
+    timer.end();
     callback({success: true, maps: maps});
   });
 }
 
 JSONFileDatabase.prototype.myMaps = function(userId, callback) {
+  var timer = new utils.Timer("JSONFileDatabase.myMaps");
   var this_ = this;
   this.loadDatabase(function(database) {
     var maps = []
@@ -609,6 +646,7 @@ JSONFileDatabase.prototype.myMaps = function(userId, callback) {
       }
     }
     
+    timer.end();
     callback({success: true, maps: maps});
   });
 }
@@ -616,11 +654,13 @@ JSONFileDatabase.prototype.myMaps = function(userId, callback) {
 // USER MANAGEMENT
 
 JSONFileDatabase.prototype.userId = function(username, password, callback) {
+  var timer = new utils.Timer("JSONFileDatabase.userId");
   var this_ = this;
   this.loadDatabase(function(database) {
     for(var i = 0; i < database.users.length; ++i) {
       var user = database.users[i];
       if(user.username == username && user.password == password) {
+        timer.end();
         callback({success: true, userId: user.userId});
         return;
       }
@@ -631,18 +671,21 @@ JSONFileDatabase.prototype.userId = function(username, password, callback) {
 }
 
 JSONFileDatabase.prototype.user = function(userId, callback) {
+  var timer = new utils.Timer("JSONFileDatabase.user");
   var this_ = this;
   this.loadDatabase(function(database) {
     var user = database.user(userId);
     if(user === null) {
       callback({success: false, reason: "No such user!"});
     } else {
+      timer.end();
       callback({success: true, user: user.clone()});
     }
   });
 }
 
 JSONFileDatabase.prototype.updateUser = function(user, callback) {
+  var timer = new utils.Timer("JSONFileDatabase.updateUser");
   var this_ = this;
   this.loadDatabase(function(database) {
     var existingUser = database.user(user.userId);
@@ -660,12 +703,14 @@ JSONFileDatabase.prototype.updateUser = function(user, callback) {
     existingUser.cloneFrom(user);
     
     this_.saveDatabase(function() {
+      timer.end();
       callback({success: true});
     });    
   });
 }
 
 JSONFileDatabase.prototype.register = function(newUser, callback) {
+  var timer = new utils.Timer("JSONFileDatabase.register");
   var this_ = this;
   this.loadDatabase(function(database) {
     for(var i = 0; i < database.users.length; ++i) {
@@ -682,6 +727,7 @@ JSONFileDatabase.prototype.register = function(newUser, callback) {
     database.users.push(user);
     
     this_.saveDatabase(function() {
+      timer.end();
       callback({success: true, userId: user.userId});
     });
   });
@@ -704,6 +750,7 @@ function getCarriedUnits(database, unit) {
 }
 
 JSONFileDatabase.prototype.surrender = function(players, callback) {
+  var timer = new utils.Timer("JSONFileDatabase.surrender");
   // Wrap in an array if surrendering a single player
   players = typeof(players) == "object" ? players : [players];
   var this_ = this;
@@ -746,12 +793,14 @@ JSONFileDatabase.prototype.surrender = function(players, callback) {
     }
     
     this_.saveDatabase(function() {
+      timer.end();
       callback({success: true});
     });
   });
 }
 
 JSONFileDatabase.prototype.unit = function(unitId, callback) {
+  var timer = new utils.Timer("JSONFileDatabase.unit");
   var this_ = this;
   this.loadDatabase(function(database) {
     var unit = database.unit(unitId);
@@ -760,12 +809,14 @@ JSONFileDatabase.prototype.unit = function(unitId, callback) {
     } else {
       unit = unit.clone();
       getCarriedUnits(database, unit);
+      timer.end();
       callback({success: true, unit: unit});
     }
   });
 }
 
 JSONFileDatabase.prototype.unitWithTile = function(unitId, callback) {
+  var timer = new utils.Timer("JSONFileDatabase.unitWithTile");
   var this_ = this;
   this.loadDatabase(function(database) {
     var unit = database.unit(unitId);
@@ -780,12 +831,14 @@ JSONFileDatabase.prototype.unitWithTile = function(unitId, callback) {
         tile.setUnit(unit);
       }
       
+      timer.end();
       callback({success: true, unit: unit, tile: tile});
     }
   });
 }
 
 JSONFileDatabase.prototype.unitAt = function(gameId, x, y, callback) {
+  var timer = new utils.Timer("JSONFileDatabase.unitAt");
   var this_ = this;
   this.loadDatabase(function(database) {
     for(var i = 0; i < database.tiles.length; ++i) {
@@ -809,6 +862,7 @@ JSONFileDatabase.prototype.unitAt = function(gameId, x, y, callback) {
 }
 
 JSONFileDatabase.prototype.units = function(gameId, callback) {
+  var timer = new utils.Timer("JSONFileDatabase.units");
   var this_ = this;
   this.loadDatabase(function(database) {
     var units = [];
@@ -821,11 +875,13 @@ JSONFileDatabase.prototype.units = function(gameId, callback) {
       }
     }
     
+    timer.end();
     callback({success: true, units: units});
   });
 }
 
 JSONFileDatabase.prototype.playerUnits = function(gameId, playerNumber, callback) {
+  var timer = new utils.Timer("JSONFileDatabase.playerUnits");
   var this_ = this;
   this.loadDatabase(function(database) {
     var units = [];
@@ -841,11 +897,13 @@ JSONFileDatabase.prototype.playerUnits = function(gameId, playerNumber, callback
       }
     }
     
+    timer.end();
     callback({success: true, units: units});
   });
 }
 
 JSONFileDatabase.prototype.carriedUnits = function(carrierId, callback) {
+  var timer = new utils.Timer("JSONFileDatabase.carriedUnits");
   var this_ = this;
   this.loadDatabase(function(database) {
     var units = [];
@@ -856,11 +914,13 @@ JSONFileDatabase.prototype.carriedUnits = function(carrierId, callback) {
       }
     }
     
+    timer.end();
     callback({success: true, units: units});
   });
 }
 
 JSONFileDatabase.prototype.createUnit = function(newUnit, callback) {
+  var timer = new utils.Timer("JSONFileDatabase.createUnit");
   var this_ = this;
   this.loadDatabase(function(database) {
     var unit = newUnit.clone();
@@ -868,6 +928,7 @@ JSONFileDatabase.prototype.createUnit = function(newUnit, callback) {
     database.unitIdCounter += 1;
     database.units.push(unit);
     this_.saveDatabase(function() {
+      timer.end();
       callback({success: true, unitId: unit.unitId});
     });
   });
@@ -878,8 +939,8 @@ JSONFileDatabase.prototype.updateUnit = function(unit, callback) {
 }
 
 JSONFileDatabase.prototype.updateUnits = function(units, callback) {
+  var timer = new utils.Timer("JSONFileDatabase.updateUnits");
   var this_ = this;
-  var timer = new utils.Timer("updateUnits");
   this.loadDatabase(function(database) {
     for(var i = 0; i < units.length; ++i) {
       var unit = units[i];
@@ -902,8 +963,8 @@ JSONFileDatabase.prototype.updateUnits = function(units, callback) {
       }
     }
     this_.saveDatabase(function() {
-      callback({success: true});
       timer.end();
+      callback({success: true});
     });    
   });
 }
@@ -913,6 +974,7 @@ JSONFileDatabase.prototype.deleteUnit = function(unitId, callback) {
 }
 
 JSONFileDatabase.prototype.deleteUnits = function(units, callback) {
+  var timer = new utils.Timer("JSONFileDatabase.deleteUnits");
   var this_ = this;
   this.loadDatabase(function(database) {
     function d(unitId, ids) {
@@ -947,24 +1009,28 @@ JSONFileDatabase.prototype.deleteUnits = function(units, callback) {
     }
     
     this_.saveDatabase(function() {
+      timer.end();
       callback({success: true});
     });
   });
 }
 
 JSONFileDatabase.prototype.tile = function(tileId, callback) {
+  var timer = new utils.Timer("JSONFileDatabase.tile");
   var this_ = this;
   this.loadDatabase(function(database) {
     var tile = database.tile(tileId);
     if(tile === null) {
       callback({success: false, reason: "No such tile!"});
     } else {
+      timer.end();
       callback({success: true, tile: tile.clone()});
     }
   });
 }
 
 JSONFileDatabase.prototype.tileAt = function(gameId, x, y, callback) {
+  var timer = new utils.Timer("JSONFileDatabase.tileAt");
   var this_ = this;
   this.loadDatabase(function(database) {
     for(var i = 0; i < database.tiles.length; ++i) {
@@ -979,6 +1045,7 @@ JSONFileDatabase.prototype.tileAt = function(gameId, x, y, callback) {
 }
 
 JSONFileDatabase.prototype.tiles = function(gameId, callback) {
+  var timer = new utils.Timer("JSONFileDatabase.tiles");
   var this_ = this;
   this.loadDatabase(function(database) {
     var tiles = [];
@@ -989,13 +1056,14 @@ JSONFileDatabase.prototype.tiles = function(gameId, callback) {
       }
     }
     
+    timer.end();
     callback({success: true, tiles: tiles});
   });
 }
 
 JSONFileDatabase.prototype.tilesWithUnits = function(gameId, callback) {
+  var timer = new utils.Timer("JSONFileDatabase.tilesWithUnits");
   var this_ = this;
-  var timer = new utils.Timer("tilesWithUnits");
   this.loadDatabase(function(database) {
     var tiles = [];
     
@@ -1017,6 +1085,7 @@ JSONFileDatabase.prototype.tilesWithUnits = function(gameId, callback) {
 }
 
 JSONFileDatabase.prototype.playerTiles = function(gameId, playerNumber, callback) {
+  var timer = new utils.Timer("JSONFileDatabase.playerTiles");
   var this_ = this;
   this.loadDatabase(function(database) {
     var tiles = [];
@@ -1027,6 +1096,7 @@ JSONFileDatabase.prototype.playerTiles = function(gameId, playerNumber, callback
       }
     }
     
+    timer.end();
     callback({success: true, tiles: tiles});
   });
 }
@@ -1036,8 +1106,9 @@ JSONFileDatabase.prototype.updateTile = function(tile, callback) {
 }
 
 JSONFileDatabase.prototype.updateTiles = function(tiles, callback) {
+  var timer = new utils.Timer("JSONFileDatabase.updateTiles");
   var this_ = this;
-  var timer = new utils.Timer("updateTiles");
+  var timer = new utils.Timer("JSONFileDatabase.updateTiles");
   this.loadDatabase(function(database) {
     for(var i = 0; i < tiles.length; ++i) {
       var tile = tiles[i];
@@ -1059,6 +1130,7 @@ JSONFileDatabase.prototype.updateTiles = function(tiles, callback) {
 // CHAT
 
 JSONFileDatabase.prototype.createChatMessage = function(newChatMessage, callback) {
+  var timer = new utils.Timer("JSONFileDatabase.createChatMessage");
   var this_ = this;
   this.loadDatabase(function(database) {
     var chatMessage = newChatMessage.clone();
@@ -1066,12 +1138,14 @@ JSONFileDatabase.prototype.createChatMessage = function(newChatMessage, callback
     database.chatMessageIdCounter += 1;
     database.chatMessages.push(chatMessage);
     this_.saveDatabase(function() {
+      timer.end();
       callback({success: true, chatMessageId: chatMessage.chatMessageId});
     });
   });
 }
 
 JSONFileDatabase.prototype.chatMessages = function(gameId, callback) {
+  var timer = new utils.Timer("JSONFileDatabase.chatMessages");
   var this_ = this;
   this.loadDatabase(function(database) {
     var chatMessages = [];
@@ -1084,6 +1158,7 @@ JSONFileDatabase.prototype.chatMessages = function(gameId, callback) {
       }
     }
     
+    timer.end();
     callback({success: true, chatMessages: chatMessages});
   });
 }
@@ -1091,6 +1166,7 @@ JSONFileDatabase.prototype.chatMessages = function(gameId, callback) {
 // GAME EVENT TICKER
 
 JSONFileDatabase.prototype.createTickerMessage = function(gameId, content, callback) {
+  var timer = new utils.Timer("JSONFileDatabase.createTickerMessage");
   var this_ = this;
   this.loadDatabase(function(database) {
     
@@ -1101,6 +1177,7 @@ JSONFileDatabase.prototype.createTickerMessage = function(gameId, content, callb
 }
 
 JSONFileDatabase.prototype.tickerMessages = function(gameId, count, callback) {
+  var timer = new utils.Timer("JSONFileDatabase.tickerMessages");
   var this_ = this;
   this.loadDatabase(function(database) {
     
@@ -1113,6 +1190,7 @@ JSONFileDatabase.prototype.tickerMessages = function(gameId, count, callback) {
 // GAME STATISTICS
 
 JSONFileDatabase.prototype.gameStatistics = function(gameId, callback) {
+  var timer = new utils.Timer("JSONFileDatabase.gameStatistics");
   var this_ = this;
   this.loadDatabase(function(database) {
     
@@ -1123,6 +1201,7 @@ JSONFileDatabase.prototype.gameStatistics = function(gameId, callback) {
 }
 
 JSONFileDatabase.prototype.createTurnStatistics = function(gameId, turnStatistics, callback) {
+  var timer = new utils.Timer("JSONFileDatabase.createTurnStatistics");
   var this_ = this;
   this.loadDatabase(function(database) {
     
