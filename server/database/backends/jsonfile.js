@@ -919,7 +919,7 @@ JSONFileDatabase.prototype.deleteUnits = function(units, callback) {
       if(ids === undefined)
         ids = [];
       
-      for(var i = 0; i < this.units.length; ++i) {
+      for(var i = 0; i < database.units.length; ++i) {
         if(database.units[i].unitId == unitId) {
           ids.push(database.units[i].unitId)
         } else if(database.units[i].carriedBy == unitId) {
@@ -930,16 +930,16 @@ JSONFileDatabase.prototype.deleteUnits = function(units, callback) {
     }
     
     for(var k = 0; k < units.length; ++k) {
-      d(units[k].unitId);
+      var ids = d(units[k].unitId);
       
       if(ids.length == 0) {
         callback({success: false, reason: "No such unit!"}); return;
       } 
       
       for(var i = 0; i < ids.length; ++i) {
-        for(var j = 0; j < this.units.length; ++j) {
-          if(ids[i] == this.units[j].unitId) {
-            this.units.splice(j, 1);
+        for(var j = 0; j < database.units.length; ++j) {
+          if(ids[i] == database.units[j].unitId) {
+            database.units.splice(j, 1);
             j -= 1;
           }
         }
