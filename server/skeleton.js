@@ -652,7 +652,6 @@ Skeleton.prototype.build = function(gameId, unitTypeId, destination) {
 
 Skeleton.prototype.endTurn = function(gameId) {
   var timer = new utils.Timer("Skeleton.endTurn");
-  var timer = new utils.Timer("Skeleton.endTurn");
   if(this.sessionId === null)
     return {success: false, reason: "Not logged in"}
     

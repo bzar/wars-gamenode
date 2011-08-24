@@ -1108,7 +1108,6 @@ JSONFileDatabase.prototype.updateTile = function(tile, callback) {
 JSONFileDatabase.prototype.updateTiles = function(tiles, callback) {
   var timer = new utils.Timer("JSONFileDatabase.updateTiles");
   var this_ = this;
-  var timer = new utils.Timer("JSONFileDatabase.updateTiles");
   this.loadDatabase(function(database) {
     for(var i = 0; i < tiles.length; ++i) {
       var tile = tiles[i];
