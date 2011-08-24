@@ -97,6 +97,11 @@ var wrap = function() {
     
     $("#surrender").click(function(e) {
       e.preventDefault();
+      client.stub.surrender(gameId, function(response) {
+        if(!response.success) {
+          alert("Could not surrender! " + response.reason);
+        }
+      });
     });
     
     $("#showChat").click(function(e) {

@@ -430,11 +430,12 @@ GameActions.prototype.startTurn = function(game, callback) {
     }
 
     var nextPlayer = null;
+    var numAlivePlayers = 0;
     database.tiles(game.gameId, function(result) {
       var tiles = result.tiles;
       database.units(game.gameId, function(result) {
         var units = result.units;
-        for(var i = 1; i <= players.length && nextPlayer === null; ++i) {
+        for(var i = 1; i <= players.length; ++i) {
           var player = players[(currentIndex + i) % players.length];
           
           if(player.userId == null)
@@ -453,13 +454,16 @@ GameActions.prototype.startTurn = function(game, callback) {
             if(tile.owner == player.playerNumber && tileType.builds() && tile.unitId == null)
               stillAlive = true;
           }
-          if(stillAlive && nextPlayer === null) {
-            nextPlayer = player;
+          if(stillAlive) {
+            numAlivePlayers += 1;
+            if(nextPlayer === null) {
+              nextPlayer = player;
+            }
           }
         }
         
         // Change turn
-        if(nextPlayer.playerNumber == game.inTurnNumber) {
+        if(nextPlayer.playerNumber == game.inTurnNumber || numAlivePlayers < 2) {
           game.state = "finished";
           database.updateGame(game, function(result) {
             callback({success: true, finished: true, changedTiles: []});
@@ -566,12 +570,26 @@ GameActions.prototype.surrender = function(gameId, userId, callback) {
       callback({success: false, reason: result.reason}); return;
     } else if(result.game.state != "inProgress") {
       callback({success: false, reason: "Game not in progress!"}); return;
-    } 
+    }
+    var game = result.game;
     database.userPlayerInTurn(gameId, userId, function(result) {
       if(!result.success) {
         callback({success: false, reason: result.reason}); return;
       }
-      this_.nextTurn(gameId, userId, callback);
+      
+      this_.gameProcedures.surrenderPlayer(game, result.player, function(result) {
+        if(!result.success) {
+          callback({success: false, reason: result.reason}); return;
+        }
+        
+        this_.nextTurn(gameId, userId, function(result) {
+          var finished = result.finished;
+          var inTurnNumber = result.inTurnNumber;
+          database.tilesWithUnits(gameId, function(result) {
+            callback({success: true, finished: finished, inTurnNumber: inTurnNumber, changedTiles: result.tiles});
+          });
+        });
+      });
     });
   });
 }

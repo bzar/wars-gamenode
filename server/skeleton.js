@@ -678,7 +678,28 @@ Skeleton.prototype.endTurn = function(gameId) {
 
 Skeleton.prototype.surrender = function(gameId) {
   var timer = new utils.Timer("Skeleton.surrender");
-  
+  if(this.sessionId === null)
+    return {success: false, reason: "Not logged in"}
+    
+  var requestId = this.client.requestId;
+  var this_ = this;
+  var userId = this.session.userId;
+  this.server.gameActions.surrender(gameId, userId, function(result) {
+    if(result.success) {
+      this_.server.subscriptions.forSubscribers(function(sub) {
+        sub.client.stub.gameUpdate(gameId, result.changedTiles);
+        if(result.finished) {
+          sub.client.stub.gameFinished(gameId);
+        } else {
+          sub.client.stub.gameTurnChange(gameId, result.inTurnNumber);
+        }
+      }, "game-" + gameId);
+      this_.client.sendResponse(requestId, {success: true});
+      timer.end();
+    } else {
+      this_.client.sendResponse(requestId, {success: false, reason: result.reason});
+    }
+  });
 }
 
 // CHAT

@@ -749,56 +749,6 @@ function getCarriedUnits(database, unit) {
   }
 }
 
-JSONFileDatabase.prototype.surrender = function(players, callback) {
-  var timer = new utils.Timer("JSONFileDatabase.surrender");
-  // Wrap in an array if surrendering a single player
-  players = typeof(players) == "object" ? players : [players];
-  var this_ = this;
-  this.loadDatabase(function(database) {
-    var unitIds = [];
-    for(var p = 0; p < players.length; ++p) {
-      var player = players[p];
-      for(var i = 0; i < database.tiles.length; ++i) {
-        var tile = database.tiles[i];
-        if(tile.gameId == player.gameId && tile.owner == player.playerNumber) {
-          tile.owner = 0;
-          if(tile.unitId !== null) {
-            unitIds.push(tile.unitId);
-            tile.unitId = null;
-          }
-        }
-      }
-    }
-    
-    for(var i = 0; i < database.units.length; ++i) {
-      if(unitIds.indexOf(database.units[i].carriedBy) != -1) {
-        unitIds.push(database.units[i].unitId);
-      }
-    }
-    
-    var start = null;
-    for(var i = 0; i < database.units.length; ++i) {
-      if(unitIds.indexOf(database.units[i].unitId) != -1) {
-        if(start === null)
-          start = i;
-      } else if(start !== null) {
-        database.units.splice(start, i - start);
-        i -= i - start;
-        start = null;
-      }
-    }
-    if(start !== null) {
-      database.units.splice(start);
-      start = null;
-    }
-    
-    this_.saveDatabase(function() {
-      timer.end();
-      callback({success: true});
-    });
-  });
-}
-
 JSONFileDatabase.prototype.unit = function(unitId, callback) {
   var timer = new utils.Timer("JSONFileDatabase.unit");
   var this_ = this;
@@ -969,8 +919,8 @@ JSONFileDatabase.prototype.updateUnits = function(units, callback) {
   });
 }
 
-JSONFileDatabase.prototype.deleteUnit = function(unitId, callback) {
-  return this.deleteUnits([unitId], callback);
+JSONFileDatabase.prototype.deleteUnit = function(unit, callback) {
+  return this.deleteUnits([unit], callback);
 }
 
 JSONFileDatabase.prototype.deleteUnits = function(units, callback) {
@@ -1001,6 +951,11 @@ JSONFileDatabase.prototype.deleteUnits = function(units, callback) {
       for(var i = 0; i < ids.length; ++i) {
         for(var j = 0; j < database.units.length; ++j) {
           if(ids[i] == database.units[j].unitId) {
+            if(database.units[j].tileId !== null) {
+              var tile = database.tile(database.units[j].tileId);
+              tile.unitId = null;
+            }
+            
             database.units.splice(j, 1);
             j -= 1;
           }
