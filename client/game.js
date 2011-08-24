@@ -120,6 +120,7 @@ var wrap = function() {
     
     client.skeleton.gameTurnChange = function(gameId, newTurn) {
       inTurnNumber = newTurn;
+      $("#mapCanvas").attr("class", "player" + inTurnNumber);
       $(".playerItem.inTurn").removeClass("inTurn");
       var playerInTurn = $('.playerItem[playerNumber="' + inTurnNumber + '"]');
       playerInTurn.addClass("inTurn");
@@ -593,6 +594,7 @@ var wrap = function() {
         
         map.doPreload(function() {
           inTurnNumber = game.inTurnNumber;
+          $("#mapCanvas").attr("class", "player" + inTurnNumber);
           initializePlayers(game.players);
           refreshFunds();
           map.currentTiles = game.tiles;

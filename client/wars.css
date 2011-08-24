@@ -644,3 +644,6 @@ input[type=text], input[type=password] {
   color: #f88;
 }
 
+#mapCanvas {
+  padding: 4px;
+}
