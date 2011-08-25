@@ -480,6 +480,18 @@ Skeleton.prototype.unsubscribeGame = function(gameId) {
   return {success: true};
 }
 
+function prepareEvents(events) {
+  var preparedEvents = [];
+  for(var i = 0; i < events.length; ++i) {
+    var time = new Date();
+    time.setTime(events[i].time);
+    preparedEvents.push({
+      time: time.toUTCString(),
+      content: events[i].content
+    });
+  }
+  return preparedEvents;
+}
 Skeleton.prototype.moveAndAttack = function(gameId, unitId, destination, targetId) {
   var timer = new utils.Timer("Skeleton.moveAndAttack");
   var timer = new utils.Timer("Skeleton.moveAndAttack");
@@ -491,8 +503,10 @@ Skeleton.prototype.moveAndAttack = function(gameId, unitId, destination, targetI
   var userId = this.session.userId;
   this.server.gameActions.moveAndAttack(gameId, userId, unitId, destination, targetId, function(result) {
     if(result.success) {
+      var preparedEvents = prepareEvents(result.events);
       this_.server.subscriptions.forSubscribers(function(sub) {
         sub.client.stub.gameUpdate(gameId, result.changedTiles);
+        sub.client.stub.gameEvents(gameId, preparedEvents);
       }, "game-" + gameId);
       this_.client.sendResponse(requestId, {success: true});
       timer.end();
@@ -533,8 +547,10 @@ Skeleton.prototype.moveAndCapture = function(gameId, unitId, destination) {
   var userId = this.session.userId;
   this.server.gameActions.moveAndCapture(gameId, userId, unitId, destination, function(result) {
     if(result.success) {
+      var preparedEvents = prepareEvents(result.events);
       this_.server.subscriptions.forSubscribers(function(sub) {
         sub.client.stub.gameUpdate(gameId, result.changedTiles);
+        sub.client.stub.gameEvents(gameId, preparedEvents);
       }, "game-" + gameId);
       this_.client.sendResponse(requestId, {success: true});
       timer.end();
@@ -554,8 +570,10 @@ Skeleton.prototype.moveAndDeploy = function(gameId, unitId, destination) {
   var userId = this.session.userId;
   this.server.gameActions.moveAndDeploy(gameId, userId, unitId, destination, function(result) {
     if(result.success) {
+      var preparedEvents = prepareEvents(result.events);
       this_.server.subscriptions.forSubscribers(function(sub) {
         sub.client.stub.gameUpdate(gameId, result.changedTiles);
+        sub.client.stub.gameEvents(gameId, preparedEvents);
       }, "game-" + gameId);
       this_.client.sendResponse(requestId, {success: true});
       timer.end();
@@ -575,8 +593,10 @@ Skeleton.prototype.undeploy = function(gameId, unitId) {
   var userId = this.session.userId;
   this.server.gameActions.undeploy(gameId, userId, unitId, function(result) {
     if(result.success) {
+      var preparedEvents = prepareEvents(result.events);
       this_.server.subscriptions.forSubscribers(function(sub) {
         sub.client.stub.gameUpdate(gameId, result.changedTiles);
+        sub.client.stub.gameEvents(gameId, preparedEvents);
       }, "game-" + gameId);
       this_.client.sendResponse(requestId, {success: true});
       timer.end();
@@ -596,8 +616,10 @@ Skeleton.prototype.moveAndLoadInto = function(gameId, unitId, carrierId) {
   var userId = this.session.userId;
   this.server.gameActions.moveAndLoadInto(gameId, userId, unitId, carrierId, function(result) {
     if(result.success) {
+      var preparedEvents = prepareEvents(result.events);
       this_.server.subscriptions.forSubscribers(function(sub) {
         sub.client.stub.gameUpdate(gameId, result.changedTiles);
+        sub.client.stub.gameEvents(gameId, preparedEvents);
       }, "game-" + gameId);
       this_.client.sendResponse(requestId, {success: true});
       timer.end();
@@ -618,8 +640,10 @@ Skeleton.prototype.moveAndUnload = function(gameId, unitId, destination, carried
   this.server.gameActions.moveAndUnload(gameId, userId, unitId, destination, 
                                         carriedUnitId, unloadDestination, function(result) {
     if(result.success) {
+      var preparedEvents = prepareEvents(result.events);
       this_.server.subscriptions.forSubscribers(function(sub) {
         sub.client.stub.gameUpdate(gameId, result.changedTiles);
+        sub.client.stub.gameEvents(gameId, preparedEvents);
       }, "game-" + gameId);
       this_.client.sendResponse(requestId, {success: true});
       timer.end();
@@ -639,8 +663,10 @@ Skeleton.prototype.build = function(gameId, unitTypeId, destination) {
   var userId = this.session.userId;
   this.server.gameActions.build(gameId, userId, unitTypeId, destination, function(result) {
     if(result.success) {
+      var preparedEvents = prepareEvents(result.events);
       this_.server.subscriptions.forSubscribers(function(sub) {
         sub.client.stub.gameUpdate(gameId, result.changedTiles);
+        sub.client.stub.gameEvents(gameId, preparedEvents);
       }, "game-" + gameId);
       this_.client.sendResponse(requestId, {success: true});
       timer.end();
@@ -660,8 +686,10 @@ Skeleton.prototype.endTurn = function(gameId) {
   var userId = this.session.userId;
   this.server.gameActions.nextTurn(gameId, userId, function(result) {
     if(result.success) {
+      var preparedEvents = prepareEvents(result.events);
       this_.server.subscriptions.forSubscribers(function(sub) {
         sub.client.stub.gameUpdate(gameId, result.changedTiles);
+        sub.client.stub.gameEvents(gameId, preparedEvents);
         if(result.finished) {
           sub.client.stub.gameFinished(gameId);
         } else {
@@ -686,8 +714,10 @@ Skeleton.prototype.surrender = function(gameId) {
   var userId = this.session.userId;
   this.server.gameActions.surrender(gameId, userId, function(result) {
     if(result.success) {
+      var preparedEvents = prepareEvents(result.events);
       this_.server.subscriptions.forSubscribers(function(sub) {
         sub.client.stub.gameUpdate(gameId, result.changedTiles);
+        sub.client.stub.gameEvents(gameId, preparedEvents);
         if(result.finished) {
           sub.client.stub.gameFinished(gameId);
         } else {
@@ -759,11 +789,24 @@ Skeleton.prototype.chat = function(gameId, message) {
   });
 }
 
-// GAME EVENT TICKER
+// GAME EVENTS
 
-Skeleton.prototype.tickerMessages = function(gameId, count) {
-  var timer = new utils.Timer("Skeleton.tickerMessages");
-  
+Skeleton.prototype.gameEvents = function(gameId, count) {
+  var timer = new utils.Timer("Skeleton.gameEvents");
+  if(this.sessionId === null)
+    return {success: false, reason: "Not logged in"}
+
+  var requestId = this.client.requestId;
+  var this_ = this;
+  this.server.database.gameEvents(gameId, function(result) {
+    if(result.success) {
+      var preparedEvents = prepareEvents(result.gameEvents);
+      this_.client.sendResponse(requestId, {success: true, gameEvents: preparedEvents});
+      timer.end();
+    } else {
+      this_.client.sendResponse(requestId, {success: false, reason: result.reason});
+    }
+  });
 }
 
 // GAME STATISTICS

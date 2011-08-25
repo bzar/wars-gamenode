@@ -26,7 +26,7 @@ Skeleton.prototype.gameUpdate = function(gameId, tileChanges) {
 Skeleton.prototype.gameTurnChange = function(gameId, newTurn) {
 }
 
-Skeleton.prototype.tickerMessage = function(tickerMessage) {
+Skeleton.prototype.gameEvents = function(gameId, events) {
 }
 
 Skeleton.prototype.chatMessage = function(messageInfo) {

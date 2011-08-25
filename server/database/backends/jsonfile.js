@@ -29,6 +29,8 @@ var Database = function() {
   this.unitIdCounter = 0;
   this.chatMessages = new Array();
   this.chatMessageIdCounter = 0;
+  this.gameEvents = new Array();
+  this.gameEventIdCounter = 0;
 };
 
 Database.prototype.user = function(userId) {
@@ -153,6 +155,14 @@ JSONFileDatabase.prototype.loadDatabase = function(callback) {
           var chatMessage = new entities.ChatMessage(item.chatMessageId, item.gameId, item.userId, item.time, item.content);
           this_.database.chatMessages.push(chatMessage);
         }
+        
+        this_.database.gameEventIdCounter = databaseContent.gameEventIdCounter;
+        for(var i = 0; i < databaseContent.gameEvents.length; ++i) {
+          var item = databaseContent.gameEvents[i];
+          var gameEvent = new entities.GameEvent(item.gameEventId, item.gameId, item.time, item.content);
+          this_.database.gameEvents.push(gameEvent);
+        }
+        
         callback(this_.database);
       }
     });
@@ -1117,27 +1127,43 @@ JSONFileDatabase.prototype.chatMessages = function(gameId, callback) {
   });
 }
 
-// GAME EVENT TICKER
+// GAME EVENTS
 
-JSONFileDatabase.prototype.createTickerMessage = function(gameId, content, callback) {
-  var timer = new utils.Timer("JSONFileDatabase.createTickerMessage");
+JSONFileDatabase.prototype.createGameEvent = function(newGameEvent, callback) {
+  this.createGameEvents([newGameEvent], callback);
+}
+
+JSONFileDatabase.prototype.createGameEvents = function(newGameEvents, callback) {
+  var timer = new utils.Timer("JSONFileDatabase.createGameEvents");
   var this_ = this;
   this.loadDatabase(function(database) {
-    
+    for(var i = 0; i < newGameEvents.length; ++i) {
+      var gameEvent = newGameEvents[i].clone();
+      gameEvent.gameEventId = database.gameEventIdCounter;
+      database.gameEventIdCounter += 1;
+      database.gameEvents.push(gameEvent);
+    }
     this_.saveDatabase(function() {
-      callback();
+      timer.end();
+      callback({success: true, gameEventId: gameEvent.gameEventId});
     });
   });
 }
 
-JSONFileDatabase.prototype.tickerMessages = function(gameId, count, callback) {
-  var timer = new utils.Timer("JSONFileDatabase.tickerMessages");
+JSONFileDatabase.prototype.gameEvents = function(gameId, callback) {
+  var timer = new utils.Timer("JSONFileDatabase.gameEvents");
   var this_ = this;
   this.loadDatabase(function(database) {
+    var gameEvents = [];
+    for(var i = 0; i < database.gameEvents.length; ++i) {
+      var gameEvent = database.gameEvents[i];
+      if(gameEvent.gameId == gameId) {
+        gameEvents.push(gameEvent.clone());
+      }
+    }
     
-    this_.saveDatabase(function() {
-      callback();
-    });
+    timer.end();
+    callback({success: true, gameEvents: gameEvents});
   });
 }
 
