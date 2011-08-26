@@ -469,6 +469,84 @@ input[type=text], input[type=password] {
   background-color: #b77;
 }
 
+#messageTickerContainer {
+  display: none;
+  position: absolute;
+  bottom: 0;
+  left: 190;
+  right: 0;
+  z-index: 5;
+  padding: 0;
+  box-shadow: 0px 0px -10px #666;
+  text-align: center;
+}
+
+#showHideMessageTicker {
+  display: inline-block;
+  width: 100%;
+  max-width: 700px;
+  height: 12px;
+  font: 10px sans-serif;
+  color: #ccc !important;
+  background-color: #777;
+  text-decoration: none;
+  text-align: center;
+  opacity: 0.8;
+  margin: 0;
+  padding: 0;
+}
+
+#showHideMessageTicker:hover {
+  color: #eee !important;
+  background-color: #999;
+}
+
+#showHideMessageTicker:visited {
+  color: inherit;
+}
+
+#messageTicker {
+  display: inline-block;
+  width: 100%;
+  max-width: 700px;
+  margin: 0;
+  padding: 0;
+  overflow: auto;
+  text-align: left;
+}
+
+#messageTicker.full {
+  height: 432px;
+}
+
+#messageTicker.normal {
+  height: 146px;
+}
+
+#messageTicker.small {
+  height: 48px;
+}
+
+#messageTicker li {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  font: 20px sans-serif;
+  height: 48px;
+}
+
+#messageTicker li span {
+  margin-right: 8px;
+  display: inline-block;
+  vertical-align: middle;
+}
+
+#messageTicker li:nth-child(even) {
+  border-style: solid hidden solid hidden;
+  border-width: 1px;
+  border-color: #444;
+}
+
 #chat {
   background-color: #ddd;
   margin: 0;
@@ -647,3 +725,4 @@ input[type=text], input[type=password] {
 #mapCanvas {
   padding: 4px;
 }
+

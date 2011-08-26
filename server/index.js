@@ -3,22 +3,26 @@ var Server = require("../lib/gamenode/server/gameNodeServer").GameNodeServer,
     SubscriptionManager = require("../lib/gamenode/server/subscriptionManager").SubscriptionManager,
     FileServer = require("../lib/gamenode/server/fileServer").FileServer,
     Skeleton = require("./skeleton").Skeleton,
-    config = require("./configuration").configuration,
+    configuration = require("./configuration").configuration,
     settings = require("./settings").settings,
     database = require("./database");
 
 var GameManagement = require("./game").GameManagement;
 var GameActions = require("./game").GameActions;
 
-process.on('uncaughtException', function (err) {
-  console.log("*** ERROR! ***");
-  console.error(err);
-});
+if(!configuration.crashOnError) {
+  process.on('uncaughtException', function (err) {
+    console.log("");
+    console.log("*** ERROR! ***");
+    console.error(err);
+    console.log("");
+  });
+}
 
 function WarsServer() {
   this.sessionStorage = new SessionStorage();
-  this.database = database.create(config.database.type, config.database);
-  this.config = config;
+  this.database = database.create(configuration.database.type, configuration.database);
+  this.configuration = configuration;
   this.settings = settings;
   this.subscriptions = new SubscriptionManager();
   this.gameManagement = new GameManagement(this.database);
@@ -29,21 +33,15 @@ WarsServer.prototype = new Server(Skeleton);
 
 var server = new WarsServer();
 
-server.listen(8888,"0.0.0.0");
+server.listen(configuration.port, configuration.interface);
 
 server.io.configure(null, function(){
-  server.io.set('log level', 0);
-
-  server.io.set('transports', [
-    //    'websocket'
-    //, 'flashsocket'
-    , 'htmlfile'
-    , 'xhr-polling'
-    , 'jsonp-polling'
-  ]);
+  server.io.set('log level', configuration.io.logLevel);
+  server.io.set('transports', configuration.io.transports);
 });
+
 var fileServer = undefined;
-if(config.enableFileServer) {
+if(configuration.enableFileServer) {
   fileServer = new FileServer(
     ["jquery-1.6.2.min.js", "skeleton.js", "base.js", "wars.css",
     "login.html", "login.js", "register.html", "register.js", 
@@ -51,7 +49,8 @@ if(config.enableFileServer) {
     "mapEditor.html", "mapEditor.js", "map.js", "image_map.js",
     "createGame.html", "createGame.js", "pregame.html", "pregame.js",
     "join.html", "join.js", "game.html", "game.js", "gamelogic.js",
-    "profile.html", "profile.js", "spectate.html", "spectate.js"
+    "profile.html", "profile.js", "spectate.html", "spectate.js",
+    "ticker.js"
     ], 
     { 
       gamenode: "../lib/gamenode/web", 

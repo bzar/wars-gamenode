@@ -17,6 +17,7 @@ exports.Skeleton = Skeleton;
 // GAME MANAGEMENT
 
 Skeleton.prototype.createGame = function(name, mapId, public, turnLength) {
+  var timer = new utils.Timer("Skeleton.createGame");
   if(this.sessionId === null)
     return {success: false, reason: "Not logged in"}
     
@@ -27,6 +28,7 @@ Skeleton.prototype.createGame = function(name, mapId, public, turnLength) {
   this.server.gameManagement.createGame(game, function(result) {
     if(result.success) {
       this_.client.sendResponse(requestId, {success: true, gameId: result.gameId});
+      timer.end();
     } else {
       this_.client.sendResponse(requestId, {success: false, reason: result.reason});
     }
@@ -34,6 +36,7 @@ Skeleton.prototype.createGame = function(name, mapId, public, turnLength) {
 }
 
 Skeleton.prototype.joinGame = function(gameId, playerNumber) {
+  var timer = new utils.Timer("Skeleton.joinGame");
   if(this.sessionId === null)
     return {success: false, reason: "Not logged in"}
     
@@ -49,6 +52,7 @@ Skeleton.prototype.joinGame = function(gameId, playerNumber) {
         }, "game-" + gameId);
       });
       this_.client.sendResponse(requestId, {success: true});
+      timer.end();
     } else {
       this_.client.sendResponse(requestId, {success: false, reason: result.reason});
     }
@@ -56,6 +60,7 @@ Skeleton.prototype.joinGame = function(gameId, playerNumber) {
 }
 
 Skeleton.prototype.leaveGame = function(gameId, playerNumber) {
+  var timer = new utils.Timer("Skeleton.leaveGame");
   if(this.sessionId === null)
     return {success: false, reason: "Not logged in"}
     
@@ -68,6 +73,7 @@ Skeleton.prototype.leaveGame = function(gameId, playerNumber) {
         sub.client.stub.playerLeft(playerNumber);
       }, "game-" + gameId);
       this_.client.sendResponse(requestId, {success: true});
+      timer.end();
     } else {
       this_.client.sendResponse(requestId, {success: false, reason: result.reason});
     }
@@ -75,6 +81,7 @@ Skeleton.prototype.leaveGame = function(gameId, playerNumber) {
 }
 
 Skeleton.prototype.startGame = function(gameId) {
+  var timer = new utils.Timer("Skeleton.startGame");
   if(this.sessionId === null)
     return {success: false, reason: "Not logged in"}
     
@@ -89,6 +96,7 @@ Skeleton.prototype.startGame = function(gameId) {
             sub.client.stub.gameStarted(gameId);
           }, "game-" + gameId);
           this_.client.sendResponse(requestId, {success: true});
+          timer.end();
         } else {
           this_.client.sendResponse(requestId, {success: false, reason: result.reason});
         }
@@ -100,6 +108,7 @@ Skeleton.prototype.startGame = function(gameId) {
 }
 
 Skeleton.prototype.deleteGame = function(gameId) {
+  var timer = new utils.Timer("Skeleton.deleteGame");
   if(this.sessionId === null)
     return {success: false, reason: "Not logged in"}
     
@@ -109,6 +118,7 @@ Skeleton.prototype.deleteGame = function(gameId) {
   this.server.gameManagement.deleteGame(userId, gameId, function(result) {
     if(result.success) {
       this_.client.sendResponse(requestId, {success: true});
+      timer.end();
     } else {
       this_.client.sendResponse(requestId, {success: false, reason: result.reason});
     }
@@ -116,6 +126,7 @@ Skeleton.prototype.deleteGame = function(gameId) {
 }
 
 Skeleton.prototype.openGames = function() {
+  var timer = new utils.Timer("Skeleton.openGames");
   if(this.sessionId === null)
     return {success: false, reason: "Not logged in"}
 
@@ -124,6 +135,7 @@ Skeleton.prototype.openGames = function() {
   this.server.gameManagement.openGames(function(result) {
     if(result.success) {
       this_.client.sendResponse(requestId, {success: true, games: result.games});
+      timer.end();
     } else {
       this_.client.sendResponse(requestId, {success: false, reason: result.reason});
     }
@@ -131,6 +143,7 @@ Skeleton.prototype.openGames = function() {
 }
 
 Skeleton.prototype.publicGames = function() {
+  var timer = new utils.Timer("Skeleton.publicGames");
   if(this.sessionId === null)
     return {success: false, reason: "Not logged in"}
 
@@ -139,6 +152,7 @@ Skeleton.prototype.publicGames = function() {
   this.server.gameManagement.publicGames(function(result) {
     if(result.success) {
       this_.client.sendResponse(requestId, {success: true, games: result.games});
+      timer.end();
     } else {
       this_.client.sendResponse(requestId, {success: false, reason: result.reason});
     }
@@ -146,6 +160,7 @@ Skeleton.prototype.publicGames = function() {
 }
 
 Skeleton.prototype.myGames = function() {
+  var timer = new utils.Timer("Skeleton.myGames");
   if(this.sessionId === null)
     return {success: false, reason: "Not logged in"}
 
@@ -154,6 +169,7 @@ Skeleton.prototype.myGames = function() {
   this.server.gameManagement.myGames(this.session.userId, function(result) {
     if(result.success) {
       this_.client.sendResponse(requestId, {success: true, games: result.games});
+      timer.end();
     } else {
       this_.client.sendResponse(requestId, {success: false, reason: result.reason});
     }
@@ -163,6 +179,7 @@ Skeleton.prototype.myGames = function() {
 // MAP MANAGEMENT
 
 Skeleton.prototype.createMap = function(name, initialFunds, mapData) {
+  var timer = new utils.Timer("Skeleton.createMap");
   if(this.sessionId === null)
     return {success: false, reason: "Not logged in"}
     
@@ -172,6 +189,7 @@ Skeleton.prototype.createMap = function(name, initialFunds, mapData) {
   this.server.database.createMap(map, function(result) {
     if(result.success) {
       this_.client.sendResponse(requestId, {success: true, mapId: result.mapId});
+      timer.end();
     } else {
       this_.client.sendResponse(requestId, {success: false, reason: result.reason});
     }
@@ -179,6 +197,7 @@ Skeleton.prototype.createMap = function(name, initialFunds, mapData) {
 }
 
 Skeleton.prototype.updateMap = function(mapId, name, initialFunds, mapData) {
+  var timer = new utils.Timer("Skeleton.updateMap");
   if(this.sessionId === null)
     return {success: false, reason: "Not logged in"}
 
@@ -188,6 +207,7 @@ Skeleton.prototype.updateMap = function(mapId, name, initialFunds, mapData) {
   this.server.database.updateMap(map, function(result) {
     if(result.success) {
       this_.client.sendResponse(requestId, {success: true});
+      timer.end();
     } else {
       this_.client.sendResponse(requestId, {success: false, reason: result.reason});
     }
@@ -195,6 +215,7 @@ Skeleton.prototype.updateMap = function(mapId, name, initialFunds, mapData) {
 }
 
 Skeleton.prototype.mapData = function(mapId) {
+  var timer = new utils.Timer("Skeleton.mapData");
   if(this.sessionId === null)
     return {success: false, reason: "Not logged in"}
 
@@ -219,6 +240,7 @@ Skeleton.prototype.mapData = function(mapId) {
 }
 
 Skeleton.prototype.maps = function() {
+  var timer = new utils.Timer("Skeleton.maps");
   if(this.sessionId === null)
     return {success: false, reason: "Not logged in"}
 
@@ -227,6 +249,7 @@ Skeleton.prototype.maps = function() {
   this.server.database.maps(function(result) {
     if(result.success) {
       this_.client.sendResponse(requestId, {success: true, maps: result.maps});
+      timer.end();
     } else {
       this_.client.sendResponse(requestId, {success: false, reason: result.reason});
     }
@@ -234,6 +257,7 @@ Skeleton.prototype.maps = function() {
 }
 
 Skeleton.prototype.myMaps = function() {
+  var timer = new utils.Timer("Skeleton.myMaps");
   if(this.sessionId === null)
     return {success: false, reason: "Not logged in"}
 
@@ -242,6 +266,7 @@ Skeleton.prototype.myMaps = function() {
   this.server.database.myMaps(this.session.userId, function(result) {
     if(result.success) {
       this_.client.sendResponse(requestId, {success: true, maps: result.maps});
+      timer.end();
     } else {
       this_.client.sendResponse(requestId, {success: false, reason: result.reason});
     }
@@ -251,6 +276,7 @@ Skeleton.prototype.myMaps = function() {
 // PROFILE MANAGEMENT
 
 Skeleton.prototype.saveProfile = function(username, password, email, theme, defaultEmailSetting) {
+  var timer = new utils.Timer("Skeleton.saveProfile");
   if(this.sessionId === null)
     return {success: false, reason: "Not logged in"}
 
@@ -267,6 +293,7 @@ Skeleton.prototype.saveProfile = function(username, password, email, theme, defa
       this_.server.database.updateUser(result.user, function(success) {
         if(result.success) {
           this_.client.sendResponse(requestId, {success: true, profile: result.user});
+          timer.end();
         } else {
           this_.client.sendResponse(requestId, {success: false, reason: result.reason});
         }
@@ -278,6 +305,7 @@ Skeleton.prototype.saveProfile = function(username, password, email, theme, defa
 }
 
 Skeleton.prototype.profile = function() {
+  var timer = new utils.Timer("Skeleton.profile");
   if(this.sessionId === null)
     return {success: false, reason: "Not logged in"}
 
@@ -287,6 +315,7 @@ Skeleton.prototype.profile = function() {
     if(result.success) {
       result.user.password = undefined;
       this_.client.sendResponse(requestId, {success: true, profile: result.user});
+      timer.end();
     } else {
       this_.client.sendResponse(requestId, {success: false, reason: result.reason});
     }
@@ -328,6 +357,7 @@ Skeleton.prototype.closeSession = function() {
 }
 
 Skeleton.prototype.register = function(username, password, email) {
+  var timer = new utils.Timer("Skeleton.register");
   var user = new entities.User(null, username, password, email, 
                                {emailNotifications: true, gameTheme: "pixel"});
   var requestId = this.client.requestId;
@@ -335,6 +365,7 @@ Skeleton.prototype.register = function(username, password, email) {
   this.server.database.register(user, function(userId) {
     if(userId !== null) {
       this_.client.sendResponse(requestId, {success: true});
+      timer.end();
     } else {
       this_.client.sendResponse(requestId, {success: false, reason: result.reason});
     }
@@ -344,6 +375,7 @@ Skeleton.prototype.register = function(username, password, email) {
 // GAME
 
 Skeleton.prototype.gameRules = function(gameId) {
+  var timer = new utils.Timer("Skeleton.gameRules");
   var elements = this.server.settings.gameElements;
   var rules = {
     armors: elements.armors,
@@ -360,11 +392,12 @@ Skeleton.prototype.gameRules = function(gameId) {
     rules.bannedUnits = [];
   }
   
+  timer.end();
   return rules;
 }
 
 Skeleton.prototype.gameData = function(gameId) {
-  var timer = new utils.Timer("gameData");
+  var timer = new utils.Timer("Skeleton.gameData");
   if(this.sessionId === null)
     return {success: false, reason: "Not logged in"}
 
@@ -387,6 +420,7 @@ Skeleton.prototype.gameData = function(gameId) {
 }
 
 Skeleton.prototype.myFunds = function(gameId) {
+  var timer = new utils.Timer("Skeleton.myFunds");
   var requestId = this.client.requestId;
   var this_ = this;
   var userId = this.session.userId;
@@ -418,6 +452,7 @@ Skeleton.prototype.myFunds = function(gameId) {
           
           if(funds !== null) {
             this_.client.sendResponse(requestId, {success: true, funds: funds});
+            timer.end();
           } else {
             this_.client.sendResponse(requestId, {success: false, reason: "No player for user!"});
           }
@@ -431,6 +466,7 @@ Skeleton.prototype.myFunds = function(gameId) {
 }
 
 Skeleton.prototype.turnRemaining = function(gameId) {
+  var timer = new utils.Timer("Skeleton.turnRemaining");
   
 }
 
@@ -444,8 +480,21 @@ Skeleton.prototype.unsubscribeGame = function(gameId) {
   return {success: true};
 }
 
+function prepareEvents(events) {
+  var preparedEvents = [];
+  for(var i = 0; i < events.length; ++i) {
+    var time = new Date();
+    time.setTime(events[i].time);
+    preparedEvents.push({
+      time: time.toUTCString(),
+      content: events[i].content
+    });
+  }
+  return preparedEvents;
+}
 Skeleton.prototype.moveAndAttack = function(gameId, unitId, destination, targetId) {
-  var timer = new utils.Timer("moveAndAttack");
+  var timer = new utils.Timer("Skeleton.moveAndAttack");
+  var timer = new utils.Timer("Skeleton.moveAndAttack");
   if(this.sessionId === null)
     return {success: false, reason: "Not logged in"}
     
@@ -454,8 +503,10 @@ Skeleton.prototype.moveAndAttack = function(gameId, unitId, destination, targetI
   var userId = this.session.userId;
   this.server.gameActions.moveAndAttack(gameId, userId, unitId, destination, targetId, function(result) {
     if(result.success) {
+      var preparedEvents = prepareEvents(result.events);
       this_.server.subscriptions.forSubscribers(function(sub) {
         sub.client.stub.gameUpdate(gameId, result.changedTiles);
+        sub.client.stub.gameEvents(gameId, preparedEvents);
       }, "game-" + gameId);
       this_.client.sendResponse(requestId, {success: true});
       timer.end();
@@ -466,6 +517,7 @@ Skeleton.prototype.moveAndAttack = function(gameId, unitId, destination, targetI
 }
 
 Skeleton.prototype.moveAndWait = function(gameId, unitId, destination) {
+  var timer = new utils.Timer("Skeleton.moveAndWait");
   if(this.sessionId === null)
     return {success: false, reason: "Not logged in"}
     
@@ -478,6 +530,7 @@ Skeleton.prototype.moveAndWait = function(gameId, unitId, destination) {
         sub.client.stub.gameUpdate(gameId, result.changedTiles);
       }, "game-" + gameId);
       this_.client.sendResponse(requestId, {success: true});
+      timer.end();
     } else {
       this_.client.sendResponse(requestId, {success: false, reason: result.reason});
     }
@@ -485,6 +538,7 @@ Skeleton.prototype.moveAndWait = function(gameId, unitId, destination) {
 }
 
 Skeleton.prototype.moveAndCapture = function(gameId, unitId, destination) {
+  var timer = new utils.Timer("Skeleton.moveAndCapture");
   if(this.sessionId === null)
     return {success: false, reason: "Not logged in"}
     
@@ -493,10 +547,13 @@ Skeleton.prototype.moveAndCapture = function(gameId, unitId, destination) {
   var userId = this.session.userId;
   this.server.gameActions.moveAndCapture(gameId, userId, unitId, destination, function(result) {
     if(result.success) {
+      var preparedEvents = prepareEvents(result.events);
       this_.server.subscriptions.forSubscribers(function(sub) {
         sub.client.stub.gameUpdate(gameId, result.changedTiles);
+        sub.client.stub.gameEvents(gameId, preparedEvents);
       }, "game-" + gameId);
       this_.client.sendResponse(requestId, {success: true});
+      timer.end();
     } else {
       this_.client.sendResponse(requestId, {success: false, reason: result.reason});
     }
@@ -504,6 +561,7 @@ Skeleton.prototype.moveAndCapture = function(gameId, unitId, destination) {
 }
 
 Skeleton.prototype.moveAndDeploy = function(gameId, unitId, destination) {
+  var timer = new utils.Timer("Skeleton.moveAndDeploy");
   if(this.sessionId === null)
     return {success: false, reason: "Not logged in"}
     
@@ -512,10 +570,13 @@ Skeleton.prototype.moveAndDeploy = function(gameId, unitId, destination) {
   var userId = this.session.userId;
   this.server.gameActions.moveAndDeploy(gameId, userId, unitId, destination, function(result) {
     if(result.success) {
+      var preparedEvents = prepareEvents(result.events);
       this_.server.subscriptions.forSubscribers(function(sub) {
         sub.client.stub.gameUpdate(gameId, result.changedTiles);
+        sub.client.stub.gameEvents(gameId, preparedEvents);
       }, "game-" + gameId);
       this_.client.sendResponse(requestId, {success: true});
+      timer.end();
     } else {
       this_.client.sendResponse(requestId, {success: false, reason: result.reason});
     }
@@ -523,6 +584,7 @@ Skeleton.prototype.moveAndDeploy = function(gameId, unitId, destination) {
 }
 
 Skeleton.prototype.undeploy = function(gameId, unitId) {
+  var timer = new utils.Timer("Skeleton.undeploy");
   if(this.sessionId === null)
     return {success: false, reason: "Not logged in"}
     
@@ -531,10 +593,13 @@ Skeleton.prototype.undeploy = function(gameId, unitId) {
   var userId = this.session.userId;
   this.server.gameActions.undeploy(gameId, userId, unitId, function(result) {
     if(result.success) {
+      var preparedEvents = prepareEvents(result.events);
       this_.server.subscriptions.forSubscribers(function(sub) {
         sub.client.stub.gameUpdate(gameId, result.changedTiles);
+        sub.client.stub.gameEvents(gameId, preparedEvents);
       }, "game-" + gameId);
       this_.client.sendResponse(requestId, {success: true});
+      timer.end();
     } else {
       this_.client.sendResponse(requestId, {success: false, reason: result.reason});
     }
@@ -542,6 +607,7 @@ Skeleton.prototype.undeploy = function(gameId, unitId) {
 }
 
 Skeleton.prototype.moveAndLoadInto = function(gameId, unitId, carrierId) {
+  var timer = new utils.Timer("Skeleton.moveAndLoadInto");
   if(this.sessionId === null)
     return {success: false, reason: "Not logged in"}
     
@@ -550,10 +616,13 @@ Skeleton.prototype.moveAndLoadInto = function(gameId, unitId, carrierId) {
   var userId = this.session.userId;
   this.server.gameActions.moveAndLoadInto(gameId, userId, unitId, carrierId, function(result) {
     if(result.success) {
+      var preparedEvents = prepareEvents(result.events);
       this_.server.subscriptions.forSubscribers(function(sub) {
         sub.client.stub.gameUpdate(gameId, result.changedTiles);
+        sub.client.stub.gameEvents(gameId, preparedEvents);
       }, "game-" + gameId);
       this_.client.sendResponse(requestId, {success: true});
+      timer.end();
     } else {
       this_.client.sendResponse(requestId, {success: false, reason: result.reason});
     }
@@ -561,6 +630,7 @@ Skeleton.prototype.moveAndLoadInto = function(gameId, unitId, carrierId) {
 }
 
 Skeleton.prototype.moveAndUnload = function(gameId, unitId, destination, carriedUnitId, unloadDestination) {
+  var timer = new utils.Timer("Skeleton.moveAndUnload");
   if(this.sessionId === null)
     return {success: false, reason: "Not logged in"}
     
@@ -570,10 +640,13 @@ Skeleton.prototype.moveAndUnload = function(gameId, unitId, destination, carried
   this.server.gameActions.moveAndUnload(gameId, userId, unitId, destination, 
                                         carriedUnitId, unloadDestination, function(result) {
     if(result.success) {
+      var preparedEvents = prepareEvents(result.events);
       this_.server.subscriptions.forSubscribers(function(sub) {
         sub.client.stub.gameUpdate(gameId, result.changedTiles);
+        sub.client.stub.gameEvents(gameId, preparedEvents);
       }, "game-" + gameId);
       this_.client.sendResponse(requestId, {success: true});
+      timer.end();
     } else {
       this_.client.sendResponse(requestId, {success: false, reason: result.reason});
     }
@@ -581,6 +654,7 @@ Skeleton.prototype.moveAndUnload = function(gameId, unitId, destination, carried
 }
 
 Skeleton.prototype.build = function(gameId, unitTypeId, destination) {
+  var timer = new utils.Timer("Skeleton.build");
   if(this.sessionId === null)
     return {success: false, reason: "Not logged in"}
     
@@ -589,10 +663,13 @@ Skeleton.prototype.build = function(gameId, unitTypeId, destination) {
   var userId = this.session.userId;
   this.server.gameActions.build(gameId, userId, unitTypeId, destination, function(result) {
     if(result.success) {
+      var preparedEvents = prepareEvents(result.events);
       this_.server.subscriptions.forSubscribers(function(sub) {
         sub.client.stub.gameUpdate(gameId, result.changedTiles);
+        sub.client.stub.gameEvents(gameId, preparedEvents);
       }, "game-" + gameId);
       this_.client.sendResponse(requestId, {success: true});
+      timer.end();
     } else {
       this_.client.sendResponse(requestId, {success: false, reason: result.reason});
     }
@@ -600,7 +677,7 @@ Skeleton.prototype.build = function(gameId, unitTypeId, destination) {
 }
 
 Skeleton.prototype.endTurn = function(gameId) {
-  var timer = new utils.Timer("endTurn");
+  var timer = new utils.Timer("Skeleton.endTurn");
   if(this.sessionId === null)
     return {success: false, reason: "Not logged in"}
     
@@ -609,8 +686,10 @@ Skeleton.prototype.endTurn = function(gameId) {
   var userId = this.session.userId;
   this.server.gameActions.nextTurn(gameId, userId, function(result) {
     if(result.success) {
+      var preparedEvents = prepareEvents(result.events);
       this_.server.subscriptions.forSubscribers(function(sub) {
         sub.client.stub.gameUpdate(gameId, result.changedTiles);
+        sub.client.stub.gameEvents(gameId, preparedEvents);
         if(result.finished) {
           sub.client.stub.gameFinished(gameId);
         } else {
@@ -626,12 +705,37 @@ Skeleton.prototype.endTurn = function(gameId) {
 }
 
 Skeleton.prototype.surrender = function(gameId) {
-  
+  var timer = new utils.Timer("Skeleton.surrender");
+  if(this.sessionId === null)
+    return {success: false, reason: "Not logged in"}
+    
+  var requestId = this.client.requestId;
+  var this_ = this;
+  var userId = this.session.userId;
+  this.server.gameActions.surrender(gameId, userId, function(result) {
+    if(result.success) {
+      var preparedEvents = prepareEvents(result.events);
+      this_.server.subscriptions.forSubscribers(function(sub) {
+        sub.client.stub.gameUpdate(gameId, result.changedTiles);
+        sub.client.stub.gameEvents(gameId, preparedEvents);
+        if(result.finished) {
+          sub.client.stub.gameFinished(gameId);
+        } else {
+          sub.client.stub.gameTurnChange(gameId, result.inTurnNumber);
+        }
+      }, "game-" + gameId);
+      this_.client.sendResponse(requestId, {success: true});
+      timer.end();
+    } else {
+      this_.client.sendResponse(requestId, {success: false, reason: result.reason});
+    }
+  });
 }
 
 // CHAT
 
 Skeleton.prototype.chatMessages = function(gameId) {
+  var timer = new utils.Timer("Skeleton.chatMessages");
   if(this.sessionId === null)
     return {success: false, reason: "Not logged in"}
 
@@ -645,6 +749,7 @@ Skeleton.prototype.chatMessages = function(gameId) {
         result.chatMessages[i].time = time.toUTCString();
       }
       this_.client.sendResponse(requestId, {success: true, chatMessages: result.chatMessages});
+      timer.end();
     } else {
       this_.client.sendResponse(requestId, {success: false, reason: result.reason});
     }
@@ -684,18 +789,34 @@ Skeleton.prototype.chat = function(gameId, message) {
   });
 }
 
-// GAME EVENT TICKER
+// GAME EVENTS
 
-Skeleton.prototype.tickerMessages = function(gameId, count) {
-  
+Skeleton.prototype.gameEvents = function(gameId, count) {
+  var timer = new utils.Timer("Skeleton.gameEvents");
+  if(this.sessionId === null)
+    return {success: false, reason: "Not logged in"}
+
+  var requestId = this.client.requestId;
+  var this_ = this;
+  this.server.database.gameEvents(gameId, function(result) {
+    if(result.success) {
+      var preparedEvents = prepareEvents(result.gameEvents);
+      this_.client.sendResponse(requestId, {success: true, gameEvents: preparedEvents});
+      timer.end();
+    } else {
+      this_.client.sendResponse(requestId, {success: false, reason: result.reason});
+    }
+  });
 }
 
 // GAME STATISTICS
 
 Skeleton.prototype.gameStatistics = function(gameId) {
+  var timer = new utils.Timer("Skeleton.gameStatistics");
   
 }
 
 Skeleton.prototype.lastTurnStatistics = function(gameId) {
+  var timer = new utils.Timer("Skeleton.lastTurnStatistics");
   
 }

@@ -10,6 +10,7 @@ var wrap = function() {
   var gameLogic = null;
   var theme = null;
   var map = null;
+  var ticker = null;
   var gameUIState = {
     stateName: "select"
   }
@@ -97,6 +98,11 @@ var wrap = function() {
     
     $("#surrender").click(function(e) {
       e.preventDefault();
+      client.stub.surrender(gameId, function(response) {
+        if(!response.success) {
+          alert("Could not surrender! " + response.reason);
+        }
+      });
     });
     
     $("#showChat").click(function(e) {
@@ -161,7 +167,115 @@ var wrap = function() {
     }
     
     $("#mapCanvas").click(handleMapClick);
-//    $("#mapCanvas").click(function(e){console.log(e);});
+  }
+  
+  function showGame(game, author) {
+    $("#gameName").text(game.name);
+    client.stub.profile(function(response) {
+      theme = response.profile.settings.gameTheme;
+      client.stub.gameRules(gameId, function(rules) {
+        map = new Map(undefined, 1.0, theme, rules);
+        gameLogic = new GameLogic(map, rules);
+        map.canvas = $("#mapCanvas")[0];
+        gameMap = map;
+        
+        map.doPreload(function() {
+          inTurnNumber = game.inTurnNumber;
+          $("#mapCanvas").attr("class", "player" + inTurnNumber);
+          initializePlayers(game.players);
+          initializeMessageTicker();
+          refreshFunds();
+          map.currentTiles = game.tiles;
+          var mapSize = map.getMapSize();
+          var width = mapSize.w * map.tileW
+          var height = mapSize.h * map.tileH
+          map.canvas.width = width;
+          map.canvas.height = height;
+          map.refresh();
+        });
+      });    
+    });
+  }
+  
+  function initializeMessageTicker() {
+    ticker = new MessageTicker($("#messageTicker"), map);
+    client.skeleton.gameEvents = function(gameId, events) {
+      ticker.showMessages(events);
+    };
+    
+    client.stub.gameEvents(gameId, function(response) {
+      if(!response.success) {
+        alert("Could not get game events! " + response.reason);
+      } else {
+        ticker.showMessages(response.gameEvents, true);
+      }
+    });
+    
+    var messageTicker = $("#messageTicker");
+    messageTicker.attr("class", "normal");
+    $("#showHideMessageTicker").click(function(e) {
+      e.preventDefault();
+      if(messageTicker.hasClass("small")) {
+        messageTicker.attr("class", "full");
+      } else if(messageTicker.hasClass("full")){
+        messageTicker.attr("class", "normal");
+      } else {
+        messageTicker.attr("class", "small");
+      }
+      messages.scrollTop(0);
+    });
+  }
+  
+  function initializePlayers(players) {
+    players.sort(function(a, b) { return a.playerNumber - b.playerNumber; });
+    var playerList = $("#players");
+    
+    for(var i = 0; i < players.length; ++i) {
+      var player = players[i];
+      var item = $("<li></li>");
+      var number = $("<span></span>");
+      var name = $("<span></span>");
+      
+      item.addClass("playerItem");
+      if(player.playerNumber == inTurnNumber) {
+        item.addClass("inTurn");
+        if(player.isMe) {
+          initializeTurn(player.playerNumber);
+        } else {
+          finalizeTurn();
+        }
+      }
+      if(player.isMe) {
+        item.addClass("isMe");
+      }
+      item.attr("playerNumber", player.playerNumber);
+      
+      number.text(player.playerNumber);
+      number.addClass("player" + player.playerNumber);
+      number.addClass("playerNumber");
+      
+      name.text(player.playerName !== null ? player.playerName : "");
+      name.addClass("playerName");
+      
+      item.append(number);
+      item.append(name);
+
+      playerList.append(item);
+    }
+  }
+  
+  function initializeTurn() {
+    inTurn = true;
+    refreshFunds();
+    $("#endTurn").show();
+    $("#surrender").show();
+  }
+  
+  function finalizeTurn() {
+    inTurn = false;
+    refreshFunds();
+    $("#endTurn").hide();
+    $("#surrender").hide();
   }
   
   function handleMapClick(e) {
@@ -555,7 +669,7 @@ var wrap = function() {
       var pos = SPRITE_SHEET_MAP[SPRITE_UNIT][unitType.id][inTurnNumber];
       var unitImageX = pos.x * map.tileW;
       var unitImageY = pos.y * map.tileH;
-      unitImage.css("background-position", -unitImageX + "px " + -unitImageY + "px")
+      unitImage.css("background-position", -unitImageX + "px " + -unitImageY + "px");
       buildItem.append(unitPrice);
       buildItem.append(unitImage);
       buildItem.append(unitName);
@@ -580,84 +694,5 @@ var wrap = function() {
       
       buildMenu.append(buildItem);
     }
-  }
-  
-  function showGame(game, author) {
-    $("#gameName").text(game.name);
-    client.stub.profile(function(response) {
-      theme = response.profile.settings.gameTheme;
-      client.stub.gameRules(gameId, function(rules) {
-        map = new Map(undefined, 1.0, theme, rules);
-        gameLogic = new GameLogic(map, rules);
-        map.canvas = $("#mapCanvas")[0];
-        gameMap = map;
-        
-        map.doPreload(function() {
-          inTurnNumber = game.inTurnNumber;
-          $("#mapCanvas").attr("class", "player" + inTurnNumber);
-          initializePlayers(game.players);
-          refreshFunds();
-          map.currentTiles = game.tiles;
-          var mapSize = map.getMapSize();
-          var width = mapSize.w * map.tileW
-          var height = mapSize.h * map.tileH
-          map.canvas.width = width;
-          map.canvas.height = height;
-          map.refresh();
-        });
-      });    
-    });
-  }
-  
-  function initializePlayers(players) {
-    players.sort(function(a, b) { return a.playerNumber - b.playerNumber; });
-    var playerList = $("#players");
-    
-    for(var i = 0; i < players.length; ++i) {
-      var player = players[i];
-      var item = $("<li></li>");
-      var number = $("<span></span>");
-      var name = $("<span></span>");
-      
-      item.addClass("playerItem");
-      if(player.playerNumber == inTurnNumber) {
-        item.addClass("inTurn");
-        if(player.isMe) {
-          initializeTurn(player.playerNumber);
-        } else {
-          finalizeTurn();
-        }
-      }
-      if(player.isMe) {
-        item.addClass("isMe");
-      }
-      item.attr("playerNumber", player.playerNumber);
-      
-      number.text(player.playerNumber);
-      number.addClass("player" + player.playerNumber);
-      number.addClass("playerNumber");
-      
-      name.text(player.playerName !== null ? player.playerName : "");
-      name.addClass("playerName");
-      
-      item.append(number);
-      item.append(name);
-
-      playerList.append(item);
-    }
-  }
-  
-  function initializeTurn() {
-    inTurn = true;
-    refreshFunds();
-    $("#endTurn").show();
-    $("#surrender").show();
-  }
-  
-  function finalizeTurn() {
-    inTurn = false;
-    refreshFunds();
-    $("#endTurn").hide();
-    $("#surrender").hide();
   }
 }();

@@ -145,6 +145,8 @@ GameManagement.prototype.leaveGame = function(userId, gameId, playerNumber, call
 GameManagement.prototype.startGame = function(userId, gameId, callback) {
   var database = this.database;
   var gameInformation = new GameInformation(database);
+  var gameProcedures = new GameProcedures(database);
+  
   gameInformation.gameData(gameId, function(result) {
     if(!result.success) {
       callback({success: false, reason: result.reason});
@@ -172,7 +174,7 @@ GameManagement.prototype.startGame = function(userId, gameId, callback) {
           if(numPlayers < 2) {
             callback({success: false, reason: "Need at least two players to start!"});
           } else {
-            database.surrender(playersWithoutUsers, function(response) {
+            gameProcedures.surrenderPlayers(game, playersWithoutUsers, function(response) {
               game.state = "inProgress";
               database.updateGame(game, function(result) {
                 if(result.success) {

@@ -112,7 +112,7 @@ Map.prototype.paintTerrainTile = function(ctx, el, xPos, yPos) {
                       xPos, yPos, this.tileW, this.tileH);
         if(el.capturePoints<200) {
             // draw capture bar
-            if(el.beingcaptured) {
+            if(el.beingCaptured) {
                 ctx.fillStyle = "red";
             } else {
                 ctx.fillStyle = "lightblue";
