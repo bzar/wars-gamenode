@@ -56,6 +56,7 @@ GameManagement.prototype.createGame = function(game, callback) {
           tile.unit = new entities.Unit(null, null, mapTile.unit.type, 
                                         mapTile.unit.owner, null, 100, 
                                         false, false, false);
+          players[playerIds.indexOf(mapTile.unit.owner)].score += parseInt(tile.unit.health * tile.unit.unitType().price / 100)
         }
         
         gameData.push(tile);

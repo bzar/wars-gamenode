@@ -31,6 +31,8 @@ var Database = function() {
   this.chatMessageIdCounter = 0;
   this.gameEvents = new Array();
   this.gameEventIdCounter = 0;
+  this.gameStatistics = new Array();
+  this.gameStatisticIdCounter = 0;
 };
 
 Database.prototype.user = function(userId) {
@@ -161,6 +163,14 @@ JSONFileDatabase.prototype.loadDatabase = function(callback) {
           var item = databaseContent.gameEvents[i];
           var gameEvent = new entities.GameEvent(item.gameEventId, item.gameId, item.time, item.content);
           this_.database.gameEvents.push(gameEvent);
+        }
+        
+        this_.database.gameStatisticIdCounter = databaseContent.gameStatisticIdCounter;
+        for(var i = 0; i < databaseContent.gameStatistics.length; ++i) {
+          var item = databaseContent.gameStatistics[i];
+          var gameStatistic = new entities.GameStatistic(item.gameStatisticId, item.gameId, item.turnNumber, 
+                                                         item.roundNumber, item.inTurnNumber, item.content);
+          this_.database.gameStatistics.push(gameStatistic);
         }
         
         callback(this_.database);
@@ -544,16 +554,21 @@ JSONFileDatabase.prototype.player = function(playerId, callback) {
 
 
 JSONFileDatabase.prototype.updatePlayer = function(player, callback) {
-  var timer = new utils.Timer("JSONFileDatabase.updatePlayer");
+  this.updatePlayers([player], callback);
+}
+
+JSONFileDatabase.prototype.updatePlayers = function(players, callback) {
+  var timer = new utils.Timer("JSONFileDatabase.updatePlayers");
   var this_ = this;
   this.loadDatabase(function(database) {
-    var existingPlayer = database.player(player.playerId);
-    if(existingPlayer === null) {
-      callback({success: false, reason: "Player does not exist!"});
-      return;
+    for(var i = 0; i < players.length; ++i) {
+      var existingPlayer = database.player(players[i].playerId);
+      if(existingPlayer === null) {
+        callback({success: false, reason: "Player does not exist!"});
+        return;
+      }
+      existingPlayer.cloneFrom(players[i]);
     }
-    existingPlayer.cloneFrom(player);
-    
     this_.saveDatabase(function() {
       timer.end();
       callback({success: true});
@@ -1145,7 +1160,7 @@ JSONFileDatabase.prototype.createGameEvents = function(newGameEvents, callback) 
     }
     this_.saveDatabase(function() {
       timer.end();
-      callback({success: true, gameEventId: gameEvent.gameEventId});
+      callback({success: true});
     });
   });
 }
@@ -1169,24 +1184,57 @@ JSONFileDatabase.prototype.gameEvents = function(gameId, callback) {
 
 // GAME STATISTICS
 
-JSONFileDatabase.prototype.gameStatistics = function(gameId, callback) {
-  var timer = new utils.Timer("JSONFileDatabase.gameStatistics");
+JSONFileDatabase.prototype.createGameStatistic = function(newGameStatistic, callback) {
+  this.createGameStatistics([newGameStatistic], callback);
+}
+
+JSONFileDatabase.prototype.createGameStatistics = function(newGameStatistics, callback) {
+  var timer = new utils.Timer("JSONFileDatabase.createGameStatistics");
   var this_ = this;
   this.loadDatabase(function(database) {
-    
+    for(var i = 0; i < newGameStatistics.length; ++i) {
+      var gameStatistic = newGameStatistics[i].clone();
+      gameStatistic.gameStatisticId = database.gameStatisticIdCounter;
+      database.gameStatisticIdCounter += 1;
+      database.gameStatistics.push(gameStatistic);
+    }
     this_.saveDatabase(function() {
-      callback();
+      timer.end();
+      callback({success: true});
     });
   });
 }
 
-JSONFileDatabase.prototype.createTurnStatistics = function(gameId, turnStatistics, callback) {
-  var timer = new utils.Timer("JSONFileDatabase.createTurnStatistics");
+JSONFileDatabase.prototype.gameStatistics = function(gameId, callback) {
+  var timer = new utils.Timer("JSONFileDatabase.gameStatistics");
   var this_ = this;
   this.loadDatabase(function(database) {
+    var gameStatistics = [];
+    for(var i = 0; i < database.gameStatistics.length; ++i) {
+      var gameStatistic = database.gameStatistics[i];
+      if(gameStatistic.gameId == gameId) {
+        gameStatistics.push(gameStatistic.clone());
+      }
+    }
     
-    this_.saveDatabase(function() {
-      callback();
-    });
+    timer.end();
+    callback({success: true, gameStatistics: gameStatistics});
+  });
+}
+
+JSONFileDatabase.prototype.gameLatestStatistic = function(gameId, callback) {
+  var timer = new utils.Timer("JSONFileDatabase.gameStatistics");
+  var this_ = this;
+  this.loadDatabase(function(database) {
+    var latestStatistics = null;
+    for(var i = 0; i < database.gameStatistics.length; ++i) {
+      var gameStatistic = database.gameStatistics[i];
+      if(gameStatistic.gameId == gameId && (latestStatistic === null || gameStatistic.turnNumber > latestStatistic.turnNumber)) {
+        latestStatistic = gameStatistic.clone();
+      }
+    }
+    
+    timer.end();
+    callback({success: true, latestStatistic: latestStatistic});
   });
 }

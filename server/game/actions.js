@@ -82,47 +82,59 @@ GameActions.prototype.moveAndAttack = function(gameId, userId, unitId, destinati
         if(target.owner == unit.owner) {
           callback({success: false, reason: "Cannot attack own units!"}); return;
         }
-        
-        var power = gameLogic.calculateDamage(unit, destinationTile, target, targetTile);
-        if(power === null) {
-          callback({success: false, reason: "Cannot attack target from destination!"}); return;
-        }
+      
+        database.gamePlayer(gameId, target.owner, function(result) {
+          var targetPlayer = result.player;
+          
+          var power = gameLogic.calculateDamage(unit, destinationTile, target, targetTile);
+          if(power === null) {
+            callback({success: false, reason: "Cannot attack target from destination!"}); return;
+          }
 
-        var events = new GameEventManager(gameId);
-        sourceTile.setUnit(null);
-        destinationTile.setUnit(unit);
-        
-        var updatedUnits = [];
-        var deletedUnits = [];
+          var events = new GameEventManager(gameId);
+          sourceTile.setUnit(null);
+          destinationTile.setUnit(unit);
+          
+          var updatedUnits = [];
+          var deletedUnits = [];
 
-        events.attack(unit, target, power);
-        target.health -= power;
-        unit.moved = true;
-        
-        if(target.health > 0) {
-          power = gameLogic.calculateDamage(target, targetTile, unit, destinationTile);
-          events.counterattack(target, unit, power);
-          unit.health = power ? unit.health - power : unit.health;
-          updatedUnits.push(target);
-        } else {
-          events.destroyed(target);
-          targetTile.setUnit(null);
-          deletedUnits.push(target);
-        }
-        
-        if(unit.health <= 0) {
-          events.destroyed(unit);
-          destinationTile.setUnit(null);
-          deletedUnits.push(unit);
-        } else {
-          updatedUnits.push(unit);
-        }
+          events.attack(unit, target, power);
+          targetPlayer.score -= parseInt(Math.min(target.health, power) * target.unitType().price / 100);
+          player.score += parseInt(Math.min(target.health, power) * target.unitType().price / 100);
+          target.health -= power;
+          unit.moved = true;
+          
+          if(target.health > 0) {
+            power = gameLogic.calculateDamage(target, targetTile, unit, destinationTile);
+            events.counterattack(target, unit, power);
+            if(power !== null) {
+              unit.health = unit.health - power;
+              player.score -= parseInt(Math.min(unit.health, power) * unit.unitType().price / 100);
+              targetPlayer.score += parseInt(Math.min(unit.health, power) * unit.unitType().price / 100);
+            }
+            updatedUnits.push(target);
+          } else {
+            events.destroyed(target);
+            targetTile.setUnit(null);
+            deletedUnits.push(target);
+          }
+          
+          if(unit.health <= 0) {
+            events.destroyed(unit);
+            destinationTile.setUnit(null);
+            deletedUnits.push(unit);
+          } else {
+            updatedUnits.push(unit);
+          }
 
-        database.deleteUnits(deletedUnits, function(result) {
-          database.updateUnits(updatedUnits, function(result) {
-            database.updateTiles([sourceTile, destinationTile, targetTile], function(result) {
-              database.createGameEvents(events.objects, function(result) {
-                callback({success: true, changedTiles: [sourceTile, destinationTile, targetTile], events: events.objects});
+          database.deleteUnits(deletedUnits, function(result) {
+            database.updateUnits(updatedUnits, function(result) {
+              database.updateTiles([sourceTile, destinationTile, targetTile], function(result) {
+                database.updatePlayers([player, targetPlayer], function(result) {
+                  database.createGameEvents(events.objects, function(result) {
+                    callback({success: true, changedTiles: [sourceTile, destinationTile, targetTile], events: events.objects});
+                  });
+                });
               });
             });
           });
@@ -482,24 +494,38 @@ GameActions.prototype.startTurn = function(game, callback) {
       var tiles = result.tiles;
       database.units(game.gameId, function(result) {
         var units = result.units;
+        var stats = [];
         for(var i = 1; i <= players.length; ++i) {
           var player = players[(currentIndex + i) % players.length];
           
           if(player.userId == null)
             continue;
           
-          var stillAlive = false;
-          for(var j = 0; j < units.length && !stillAlive; ++j) {
-            var unit = units[j];
-            if(unit.owner == player.playerNumber)
-              stillAlive = true;
+          var playerStats = {
+            playerNumber: player.playerNumber,
+            power: 0,
+            property: 0,
+            score: player.score
           }
           
-          for(var j = 0; j < tiles.length && !stillAlive; ++j) {
+          var stillAlive = false;
+          for(var j = 0; j < units.length; ++j) {
+            var unit = units[j];
+            if(unit.owner == player.playerNumber) {
+              stillAlive = true;
+              playerStats.power += parseInt(unit.unitType().price * unit.health / 100);
+            }
+          }
+          
+          for(var j = 0; j < tiles.length; ++j) {
             var tile = tiles[j];
             var tileType = tile.terrainType();
-            if(tile.owner == player.playerNumber && tileType.builds() && tile.unitId == null)
-              stillAlive = true;
+            if(tile.owner == player.playerNumber) {
+              if(tileType.builds() && tile.unitId == null) {
+                stillAlive = true;
+              }
+              playerStats.property += tile.capturePoints;
+            }
           }
           if(stillAlive) {
             numAlivePlayers += 1;
@@ -507,6 +533,8 @@ GameActions.prototype.startTurn = function(game, callback) {
               nextPlayer = player;
             }
           }
+          
+          stats.push(playerStats);
         }
         
         // Change turn
@@ -539,6 +567,7 @@ GameActions.prototype.startTurn = function(game, callback) {
             if(tileType.producesFunds()) {
               events.produceFunds(tile);
               nextPlayer.funds += settings.defaultFundsPerProperty;
+              nextPlayer.score += settings.defaultFundsPerProperty;
             }
             
             if(tile.unitId !== null) {
@@ -548,7 +577,7 @@ GameActions.prototype.startTurn = function(game, callback) {
                 if(unit.unitId == tile.unitId) {
                   // Heal units
                   if(unit.owner == nextPlayer.playerNumber && tileType.canRepair(unit.unitType().unitClass) && unit.health < 100) {
-                    unit.heal(settings.defaultRepairRate);
+                    nextPlayer.score += unit.heal(settings.defaultRepairRate);
                     events.repair(tile, unit, unit.health);
                   }
                   // Handle capturing
@@ -566,14 +595,19 @@ GameActions.prototype.startTurn = function(game, callback) {
             }
           }
           
+          var gameStatistic = new entities.GameStatistic(null, game.gameId, game.turnNumber, 
+                                                         game.roundNumber, game.inTurnNumber, stats);
+
           // Save tiles and units
           database.updateUnits(units, function(result) {
             database.updateTiles(nextPlayerTiles, function(result) {
               database.updateGame(game, function(result) {
                 database.updatePlayer(nextPlayer, function(result) {
                   database.createGameEvents(events.objects, function(result) {
-                    callback({success: true, finished: false, inTurnNumber: game.inTurnNumber, roundNumber: game.roundNumber,
-                              changedTiles: nextPlayerTiles, events: events.objects});
+                    database.createGameStatistic(gameStatistic, function(result) {
+                      callback({success: true, finished: false, inTurnNumber: game.inTurnNumber, roundNumber: game.roundNumber,
+                                changedTiles: nextPlayerTiles, events: events.objects});
+                    });
                   });
                 });
               });

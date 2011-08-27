@@ -56,10 +56,12 @@ Unit.prototype.unitType = function() {
 }
 
 Unit.prototype.heal = function(amount) {
+  var oldHealth = this.health;
   this.health += amount;
   if(this.health > 100) {
     this.health = 100;
   }
+  return this.health - oldHealth;
 }
 
 Unit.prototype.capture = function(tile) {
