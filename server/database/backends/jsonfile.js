@@ -1226,7 +1226,7 @@ JSONFileDatabase.prototype.gameLatestStatistic = function(gameId, callback) {
   var timer = new utils.Timer("JSONFileDatabase.gameStatistics");
   var this_ = this;
   this.loadDatabase(function(database) {
-    var latestStatistics = null;
+    var latestStatistic = null;
     for(var i = 0; i < database.gameStatistics.length; ++i) {
       var gameStatistic = database.gameStatistics[i];
       if(gameStatistic.gameId == gameId && (latestStatistic === null || gameStatistic.turnNumber > latestStatistic.turnNumber)) {

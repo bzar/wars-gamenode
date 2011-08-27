@@ -813,10 +813,40 @@ Skeleton.prototype.gameEvents = function(gameId, count) {
 
 Skeleton.prototype.gameStatistics = function(gameId) {
   var timer = new utils.Timer("Skeleton.gameStatistics");
-  
+  if(this.sessionId === null)
+    return {success: false, reason: "Not logged in"}
+
+  var requestId = this.client.requestId;
+  var this_ = this;
+  this.server.database.gameStatistics(gameId, function(result) {
+    if(result.success) {
+      for(var i = 0; i < result.gameStatistics.length; ++i) {
+        result.gameStatistics[i].gameId = undefined;
+        result.gameStatistics[i].gameStatisticId = undefined;
+      }
+      this_.client.sendResponse(requestId, {success: true, gameStatistics: result.gameStatistics});
+      timer.end();
+    } else {
+      this_.client.sendResponse(requestId, {success: false, reason: result.reason});
+    }
+  });
 }
 
-Skeleton.prototype.lastTurnStatistics = function(gameId) {
-  var timer = new utils.Timer("Skeleton.lastTurnStatistics");
-  
+Skeleton.prototype.gameLatestStatistic = function(gameId) {
+  var timer = new utils.Timer("Skeleton.latestStatistic");
+  if(this.sessionId === null)
+    return {success: false, reason: "Not logged in"}
+
+  var requestId = this.client.requestId;
+  var this_ = this;
+  this.server.database.gameLatestStatistic(gameId, function(result) {
+    if(result.success) {
+      result.latestStatistic.gameId = undefined;
+      result.latestStatistic.gameStatisticId = undefined;
+      this_.client.sendResponse(requestId, {success: true, latestStatistic: result.latestStatistic});
+      timer.end();
+    } else {
+      this_.client.sendResponse(requestId, {success: false, reason: result.reason});
+    }
+  });
 }
