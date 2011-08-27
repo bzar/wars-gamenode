@@ -431,20 +431,22 @@ var wrap = function() {
     }
 
     var actions = [];
-    if(gameLogic.unitAttackOptions(x, y, dx, dy).length > 0)
-      actions.push("attack");
-    if(gameLogic.unitCanWait(x, y, dx, dy))
-      actions.push("wait");
-    if(gameLogic.unitCanCapture(x, y, dx, dy))
-      actions.push("capture");
-    if(gameLogic.unitCanDeploy(x, y, dx, dy))
-      actions.push("deploy");
-    if(gameLogic.unitCanUndeploy(x, y, dx, dy))
-      actions.push("undeploy");
-    if(gameLogic.unitCanLoadInto(x, y, dx, dy))
+    if(gameLogic.unitCanLoadInto(x, y, dx, dy)) {
       actions.push("load");
-    if(gameLogic.unitCanUnload(x, y, dx, dy))
-      actions.push("unload");
+    } else {
+      if(gameLogic.unitCanUnload(x, y, dx, dy))
+        actions.push("unload");
+      if(gameLogic.unitAttackOptions(x, y, dx, dy).length > 0)
+        actions.push("attack");
+      if(gameLogic.unitCanCapture(x, y, dx, dy))
+        actions.push("capture");
+      if(gameLogic.unitCanDeploy(x, y, dx, dy))
+        actions.push("deploy");
+      if(gameLogic.unitCanUndeploy(x, y, dx, dy))
+        actions.push("undeploy");
+      if(gameLogic.unitCanWait(x, y, dx, dy))
+        actions.push("wait");
+    }
     actions.push("cancel");
     showActionMenu(actions, canvasPosition);  
   }
