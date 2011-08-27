@@ -34,6 +34,7 @@ h1 {
   font: 50px sans-serif;
   margin: 0;
   padding: 0;
+  text-shadow: #888 0 0 10px;
 }
 
 h2 {
@@ -572,6 +573,7 @@ input[type=text], input[type=password] {
   display: block;
   height: 24px;
   text-align: center;
+  position: relative;
 }
 
 #chat.small #chatForm {
@@ -579,14 +581,18 @@ input[type=text], input[type=password] {
 }
 
 #chatInput {
-  width: 90%;
   display: inline-block;
   background-color: #f8f8f8;
+  position: absolute;
+  left: 0;
+  right: 60px;
 }
 
 #chatSend {
-  width: 4%;
+  width: 60px;
   display: inline-block;
+  position: absolute;
+  right: 0;
 }
 
 #chatMessages .messageTime {

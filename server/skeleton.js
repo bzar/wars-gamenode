@@ -693,7 +693,7 @@ Skeleton.prototype.endTurn = function(gameId) {
         if(result.finished) {
           sub.client.stub.gameFinished(gameId);
         } else {
-          sub.client.stub.gameTurnChange(gameId, result.inTurnNumber);
+          sub.client.stub.gameTurnChange(gameId, result.inTurnNumber, result.roundNumber);
         }
       }, "game-" + gameId);
       this_.client.sendResponse(requestId, {success: true});

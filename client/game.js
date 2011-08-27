@@ -36,6 +36,7 @@ var wrap = function() {
             initializeChat(client, gameId);
             initializeMenuControls();
             initializeGameTools();
+            $("#round").text(response.game.roundNumber);
             if(response.author) {
               initializeAuthorTools();
             } else {
@@ -129,7 +130,8 @@ var wrap = function() {
   function initializeGame(game, author) {
     showGame(game, author);
     
-    client.skeleton.gameTurnChange = function(gameId, newTurn) {
+    client.skeleton.gameTurnChange = function(gameId, newTurn, newRound) {
+      $("#round").text(newRound);
       inTurnNumber = newTurn;
       $(".playerItem.inTurn").removeClass("inTurn");
       var playerInTurn = $('.playerItem[playerNumber="' + inTurnNumber + '"]');

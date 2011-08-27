@@ -572,7 +572,7 @@ GameActions.prototype.startTurn = function(game, callback) {
               database.updateGame(game, function(result) {
                 database.updatePlayer(nextPlayer, function(result) {
                   database.createGameEvents(events.objects, function(result) {
-                    callback({success: true, finished: false, inTurnNumber: game.inTurnNumber, 
+                    callback({success: true, finished: false, inTurnNumber: game.inTurnNumber, roundNumber: game.roundNumber,
                               changedTiles: nextPlayerTiles, events: events.objects});
                   });
                 });
@@ -616,7 +616,7 @@ GameActions.prototype.nextTurn = function(gameId, userId, callback) {
           
           var changedTiles = firstChangedTiles.concat(result.changedTiles);
           var events = firstEvents.concat(result.events);
-          callback({success: true, finished: result.finished, inTurnNumber: result.inTurnNumber, 
+          callback({success: true, finished: result.finished, inTurnNumber: result.inTurnNumber, roundNumber: game.roundNumber, 
                     changedTiles: changedTiles, events: events});
         });
       });
