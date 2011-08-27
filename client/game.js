@@ -105,15 +105,20 @@ var wrap = function() {
       });
     });
     
+    var chat = $("#chat");
     $("#showChat").click(function(e) {
       e.preventDefault();
-      var chat = $("#chat");
+      chat.toggle();
       if(chat.css("display") == "none") {
-        chat.show();
-        $("#showChat").removeClass("highlight");
+        $("#content").css("top", 0);
       } else {
-        chat.hide();
+        $("#showChat").removeClass("highlight");
+        $("#content").css("top", chat.outerHeight());
       }
+    });
+    
+    $("#showHideChat").click(function(e) {
+      $("#content").css("top", chat.outerHeight());
     });
   }
   
@@ -126,7 +131,6 @@ var wrap = function() {
     
     client.skeleton.gameTurnChange = function(gameId, newTurn) {
       inTurnNumber = newTurn;
-      $("#mapCanvas").attr("class", "player" + inTurnNumber);
       $(".playerItem.inTurn").removeClass("inTurn");
       var playerInTurn = $('.playerItem[playerNumber="' + inTurnNumber + '"]');
       playerInTurn.addClass("inTurn");
@@ -181,7 +185,6 @@ var wrap = function() {
         
         map.doPreload(function() {
           inTurnNumber = game.inTurnNumber;
-          $("#mapCanvas").attr("class", "player" + inTurnNumber);
           initializePlayers(game.players);
           initializeMessageTicker();
           refreshFunds();
@@ -199,30 +202,44 @@ var wrap = function() {
   
   function initializeMessageTicker() {
     ticker = new MessageTicker($("#messageTicker"), map);
+    var messageTicker = $("#messageTicker");
+    var messageTickerContainer = $("#messageTickerContainer");
     client.skeleton.gameEvents = function(gameId, events) {
       ticker.showMessages(events);
+      if(messageTickerContainer.css("display") == "none") {
+        $("#showMessageTicker").addClass("highlight");
+      }
     };
     
     client.stub.gameEvents(gameId, function(response) {
       if(!response.success) {
         alert("Could not get game events! " + response.reason);
       } else {
-        ticker.showMessages(response.gameEvents, true);
+        ticker.setMessages(response.gameEvents, true);
       }
     });
     
-    var messageTicker = $("#messageTicker");
-    messageTicker.attr("class", "normal");
     $("#showHideMessageTicker").click(function(e) {
       e.preventDefault();
       if(messageTicker.hasClass("small")) {
-        messageTicker.attr("class", "full");
-      } else if(messageTicker.hasClass("full")){
-        messageTicker.attr("class", "normal");
+        messageTicker.removeClass("small");
+        $("#content").css("bottom", messageTickerContainer.outerHeight());
       } else {
-        messageTicker.attr("class", "small");
+        messageTicker.addClass("small");
+        $("#content").css("bottom", messageTickerContainer.outerHeight());
       }
-      messages.scrollTop(0);
+      messageTicker.scrollTop(0);
+    });
+    
+    $("#showMessageTicker").click(function(e) {
+      e.preventDefault();
+      messageTickerContainer.toggle();
+      if(messageTickerContainer.css("display") == "none") {
+        $("#content").css("bottom", 0);
+      } else {
+        $("#showMessageTicker").removeClass("highlight");
+        $("#content").css("bottom", messageTickerContainer.outerHeight());
+      }
     });
   }
   

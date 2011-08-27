@@ -7,21 +7,25 @@ body {
 }
 
 #sidebar {
-  position: relative;
+  position: absolute;
+  left: 0px;
+  top: 0;
+  bottom: 0;
   width: 190px;
-  height: 100%;
-  float: left;
   background-color: #222;
   overflow: auto;
   box-shadow: inset -5px 0 15px #000;
 }
 
 #content {
-  height:100%;
+  position: absolute;
+  left: 190px;
+  right: 0;
+  top: 0;
+  bottom: 0;
   overflow: auto;
   margin: 0;
   padding: 0;
-  position:relative;
 }
 
 h1 {
@@ -225,19 +229,19 @@ input[type=text], input[type=password] {
 }
 
 .player1 {
-  background-color: rgba(214,61,56, 0.7) !important;
+  background-color: rgba(214,61,56, 1.0) !important;
 }
 
 .player2 {
-  background-color: rgba(56,67,214, 0.7) !important;
+  background-color: rgba(56,67,214, 1.0) !important;
 }
 
 .player3 {
-  background-color: rgba(217,213,43, 0.7) !important;
+  background-color: rgba(217,213,43, 1.0) !important;
 }
 
 .player4 {
-  background-color: rgba(99,173,208, 0.7) !important;
+  background-color: rgba(99,173,208, 1.0) !important;
 }
 
 #playerSelection .selected {
@@ -431,6 +435,7 @@ input[type=text], input[type=password] {
   margin-right: 8px;
   padding: 4px;
   font-weight: bold;
+  text-shadow: #111 0 0 5px;
 }
 
 .playerName {
@@ -469,22 +474,8 @@ input[type=text], input[type=password] {
   background-color: #b77;
 }
 
-#messageTickerContainer {
-  display: none;
-  position: absolute;
-  bottom: 0;
-  left: 190;
-  right: 0;
-  z-index: 5;
-  padding: 0;
-  box-shadow: 0px 0px -10px #666;
-  text-align: center;
-}
-
 #showHideMessageTicker {
-  display: inline-block;
-  width: 100%;
-  max-width: 700px;
+  display: block;
   height: 12px;
   font: 10px sans-serif;
   color: #ccc !important;
@@ -505,21 +496,22 @@ input[type=text], input[type=password] {
   color: inherit;
 }
 
-#messageTicker {
-  display: inline-block;
-  width: 100%;
-  max-width: 700px;
+#messageTickerContainer {
+  position: absolute;
+  bottom: 0;
+  left: 190px;
+  right: 0;
+  z-index: 5;
+  display: none;
   margin: 0;
   padding: 0;
-  overflow: auto;
   text-align: left;
 }
 
-#messageTicker.full {
-  height: 432px;
-}
-
-#messageTicker.normal {
+#messageTicker {
+  margin: 0;
+  padding: 0;  
+  overflow: auto;
   height: 146px;
 }
 
@@ -532,38 +524,35 @@ input[type=text], input[type=password] {
   margin: 0;
   padding: 0;
   font: 20px sans-serif;
-  height: 48px;
+  min-height: 48px;
+  border-bottom: 1px solid #444;
 }
 
-#messageTicker li span {
+#messageTicker span {
   margin-right: 8px;
   display: inline-block;
   vertical-align: middle;
+  color: #eee;
+  text-shadow: #111 0 0 5px;
 }
 
-#messageTicker li:nth-child(even) {
-  border-style: solid hidden solid hidden;
-  border-width: 1px;
-  border-color: #444;
+#messageTicker .time {
+  font: 15px sans-serif;
 }
 
 #chat {
   background-color: #ddd;
   margin: 0;
   box-shadow: 0px 0px 10px #666;
-  display: block;
 }
 
 #chat.gameChat {
+  display: none;
   position: absolute;
   top: 0;
-  left: 190;
+  left: 190px;
   right: 0;
-  opacity: 0.8;
-  display: none;
   z-index: 5;
-}
-#chat.small {
 }
 
 #chatMessages {
@@ -721,8 +710,3 @@ input[type=text], input[type=password] {
 .buildItem.disabled .price {
   color: #f88;
 }
-
-#mapCanvas {
-  padding: 4px;
-}
-

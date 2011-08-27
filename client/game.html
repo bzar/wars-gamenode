@@ -14,7 +14,7 @@
 
     <link rel="stylesheet" href="wars.css" type="text/css"/>
 
-    <title>Wars - Pregame</title>
+    <title>Wars - Game</title>
   </head>
 
   <body>
@@ -35,6 +35,7 @@
         </ul>
         <ul id="gameTools" class="navigation">
           <li><a id="showChat" href="#">Show chat</a></li>
+          <li><a id="showMessageTicker" href="#">Show events</a></li>
           <li><a id="endTurn" href="#">End turn</a></li>
           <li><a id="surrender" href="#">Surrender</a></li>
         </ul>
@@ -55,17 +56,14 @@
       </form>
       <a id="showHideChat" href="#">-</a>
     </div>
-
     <div id="content">
       <canvas id="mapCanvas"></canvas>
       <div id="buildMenu"></div>
       <div id="actionMenu"></div>
       <div id="unloadMenu"></div>
     </div>
-
     <div id="messageTickerContainer">
       <a id="showHideMessageTicker" href="#">-</a>
-      <div></div>
       <ul id="messageTicker"></ul>
     </div>
   </body>

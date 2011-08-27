@@ -1,7 +1,7 @@
 function MessageTicker(box, map) {
   this.box = box;
   this.map = map;
-  this.showAll = true;
+  this.showAll = false;
   this.numMessages = 10;
 }  
 MessageTicker.prototype.showToggle = function() {
@@ -17,31 +17,39 @@ MessageTicker.prototype.showToggle = function() {
   }
 }
 
-MessageTicker.prototype.showMessages = function(msgArray, noAnimation) {
+MessageTicker.prototype.setMessages = function(msgArray) {
+  this.box.empty();
   if(msgArray && msgArray.length > 0) {
     for(var i = 0; i < msgArray.length; ++i) {
       var msg = this.parseMessage(msgArray[i]);
       this.box.prepend(msg);
-      if(!noAnimation) {
-        msg.hide();
-        msg.slideDown("slow");
-      }
     }
-    if(!this.showAll) {
-      if(!noAnimation) {
-        $(".tickerMessage:gt(" + (this.numMessages-1) + ")", this.box).slideUp("slow");
-      } else {
-        $(".tickerMessage:gt(" + (this.numMessages-1) + ")", this.box).hide();
-      }
-    }
-    
+    $(".tickerMessage:gt(" + (this.numMessages-1) + ")", this.box).hide();
+  }
+}
+
+MessageTicker.prototype.showMessages = function(msgArray) {
+  if(msgArray && msgArray.length > 0) {
+    for(var i = 0; i < msgArray.length; ++i) {
+      var msg = this.parseMessage(msgArray[i]);
+      msg.hide();
+      this.box.prepend(msg);
+      var wrap = function(i, msg, ticker) {
+        setTimeout(function() {          
+          msg.show();
+          if(!this.showAll) {
+            $(".tickerMessage:last", ticker.box).hide();
+          }
+        }, i * 500);
+      }(i, msg, this)
+    }    
   }
 }
 
 MessageTicker.prototype.parseMessage = function(message) {
   var msg = null;
   var player = null;
-  var time = message.time;
+  var time = new Date(Date.parse(message.time));
   var data = message.content;
   
   if(data.action == "attack") {
@@ -141,6 +149,8 @@ MessageTicker.prototype.parseMessage = function(message) {
     msg = [{type:"text", text:"unknown action: " + data.action}];
   }
   
+  msg.unshift({type: "time", time: time});
+  
   var tickerMessage = $("<li></li>");
   tickerMessage.addClass("tickerMessage");
   if(player) {
@@ -156,6 +166,14 @@ MessageTicker.prototype.createTickerMessage = function(parts, rootElement) {
     if(part.type == "text") {
       var text = $("<span></span>");
       text.text(part.text);
+      rootElement.append(text);
+    } else if (part.type == "time") {
+      var text = $("<span></span>");
+      var timeString = "[" + zeroPad(part.time.getHours(), 2) + ":" + 
+                              zeroPad(part.time.getMinutes(), 2) + ":" + 
+                              zeroPad(part.time.getSeconds(), 2) + "] ";
+      text.text(timeString);
+      text.addClass("time");
       rootElement.append(text);
     } else if(part.type == "unit") {
       var image = $("<span></span>");
