@@ -716,3 +716,18 @@ input[type=text], input[type=password] {
 .buildItem.disabled .price {
   color: #f88;
 }
+
+#gameStatistic {
+  padding: 5px;
+}
+.statisticBarChart {
+  padding: 5px 0 5px 0;
+}
+
+.statisticBarChart .bar {
+  display: inline-block;
+}
+
+.statisticBarChart .label {
+  color: #ddd;
+}

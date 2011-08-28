@@ -2,6 +2,8 @@
   <head>
     <script type="text/javascript" src="jquery-1.6.2.min.js"></script>
     <script type="text/javascript" src="/socket.io/socket.io.js"></script> 
+    <script type="text/javascript" src="/d3/d3.js"></script>
+
     <script type="text/javascript" src="/gamenode/gameNodeClient.js"></script>
     <script type="text/javascript" src="/gamenode/session.js"></script>
     <script type="text/javascript" src="skeleton.js"></script>
@@ -34,11 +36,12 @@
           <li>Round: <span id="round"></span></li>
         </ul>
         <ul id="gameTools" class="navigation">
-          <li><a id="showChat" href="#">Show chat</a></li>
-          <li><a id="showMessageTicker" href="#">Show events</a></li>
+          <li><a id="showChat" href="#">Toggle chat</a></li>
+          <li><a id="showMessageTicker" href="#">Toggle events</a></li>
           <li><a id="endTurn" href="#">End turn</a></li>
           <li><a id="surrender" href="#">Surrender</a></li>
         </ul>
+        <div id="gameStatistic"></div>
         <ul id="authorTools" class="navigation">
 
         </ul>

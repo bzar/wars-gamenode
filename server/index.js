@@ -54,7 +54,8 @@ if(configuration.enableFileServer) {
     ], 
     { 
       gamenode: "../lib/gamenode/web", 
-      img: "img" 
+      img: "img",
+      d3: "d3"
     }, 
     __dirname + "/../client", "login.html");
   fileServer.attachTo(server);

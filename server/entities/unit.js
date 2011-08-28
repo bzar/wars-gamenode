@@ -68,11 +68,13 @@ Unit.prototype.capture = function(tile) {
   tile.capturePoints -= this.health;
   if(tile.capturePoints > 0) {
     tile.beingCaptured = true;
+    this.capturing = true;
   } else {
     tile.owner = this.owner;
     tile.capturePoints = 1;
+    tile.beingCaptured = false;
+    this.capturing = false;
   }
-  this.capturing = true;
   this.moved = true;
 }
 

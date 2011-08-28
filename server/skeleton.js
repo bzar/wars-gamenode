@@ -841,8 +841,10 @@ Skeleton.prototype.gameLatestStatistic = function(gameId) {
   var this_ = this;
   this.server.database.gameLatestStatistic(gameId, function(result) {
     if(result.success) {
-      result.latestStatistic.gameId = undefined;
-      result.latestStatistic.gameStatisticId = undefined;
+      if(result.latestStatistic !== null) {
+        result.latestStatistic.gameId = undefined;
+        result.latestStatistic.gameStatisticId = undefined;
+      }
       this_.client.sendResponse(requestId, {success: true, latestStatistic: result.latestStatistic});
       timer.end();
     } else {

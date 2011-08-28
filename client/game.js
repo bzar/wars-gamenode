@@ -25,7 +25,7 @@ var wrap = function() {
     var loginUrl = "login.html?next=" + document.location.pathname + document.location.search;
     session = resumeSessionOrRedirect(client, undefined, loginUrl, function() {
       client.stub.subscribeGame(gameId);
-  
+      updateStatistic();
       populateNavigation(session);
       if(gameId !== null) {
         client.stub.gameData(gameId, function(response) {
@@ -141,6 +141,7 @@ var wrap = function() {
       } else {
         finalizeTurn();
       }
+      updateStatistic();
     }
     
     client.skeleton.gameUpdate = function(gameId, tileChanges) {
@@ -715,5 +716,45 @@ var wrap = function() {
       
       buildMenu.append(buildItem);
     }
+  }
+  
+  function updateStatistic() {
+    client.stub.gameLatestStatistic(gameId, function(response) {
+      if(response.latestStatistic === null)
+        return;
+      
+      var latestStatistic = response.latestStatistic;
+      var container = d3.select("#gameStatistic");
+      container.selectAll("div").remove();
+      
+      var data = latestStatistic.content.sort(function(a, b){return a.playerNumber - b.playerNumber;});
+      
+      function addChart(container, data, property, label) {
+        var chart = container.append("div").attr("class", "statisticBarChart").attr("chartProperty", property);
+        chart.append("div").text(label).attr("class", "label");
+        
+        // Needed to have all the chart elements laid out correctly before adding content
+        setTimeout(function() {
+          var width = $(".statisticBarChart[chartProperty=\"" + property + "\"]").innerWidth();
+          var height = 8;
+          var totalValue = d3.sum(data, function(d){ return d[property]; });
+          var scale = d3.scale.linear()
+            .domain([0, totalValue])
+            .range(["0px", width + "px"]);
+        
+          chart.selectAll(".bar")
+            .data(data)
+            .enter().append("div")
+              .style("width", function(d) { return scale(d[property]); })
+              .style("height", height)
+              .attr("class", function(d) { return "bar player" + d.playerNumber })
+              .attr("title", function(d){ return Math.round(100*d[property]/totalValue) + "%" });
+        }, 0);
+      }
+      
+      addChart(container, data, "score", "Score");
+      addChart(container, data, "power", "Power");
+      addChart(container, data, "property", "Property");
+    });
   }
 }();
