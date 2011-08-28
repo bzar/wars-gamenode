@@ -36,92 +36,112 @@ Skeleton.prototype.createGame = function(name, mapId, public, turnLength) {
 }
 
 Skeleton.prototype.joinGame = function(gameId, playerNumber) {
-  var timer = new utils.Timer("Skeleton.joinGame");
   if(this.sessionId === null)
     return {success: false, reason: "Not logged in"}
-    
+
   var requestId = this.client.requestId;
   var this_ = this;
   var userId = this.session.userId;
-  this.server.gameManagement.joinGame(userId, gameId, playerNumber, function(result) {
-    if(result.success) {
-      this_.server.database.user(userId, function(result) {
-        this_.server.subscriptions.forSubscribers(function(sub) {
-          var isMe = result.user.userId == sub.session.userId;
-          sub.client.stub.playerJoined(playerNumber, result.user.username, isMe);
-        }, "game-" + gameId);
-      });
-      this_.client.sendResponse(requestId, {success: true});
-      timer.end();
-    } else {
-      this_.client.sendResponse(requestId, {success: false, reason: result.reason});
-    }
+
+  var mutex = this.server.gameMutex(gameId);
+  mutex.lock(function() {
+    var timer = new utils.Timer("Skeleton.joinGame");
+    this_.server.gameManagement.joinGame(userId, gameId, playerNumber, function(result) {
+      if(result.success) {
+        this_.server.database.user(userId, function(result) {
+          this_.server.subscriptions.forSubscribers(function(sub) {
+            var isMe = result.user.userId == sub.session.userId;
+            sub.client.stub.playerJoined(playerNumber, result.user.username, isMe);
+          }, "game-" + gameId);
+        });
+        this_.client.sendResponse(requestId, {success: true});
+        timer.end();
+      } else {
+        this_.client.sendResponse(requestId, {success: false, reason: result.reason});
+      }
+      mutex.release();
+    });
   });
 }
 
 Skeleton.prototype.leaveGame = function(gameId, playerNumber) {
-  var timer = new utils.Timer("Skeleton.leaveGame");
   if(this.sessionId === null)
     return {success: false, reason: "Not logged in"}
-    
+
   var requestId = this.client.requestId;
   var this_ = this;
   var userId = this.session.userId;
-  this.server.gameManagement.leaveGame(userId, gameId, playerNumber, function(result) {
-    if(result.success) {
-      this_.server.subscriptions.forSubscribers(function(sub) {
-        sub.client.stub.playerLeft(playerNumber);
-      }, "game-" + gameId);
-      this_.client.sendResponse(requestId, {success: true});
-      timer.end();
-    } else {
-      this_.client.sendResponse(requestId, {success: false, reason: result.reason});
-    }
+
+  var mutex = this.server.gameMutex(gameId);
+  mutex.lock(function() {
+    var timer = new utils.Timer("Skeleton.leaveGame");
+    this_.server.gameManagement.leaveGame(userId, gameId, playerNumber, function(result) {
+      if(result.success) {
+        this_.server.subscriptions.forSubscribers(function(sub) {
+          sub.client.stub.playerLeft(playerNumber);
+        }, "game-" + gameId);
+        this_.client.sendResponse(requestId, {success: true});
+        timer.end();
+      } else {
+        this_.client.sendResponse(requestId, {success: false, reason: result.reason});
+      }
+      mutex.release();
+    });
   });
 }
 
 Skeleton.prototype.startGame = function(gameId) {
-  var timer = new utils.Timer("Skeleton.startGame");
   if(this.sessionId === null)
     return {success: false, reason: "Not logged in"}
-    
+
   var requestId = this.client.requestId;
   var this_ = this;
   var userId = this.session.userId;
-  this.server.gameManagement.startGame(userId, gameId, function(result) {
-    if(result.success) {
-      this_.server.gameActions.nextTurn(gameId, userId, function(result) {
-        if(result.success) {
-          this_.server.subscriptions.forSubscribers(function(sub) {
-            sub.client.stub.gameStarted(gameId);
-          }, "game-" + gameId);
-          this_.client.sendResponse(requestId, {success: true});
-          timer.end();
-        } else {
-          this_.client.sendResponse(requestId, {success: false, reason: result.reason});
-        }
-      });
-    } else {
-      this_.client.sendResponse(requestId, {success: false, reason: result.reason});
-    }
+
+  var mutex = this.server.gameMutex(gameId);
+  mutex.lock(function() {
+    var timer = new utils.Timer("Skeleton.startGame");
+    this_.server.gameManagement.startGame(userId, gameId, function(result) {
+      if(result.success) {
+        this_.server.gameActions.nextTurn(gameId, userId, function(result) {
+          if(result.success) {
+            this_.server.subscriptions.forSubscribers(function(sub) {
+              sub.client.stub.gameStarted(gameId);
+            }, "game-" + gameId);
+            this_.client.sendResponse(requestId, {success: true});
+            timer.end();
+          } else {
+            this_.client.sendResponse(requestId, {success: false, reason: result.reason});
+          }
+        });
+      } else {
+        this_.client.sendResponse(requestId, {success: false, reason: result.reason});
+      }
+      mutex.release();
+    });
   });
 }
 
 Skeleton.prototype.deleteGame = function(gameId) {
-  var timer = new utils.Timer("Skeleton.deleteGame");
   if(this.sessionId === null)
     return {success: false, reason: "Not logged in"}
-    
-  var requestId = this.client.requestId;
+  
   var this_ = this;
-  var userId = this.session.userId;
-  this.server.gameManagement.deleteGame(userId, gameId, function(result) {
-    if(result.success) {
-      this_.client.sendResponse(requestId, {success: true});
-      timer.end();
-    } else {
-      this_.client.sendResponse(requestId, {success: false, reason: result.reason});
-    }
+  var mutex = this.server.gameMutex(gameId);
+  mutex.lock(function() {
+    var timer = new utils.Timer("Skeleton.deleteGame");
+    var requestId = this.client.requestId;
+    var this_ = this;
+    var userId = this.session.userId;
+    this_.server.gameManagement.deleteGame(userId, gameId, function(result) {
+      if(result.success) {
+        this_.client.sendResponse(requestId, {success: true});
+        timer.end();
+      } else {
+        this_.client.sendResponse(requestId, {success: false, reason: result.reason});
+      }
+      mutex.release();
+    });
   });
 }
 
@@ -493,242 +513,291 @@ function prepareEvents(events) {
   return preparedEvents;
 }
 Skeleton.prototype.moveAndAttack = function(gameId, unitId, destination, targetId) {
-  var timer = new utils.Timer("Skeleton.moveAndAttack");
-  var timer = new utils.Timer("Skeleton.moveAndAttack");
   if(this.sessionId === null)
     return {success: false, reason: "Not logged in"}
     
   var requestId = this.client.requestId;
   var this_ = this;
   var userId = this.session.userId;
-  this.server.gameActions.moveAndAttack(gameId, userId, unitId, destination, targetId, function(result) {
-    if(result.success) {
-      var preparedEvents = prepareEvents(result.events);
-      this_.server.subscriptions.forSubscribers(function(sub) {
-        sub.client.stub.gameUpdate(gameId, result.changedTiles);
-        sub.client.stub.gameEvents(gameId, preparedEvents);
-      }, "game-" + gameId);
-      this_.client.sendResponse(requestId, {success: true});
-      timer.end();
-    } else {
-      this_.client.sendResponse(requestId, {success: false, reason: result.reason});
-    }
+
+  var mutex = this.server.gameMutex(gameId);
+  mutex.lock(function() {
+    var timer = new utils.Timer("Skeleton.moveAndAttack");
+    this_.server.gameActions.moveAndAttack(gameId, userId, unitId, destination, targetId, function(result) {
+      if(result.success) {
+        var preparedEvents = prepareEvents(result.events);
+        this_.server.subscriptions.forSubscribers(function(sub) {
+          sub.client.stub.gameUpdate(gameId, result.changedTiles);
+          sub.client.stub.gameEvents(gameId, preparedEvents);
+        }, "game-" + gameId);
+        this_.client.sendResponse(requestId, {success: true});
+        timer.end();
+      } else {
+        this_.client.sendResponse(requestId, {success: false, reason: result.reason});
+      }
+      mutex.release();
+    });
   });
 }
 
 Skeleton.prototype.moveAndWait = function(gameId, unitId, destination) {
-  var timer = new utils.Timer("Skeleton.moveAndWait");
   if(this.sessionId === null)
     return {success: false, reason: "Not logged in"}
     
   var requestId = this.client.requestId;
   var this_ = this;
   var userId = this.session.userId;
-  this.server.gameActions.moveAndWait(gameId, userId, unitId, destination, function(result) {
-    if(result.success) {
-      this_.server.subscriptions.forSubscribers(function(sub) {
-        sub.client.stub.gameUpdate(gameId, result.changedTiles);
-      }, "game-" + gameId);
-      this_.client.sendResponse(requestId, {success: true});
-      timer.end();
-    } else {
-      this_.client.sendResponse(requestId, {success: false, reason: result.reason});
-    }
+  
+  var mutex = this.server.gameMutex(gameId);
+  mutex.lock(function() {
+    var timer = new utils.Timer("Skeleton.moveAndWait");
+    this_.server.gameActions.moveAndWait(gameId, userId, unitId, destination, function(result) {
+      if(result.success) {
+        this_.server.subscriptions.forSubscribers(function(sub) {
+          sub.client.stub.gameUpdate(gameId, result.changedTiles);
+        }, "game-" + gameId);
+        this_.client.sendResponse(requestId, {success: true});
+        timer.end();
+      } else {
+        this_.client.sendResponse(requestId, {success: false, reason: result.reason});
+      }
+      mutex.release();
+    });
   });
 }
 
 Skeleton.prototype.moveAndCapture = function(gameId, unitId, destination) {
-  var timer = new utils.Timer("Skeleton.moveAndCapture");
   if(this.sessionId === null)
     return {success: false, reason: "Not logged in"}
     
   var requestId = this.client.requestId;
   var this_ = this;
   var userId = this.session.userId;
-  this.server.gameActions.moveAndCapture(gameId, userId, unitId, destination, function(result) {
-    if(result.success) {
-      var preparedEvents = prepareEvents(result.events);
-      this_.server.subscriptions.forSubscribers(function(sub) {
-        sub.client.stub.gameUpdate(gameId, result.changedTiles);
-        sub.client.stub.gameEvents(gameId, preparedEvents);
-      }, "game-" + gameId);
-      this_.client.sendResponse(requestId, {success: true});
-      timer.end();
-    } else {
-      this_.client.sendResponse(requestId, {success: false, reason: result.reason});
-    }
+  
+  var mutex = this.server.gameMutex(gameId);
+  mutex.lock(function() {
+    var timer = new utils.Timer("Skeleton.moveAndCapture");
+    this_.server.gameActions.moveAndCapture(gameId, userId, unitId, destination, function(result) {
+      if(result.success) {
+        var preparedEvents = prepareEvents(result.events);
+        this_.server.subscriptions.forSubscribers(function(sub) {
+          sub.client.stub.gameUpdate(gameId, result.changedTiles);
+          sub.client.stub.gameEvents(gameId, preparedEvents);
+        }, "game-" + gameId);
+        this_.client.sendResponse(requestId, {success: true});
+        timer.end();
+      } else {
+        this_.client.sendResponse(requestId, {success: false, reason: result.reason});
+      }
+      mutex.release();
+    });
   });
 }
 
 Skeleton.prototype.moveAndDeploy = function(gameId, unitId, destination) {
-  var timer = new utils.Timer("Skeleton.moveAndDeploy");
   if(this.sessionId === null)
     return {success: false, reason: "Not logged in"}
     
   var requestId = this.client.requestId;
   var this_ = this;
   var userId = this.session.userId;
-  this.server.gameActions.moveAndDeploy(gameId, userId, unitId, destination, function(result) {
-    if(result.success) {
-      var preparedEvents = prepareEvents(result.events);
-      this_.server.subscriptions.forSubscribers(function(sub) {
-        sub.client.stub.gameUpdate(gameId, result.changedTiles);
-        sub.client.stub.gameEvents(gameId, preparedEvents);
-      }, "game-" + gameId);
-      this_.client.sendResponse(requestId, {success: true});
-      timer.end();
-    } else {
-      this_.client.sendResponse(requestId, {success: false, reason: result.reason});
-    }
+  
+  var mutex = this.server.gameMutex(gameId);
+  mutex.lock(function() {
+    var timer = new utils.Timer("Skeleton.moveAndDeploy");
+    this_.server.gameActions.moveAndDeploy(gameId, userId, unitId, destination, function(result) {
+      if(result.success) {
+        var preparedEvents = prepareEvents(result.events);
+        this_.server.subscriptions.forSubscribers(function(sub) {
+          sub.client.stub.gameUpdate(gameId, result.changedTiles);
+          sub.client.stub.gameEvents(gameId, preparedEvents);
+        }, "game-" + gameId);
+        this_.client.sendResponse(requestId, {success: true});
+        timer.end();
+      } else {
+        this_.client.sendResponse(requestId, {success: false, reason: result.reason});
+      }
+      mutex.release();
+    });
   });
 }
 
 Skeleton.prototype.undeploy = function(gameId, unitId) {
-  var timer = new utils.Timer("Skeleton.undeploy");
   if(this.sessionId === null)
     return {success: false, reason: "Not logged in"}
     
   var requestId = this.client.requestId;
   var this_ = this;
   var userId = this.session.userId;
-  this.server.gameActions.undeploy(gameId, userId, unitId, function(result) {
-    if(result.success) {
-      var preparedEvents = prepareEvents(result.events);
-      this_.server.subscriptions.forSubscribers(function(sub) {
-        sub.client.stub.gameUpdate(gameId, result.changedTiles);
-        sub.client.stub.gameEvents(gameId, preparedEvents);
-      }, "game-" + gameId);
-      this_.client.sendResponse(requestId, {success: true});
-      timer.end();
-    } else {
-      this_.client.sendResponse(requestId, {success: false, reason: result.reason});
-    }
+  
+  var mutex = this.server.gameMutex(gameId);
+  mutex.lock(function() {
+    var timer = new utils.Timer("Skeleton.undeploy");
+    this_.server.gameActions.undeploy(gameId, userId, unitId, function(result) {
+      if(result.success) {
+        var preparedEvents = prepareEvents(result.events);
+        this_.server.subscriptions.forSubscribers(function(sub) {
+          sub.client.stub.gameUpdate(gameId, result.changedTiles);
+          sub.client.stub.gameEvents(gameId, preparedEvents);
+        }, "game-" + gameId);
+        this_.client.sendResponse(requestId, {success: true});
+        timer.end();
+      } else {
+        this_.client.sendResponse(requestId, {success: false, reason: result.reason});
+      }
+      mutex.release();
+    });
   });
 }
 
 Skeleton.prototype.moveAndLoadInto = function(gameId, unitId, carrierId) {
-  var timer = new utils.Timer("Skeleton.moveAndLoadInto");
   if(this.sessionId === null)
     return {success: false, reason: "Not logged in"}
     
   var requestId = this.client.requestId;
   var this_ = this;
   var userId = this.session.userId;
-  this.server.gameActions.moveAndLoadInto(gameId, userId, unitId, carrierId, function(result) {
-    if(result.success) {
-      var preparedEvents = prepareEvents(result.events);
-      this_.server.subscriptions.forSubscribers(function(sub) {
-        sub.client.stub.gameUpdate(gameId, result.changedTiles);
-        sub.client.stub.gameEvents(gameId, preparedEvents);
-      }, "game-" + gameId);
-      this_.client.sendResponse(requestId, {success: true});
-      timer.end();
-    } else {
-      this_.client.sendResponse(requestId, {success: false, reason: result.reason});
-    }
+  
+  var mutex = this.server.gameMutex(gameId);
+  mutex.lock(function() {
+    var timer = new utils.Timer("Skeleton.moveAndLoadInto");
+    this_.server.gameActions.moveAndLoadInto(gameId, userId, unitId, carrierId, function(result) {
+      if(result.success) {
+        var preparedEvents = prepareEvents(result.events);
+        this_.server.subscriptions.forSubscribers(function(sub) {
+          sub.client.stub.gameUpdate(gameId, result.changedTiles);
+          sub.client.stub.gameEvents(gameId, preparedEvents);
+        }, "game-" + gameId);
+        this_.client.sendResponse(requestId, {success: true});
+        timer.end();
+      } else {
+        this_.client.sendResponse(requestId, {success: false, reason: result.reason});
+      }
+      mutex.release();
+    });
   });
 }
 
 Skeleton.prototype.moveAndUnload = function(gameId, unitId, destination, carriedUnitId, unloadDestination) {
-  var timer = new utils.Timer("Skeleton.moveAndUnload");
   if(this.sessionId === null)
     return {success: false, reason: "Not logged in"}
     
   var requestId = this.client.requestId;
   var this_ = this;
   var userId = this.session.userId;
-  this.server.gameActions.moveAndUnload(gameId, userId, unitId, destination, 
-                                        carriedUnitId, unloadDestination, function(result) {
-    if(result.success) {
-      var preparedEvents = prepareEvents(result.events);
-      this_.server.subscriptions.forSubscribers(function(sub) {
-        sub.client.stub.gameUpdate(gameId, result.changedTiles);
-        sub.client.stub.gameEvents(gameId, preparedEvents);
-      }, "game-" + gameId);
-      this_.client.sendResponse(requestId, {success: true});
-      timer.end();
-    } else {
-      this_.client.sendResponse(requestId, {success: false, reason: result.reason});
-    }
+  
+  var mutex = this.server.gameMutex(gameId);
+  mutex.lock(function() {
+    var timer = new utils.Timer("Skeleton.moveAndUnload");
+    this_.server.gameActions.moveAndUnload(gameId, userId, unitId, destination, 
+                                          carriedUnitId, unloadDestination, function(result) {
+      if(result.success) {
+        var preparedEvents = prepareEvents(result.events);
+        this_.server.subscriptions.forSubscribers(function(sub) {
+          sub.client.stub.gameUpdate(gameId, result.changedTiles);
+          sub.client.stub.gameEvents(gameId, preparedEvents);
+        }, "game-" + gameId);
+        this_.client.sendResponse(requestId, {success: true});
+        timer.end();
+      } else {
+        this_.client.sendResponse(requestId, {success: false, reason: result.reason});
+      }
+      mutex.release();
+    });
   });
 }
 
 Skeleton.prototype.build = function(gameId, unitTypeId, destination) {
-  var timer = new utils.Timer("Skeleton.build");
   if(this.sessionId === null)
     return {success: false, reason: "Not logged in"}
     
   var requestId = this.client.requestId;
   var this_ = this;
   var userId = this.session.userId;
-  this.server.gameActions.build(gameId, userId, unitTypeId, destination, function(result) {
-    if(result.success) {
-      var preparedEvents = prepareEvents(result.events);
-      this_.server.subscriptions.forSubscribers(function(sub) {
-        sub.client.stub.gameUpdate(gameId, result.changedTiles);
-        sub.client.stub.gameEvents(gameId, preparedEvents);
-      }, "game-" + gameId);
-      this_.client.sendResponse(requestId, {success: true});
-      timer.end();
-    } else {
-      this_.client.sendResponse(requestId, {success: false, reason: result.reason});
-    }
+  
+  var mutex = this.server.gameMutex(gameId);
+  mutex.lock(function() {
+    var timer = new utils.Timer("Skeleton.build");
+    this_.server.gameActions.build(gameId, userId, unitTypeId, destination, function(result) {
+      if(result.success) {
+        var preparedEvents = prepareEvents(result.events);
+        this_.server.subscriptions.forSubscribers(function(sub) {
+          sub.client.stub.gameUpdate(gameId, result.changedTiles);
+          sub.client.stub.gameEvents(gameId, preparedEvents);
+        }, "game-" + gameId);
+        this_.client.sendResponse(requestId, {success: true});
+        timer.end();
+      } else {
+        this_.client.sendResponse(requestId, {success: false, reason: result.reason});
+      }
+      mutex.release();
+    });
   });
 }
 
 Skeleton.prototype.endTurn = function(gameId) {
-  var timer = new utils.Timer("Skeleton.endTurn");
   if(this.sessionId === null)
     return {success: false, reason: "Not logged in"}
     
   var requestId = this.client.requestId;
   var this_ = this;
   var userId = this.session.userId;
-  this.server.gameActions.nextTurn(gameId, userId, function(result) {
-    if(result.success) {
-      var preparedEvents = prepareEvents(result.events);
-      this_.server.subscriptions.forSubscribers(function(sub) {
-        sub.client.stub.gameUpdate(gameId, result.changedTiles);
-        sub.client.stub.gameEvents(gameId, preparedEvents);
-        if(result.finished) {
-          sub.client.stub.gameFinished(gameId);
-        } else {
-          sub.client.stub.gameTurnChange(gameId, result.inTurnNumber, result.roundNumber);
-        }
-      }, "game-" + gameId);
-      this_.client.sendResponse(requestId, {success: true});
-      timer.end();
-    } else {
-      this_.client.sendResponse(requestId, {success: false, reason: result.reason});
-    }
+  
+  var mutex = this.server.gameMutex(gameId);
+  mutex.lock(function() {
+    var timer = new utils.Timer("Skeleton.endTurn");
+    this_.server.gameActions.nextTurn(gameId, userId, function(result) {
+      if(result.success) {
+        var preparedEvents = prepareEvents(result.events);
+        this_.server.subscriptions.forSubscribers(function(sub) {
+          sub.client.stub.gameUpdate(gameId, result.changedTiles);
+          sub.client.stub.gameEvents(gameId, preparedEvents);
+          if(result.finished) {
+            sub.client.stub.gameFinished(gameId);
+          } else {
+            sub.client.stub.gameTurnChange(gameId, result.inTurnNumber, result.roundNumber);
+          }
+        }, "game-" + gameId);
+        this_.client.sendResponse(requestId, {success: true});
+        timer.end();
+      } else {
+        this_.client.sendResponse(requestId, {success: false, reason: result.reason});
+      }
+      mutex.release();
+    });
   });
 }
 
 Skeleton.prototype.surrender = function(gameId) {
-  var timer = new utils.Timer("Skeleton.surrender");
   if(this.sessionId === null)
     return {success: false, reason: "Not logged in"}
     
   var requestId = this.client.requestId;
   var this_ = this;
   var userId = this.session.userId;
-  this.server.gameActions.surrender(gameId, userId, function(result) {
-    if(result.success) {
-      var preparedEvents = prepareEvents(result.events);
-      this_.server.subscriptions.forSubscribers(function(sub) {
-        sub.client.stub.gameUpdate(gameId, result.changedTiles);
-        sub.client.stub.gameEvents(gameId, preparedEvents);
-        if(result.finished) {
-          sub.client.stub.gameFinished(gameId);
-        } else {
-          sub.client.stub.gameTurnChange(gameId, result.inTurnNumber);
-        }
-      }, "game-" + gameId);
-      this_.client.sendResponse(requestId, {success: true});
-      timer.end();
-    } else {
-      this_.client.sendResponse(requestId, {success: false, reason: result.reason});
-    }
+  
+  var mutex = this.server.gameMutex(gameId);
+  mutex.lock(function() {
+    var timer = new utils.Timer("Skeleton.surrender");
+    this_.server.gameActions.surrender(gameId, userId, function(result) {
+      if(result.success) {
+        var preparedEvents = prepareEvents(result.events);
+        this_.server.subscriptions.forSubscribers(function(sub) {
+          sub.client.stub.gameUpdate(gameId, result.changedTiles);
+          sub.client.stub.gameEvents(gameId, preparedEvents);
+          if(result.finished) {
+            sub.client.stub.gameFinished(gameId);
+          } else {
+            sub.client.stub.gameTurnChange(gameId, result.inTurnNumber);
+          }
+        }, "game-" + gameId);
+        this_.client.sendResponse(requestId, {success: true});
+        timer.end();
+      } else {
+        this_.client.sendResponse(requestId, {success: false, reason: result.reason});
+      }
+      mutex.release();
+    });
   });
 }
 

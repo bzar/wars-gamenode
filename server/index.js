@@ -5,7 +5,8 @@ var Server = require("../lib/gamenode/server/gameNodeServer").GameNodeServer,
     Skeleton = require("./skeleton").Skeleton,
     configuration = require("./configuration").configuration,
     settings = require("./settings").settings,
-    database = require("./database");
+    database = require("./database"),
+    utils = require("./utils");
 
 var GameManagement = require("./game").GameManagement;
 var GameActions = require("./game").GameActions;
@@ -27,9 +28,28 @@ function WarsServer() {
   this.subscriptions = new SubscriptionManager();
   this.gameManagement = new GameManagement(this.database);
   this.gameActions = new GameActions(this.database);
+  this.gameMutexes = [];
 }
 
 WarsServer.prototype = new Server(Skeleton);
+
+WarsServer.prototype.gameMutex = function(gameId) {
+  var mutex = null;
+  for(var i = 0; i < this.gameMutexes.length; ++i) {
+    if(this.gameMutexes[i].gameId == gameId) {
+      mutex = this.gameMutexes[i].mutex;
+      break;
+    }
+  }
+  
+  if(mutex === null) {
+    mutex = new utils.Mutex();
+    this.gameMutexes.push({gameId: gameId, mutex: mutex});
+  }
+  
+  return mutex;
+}
+
 
 var server = new WarsServer();
 

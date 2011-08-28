@@ -22,6 +22,10 @@ function checkMove(database, gameId, userId, unitId, destination, callback) {
     var unit = result.unit;
     var sourceTile = result.tile;
     
+    if(unit.moved) {
+      callback({success: false, reason: "Unit already moved!"}); return;
+    } 
+    
     var gameInformation = new GameInformation(database);
     gameInformation.gameData(gameId, function(result) {
       if(!result.success) {
@@ -686,9 +690,10 @@ GameActions.prototype.surrender = function(gameId, userId, callback) {
           var finished = result.finished;
           var inTurnNumber = result.inTurnNumber;
           database.tilesWithUnits(gameId, function(result) {
+            var changedTiles = result.tiles;
             database.createGameEvents(events.objects, function(result) {
               callback({success: true, finished: finished, inTurnNumber: inTurnNumber, 
-                       changedTiles: result.tiles, events: events.objects});
+                       changedTiles: changedTiles, events: events.objects});
             });
           });
         });

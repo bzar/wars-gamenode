@@ -1,4 +1,5 @@
-configuration = require("./configuration").configuration;
+var configuration = require("./configuration").configuration;
+var EventEmitter = require('events').EventEmitter;
 
 function Timer(label, topic) {
   this.label = label;
@@ -18,3 +19,26 @@ Timer.prototype.end = function() {
   }
 }
 
+function Mutex() {
+  this.queue = new EventEmitter();
+  this.locked = false;
+}
+
+exports.Mutex = Mutex;
+
+Mutex.prototype.lock = function(fn) {
+  if(this.locked) {
+    var this_ = this;
+    this.queue.once('ready',function() {
+      this_.lock(fn);
+    });
+  } else {
+    this.locked = true;
+    fn();
+  }
+}
+
+Mutex.prototype.release = function release() {
+  this.locked = false;
+  this.queue.emit('ready');
+}
