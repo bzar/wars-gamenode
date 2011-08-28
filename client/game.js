@@ -33,6 +33,7 @@ var wrap = function() {
             if(response.game.state == "pregame") {
               document.location = "pregame.html?gameId=" + gameId;
             }
+            $("#spinner").show();
             initializeChat(client, gameId);
             initializeMenuControls();
             initializeGameTools();
@@ -90,18 +91,22 @@ var wrap = function() {
   function initializeGameTools() {
     $("#endTurn").click(function(e) {
       e.preventDefault();
+      $("#spinner").show();
       client.stub.endTurn(gameId, function(response) {
         if(!response.success) {
           alert(response.reason);
+          $("#spinner").hide();
         }
       });
     });
     
     $("#surrender").click(function(e) {
       e.preventDefault();
+      $("#spinner").show();
       client.stub.surrender(gameId, function(response) {
         if(!response.success) {
           alert("Could not surrender! " + response.reason);
+          $("#spinner").hide();
         }
       });
     });
@@ -171,6 +176,7 @@ var wrap = function() {
         }
       }
       map.refresh();
+      $("#spinner").hide();
     }
     
     $("#mapCanvas").click(handleMapClick);
@@ -198,6 +204,7 @@ var wrap = function() {
           map.canvas.width = width;
           map.canvas.height = height;
           map.refresh();
+          $("#spinner").hide();
         });
       });    
     });
@@ -377,6 +384,7 @@ var wrap = function() {
           var unitId = map.getTile(gameUIState.x, gameUIState.y).unit.unitId;
           var destination = {x: gameUIState.dx, y: gameUIState.dy};
           var targetId = map.getTile(tx, ty).unit.unitId;
+          $("#spinner").show();
           client.stub.moveAndAttack(gameId, unitId, destination, targetId, function(response) {
             if(!response.success) {
               alert(response.reason);
@@ -408,6 +416,7 @@ var wrap = function() {
           var destination = {x: gameUIState.dx, y: gameUIState.dy};
           var carriedUnitId = gameUIState.carriedUnitId;
           var unloadDestination = {x: tx, y: ty};
+          $("#spinner").show();
           client.stub.moveAndUnload(gameId, unitId, destination, carriedUnitId, unloadDestination, function(response) {
             if(!response.success) {
               alert(response.reason);
@@ -554,6 +563,7 @@ var wrap = function() {
       } else if(action == "wait") {
         var unitId = map.getTile(gameUIState.x, gameUIState.y).unit.unitId;
         var destination = {x: gameUIState.dx, y: gameUIState.dy};
+        $("#spinner").show();
         client.stub.moveAndWait(gameId, unitId, destination, function(response) {
           if(!response.success) {
             alert(response.reason);
@@ -563,6 +573,7 @@ var wrap = function() {
       } else if(action == "capture") {
         var unitId = map.getTile(gameUIState.x, gameUIState.y).unit.unitId;
         var destination = {x: gameUIState.dx, y: gameUIState.dy};
+        $("#spinner").show();
         client.stub.moveAndCapture(gameId, unitId, destination, function(response) {
           if(!response.success) {
             alert(response.reason);
@@ -572,6 +583,7 @@ var wrap = function() {
       } else if(action == "deploy") {
         var unitId = map.getTile(gameUIState.x, gameUIState.y).unit.unitId;
         var destination = {x: gameUIState.dx, y: gameUIState.dy};
+        $("#spinner").show();
         client.stub.moveAndDeploy(gameId, unitId, destination, function(response) {
           if(!response.success) {
             alert(response.reason);
@@ -580,6 +592,7 @@ var wrap = function() {
         });
       } else if(action == "undeploy") {
         var unitId = map.getTile(gameUIState.x, gameUIState.y).unit.unitId;
+        $("#spinner").show();
         client.stub.undeploy(gameId, unitId, function(response) {
           if(!response.success) {
             alert(response.reason);
@@ -589,6 +602,7 @@ var wrap = function() {
       } else if(action == "load") {
         var unitId = map.getTile(gameUIState.x, gameUIState.y).unit.unitId;
         var carrierId = map.getTile(gameUIState.dx, gameUIState.dy).unit.unitId;
+        $("#spinner").show();
         client.stub.moveAndLoadInto(gameId, unitId, carrierId, function(response) {
           if(!response.success) {
             alert(response.reason);
@@ -701,6 +715,7 @@ var wrap = function() {
       if(parseInt(unitType.price) <= funds) {
         buildItem.click(function() {
           var unitTypeId = parseInt($(this).attr("unitTypeId"));
+          $("#spinner").show();
           client.stub.build(gameId, unitTypeId, {x: tilePosition.x, y: tilePosition.y}, function(response) {
             if(response.success) {
               refreshFunds();

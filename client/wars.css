@@ -731,3 +731,15 @@ input[type=text], input[type=password] {
 .statisticBarChart .label {
   color: #ddd;
 }
+
+#spinner {
+  position: absolute;
+  top: 0;
+  left: 190px;
+  z-index: 10;
+  opacity: 0.5;
+  background-color: #eee;
+  border-radius: 0 0 5px 0;
+  display: none;
+  padding: 3px;
+}
