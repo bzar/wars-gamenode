@@ -4,3 +4,6 @@
 [submodule "client/d3"]
 	path = client/d3
 	url = git://github.com/mbostock/d3.git
+[submodule "server/lib/node_mailer"]
+	path = server/lib/node_mailer
+	url = https://github.com/Marak/node_mailer.git
