@@ -1,5 +1,6 @@
 var entities = require("../entities");
 var settings = require("../settings").settings;
+var email = require("../email");
 var GameLogic = require("../../client/gamelogic").GameLogic;
 var GameProcedures = require("./procedures").GameProcedures;
 var GameInformation = require("./information").GameInformation;
@@ -609,8 +610,11 @@ GameActions.prototype.startTurn = function(game, callback) {
                 database.updatePlayer(nextPlayer, function(result) {
                   database.createGameEvents(events.objects, function(result) {
                     database.createGameStatistic(gameStatistic, function(result) {
-                      callback({success: true, finished: false, inTurnNumber: game.inTurnNumber, roundNumber: game.roundNumber,
-                                changedTiles: nextPlayerTiles, events: events.objects});
+                      database.user(nextPlayer.userId, function(result) {
+                        email.sendTurnNotification(game, nextPlayer, result.user);
+                        callback({success: true, finished: false, inTurnNumber: game.inTurnNumber, roundNumber: game.roundNumber,
+                                  changedTiles: nextPlayerTiles, events: events.objects});
+                      });
                     });
                   });
                 });

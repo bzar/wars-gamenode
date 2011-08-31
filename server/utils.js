@@ -7,15 +7,19 @@ function Timer(label, topic) {
   this.topic = topic ? topic : "performance";
   
   if(configuration.logTopics.indexOf(this.topic) != -1) {
-    console.log("[TIMER] > " + this.label);
+    exports.log(this.topic, "> " + this.label);
   }
 }
 
 exports.Timer = Timer;
 
 Timer.prototype.end = function() {
-  if(configuration.logTopics.indexOf(this.topic) != -1) {
-    console.log("[TIMER] < " + this.label + ": " + ((new Date()).getTime() - this.start) + "ms");
+  exports.log(this.topic, "< " + this.label + ": " + ((new Date()).getTime() - this.start) + "ms");
+}
+
+exports.log = function(topic, message) {
+  if(configuration.logTopics.indexOf(topic) != -1) {
+    console.log("[" + topic + "] " + message);
   }
 }
 
