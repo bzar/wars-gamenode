@@ -97,6 +97,7 @@ GameManagement.prototype.joinGame = function(userId, gameId, playerNumber, callb
             } else {
               player.userId = userId;
               player.playerName = result.user.username;
+              player.settings.emailNotifications = result.user.settings.emailNotifications;
               this_.database.updatePlayer(player, function(result) {
                 if(result.success) {
                   callback({success: true});

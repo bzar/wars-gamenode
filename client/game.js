@@ -117,14 +117,40 @@ var wrap = function() {
       chat.toggle();
       if(chat.css("display") == "none") {
         $("#content").css("top", 0);
+        $("#showChatStatus").text("Show");
       } else {
+        $("#showChatStatus").text("Hide");
         $("#showChat").removeClass("highlight");
         $("#content").css("top", chat.outerHeight());
       }
     });
     
     $("#showHideChat").click(function(e) {
+      e.preventDefault();
       $("#content").css("top", chat.outerHeight());
+    });
+    
+    client.stub.emailNotifications(gameId, function(response) {
+      if(response.success) {
+        if(response.value) {
+          $("#sendNotificationsStatus").text("off");
+        }
+      } else {
+        $("#sendNotifications").hide();
+      }
+    });
+    
+    $("#sendNotifications").click(function(e) {
+      e.preventDefault();
+      var status = $("#sendNotificationsStatus");
+      var nextValue = status.text() != "off";
+      client.stub.setEmailNotifications(gameId, nextValue, function(response) {
+        if(response.success) {
+          status.text(nextValue ? "off" : "on");
+        } else {
+          alert("Could not change email notifications setting! " + response.reason);
+        }
+      });
     });
   }
   
@@ -245,8 +271,10 @@ var wrap = function() {
       e.preventDefault();
       messageTickerContainer.toggle();
       if(messageTickerContainer.css("display") == "none") {
+        $("#showMessageTickerStatus").text("Show");
         $("#content").css("bottom", 0);
       } else {
+        $("#showMessageTickerStatus").text("Hide");
         $("#showMessageTicker").removeClass("highlight");
         $("#content").css("bottom", messageTickerContainer.outerHeight());
       }

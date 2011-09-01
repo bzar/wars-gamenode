@@ -439,6 +439,72 @@ Skeleton.prototype.gameData = function(gameId) {
   });
 }
 
+Skeleton.prototype.emailNotifications = function(gameId) {
+  var timer = new utils.Timer("Skeleton.emailNotifications");
+  if(this.sessionId === null)
+    return {success: false, reason: "Not logged in"}
+
+  var requestId = this.client.requestId;
+  var this_ = this;
+  var userId = this.session.userId;
+  this.server.database.players(gameId, function(result) {
+    if(result.success) {
+      var value = null;
+      for(var i = 0; i < result.players.length; ++i) {
+        if(result.players[i].userId == userId) {
+          value = result.players[i].settings.emailNotifications;
+          break;
+        }
+      }
+      if(value === null) {
+        this_.client.sendResponse(requestId, {success: false, reason: "Not a player!"});
+      } else {
+        this_.client.sendResponse(requestId, {success: true, value: value});
+        timer.end();
+      }
+    } else {
+      this_.client.sendResponse(requestId, {success: false, reason: result.reason});
+    }
+  });
+}
+
+Skeleton.prototype.setEmailNotifications = function(gameId, value) {
+  var timer = new utils.Timer("Skeleton.setEmailNotifications");
+  if(this.sessionId === null)
+    return {success: false, reason: "Not logged in"}
+
+  var requestId = this.client.requestId;
+  var this_ = this;
+  var userId = this.session.userId;
+  this.server.database.players(gameId, function(result) {
+    if(result.success) {
+      var players = result.players;
+      var success = false;
+      for(var i = 0; i < players.length; ++i) {
+        if(players[i].userId == userId) {
+          players[i].settings.emailNotifications = value;
+          success = true;
+        }
+      }
+      if(success) {
+        this_.server.database.updatePlayers(players, function(success) {
+          if(result.success) {
+            this_.client.sendResponse(requestId, {success: true});
+            timer.end();
+          } else {
+            this_.client.sendResponse(requestId, {success: false, reason: result.reason});
+          }
+        });
+      } else {
+        this_.client.sendResponse(requestId, {success: false, reason: "Not a player!"});
+        timer.end();
+      }
+    } else {
+      this_.client.sendResponse(requestId, {success: false, reason: result.reason});
+    }
+  });
+}
+
 Skeleton.prototype.myFunds = function(gameId) {
   var timer = new utils.Timer("Skeleton.myFunds");
   var requestId = this.client.requestId;

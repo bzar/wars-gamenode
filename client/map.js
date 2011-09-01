@@ -323,7 +323,6 @@ Map.prototype.eventToTileY = function(event) {
 Map.prototype.showGameEvents = function(gameEvents) {
     for(i in gameEvents) {
         var e = gameEvents[i];
-        //console.log(e);
         if(e.action == "attack") {
             this.drawAttackArrow(e.attacker.x, e.attacker.y, e.target.x, e.target.y);
         }
