@@ -83,6 +83,84 @@ h2 {
   background-color: #666;
 }
 
+.actionButtons {
+  list-style: none;
+  padding: 8px 0;
+  margin: 0 8px 8px 8px;
+}
+
+.actionButtons a {
+  text-align: center;
+  background-color: #444;
+  border-style: solid;
+  border-color: #888;
+  border-width: 0 1px 1px 1px;
+  color: #eee;
+  padding: 8px;
+  font: 16px sans-serif;
+  text-decoration: none;
+  display: block;
+}
+
+.actionButtons li:last-child a {
+  border-radius: 0 0 8px 8px;
+}
+
+.actionButtons li:first-child a {
+  border-top-width: 1px;
+  border-radius: 8px 8px 0 0;
+}
+
+.actionButtons a.highlight {
+  background-color: #448;
+}
+
+.actionButtons a:visited {
+  color: #eee;
+}
+
+.actionButtons a:hover {
+  color: #fff;
+  background-color: #666;
+}
+
+.actionButtons a.highlight:hover {
+  background-color: #66a;
+}
+
+.menuNavigationButtons {
+  list-style: none;
+  text-align: left;
+  padding: 0;
+}
+
+.menuNavigationButtons a {
+  color: #eee;
+  padding: 10px;
+  font: 16px sans-serif;
+  text-decoration: none;
+  background-color: #444;
+  border-style: solid;
+  border-color: #666;
+  border-width: 1px 1px 1px 0;
+  border-radius: 0 4px 4px 0;
+  display: inline-block;
+}
+
+.menuNavigationButtons a.highlight {
+  background-color: #448;
+}
+
+.menuNavigationButtons a:visited {
+  color: #eee;
+}
+
+.menuNavigationButtons a:hover {
+  color: #fff;
+  background-color: #888;
+}
+
+
 #gameSettings {
     height: 100%;
 }
