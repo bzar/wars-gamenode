@@ -114,3 +114,10 @@ Game.prototype.getMapArray = function() {
     return mapArray;
 }
 
+Game.prototype.turnRemaining = function() {
+  if(this.settings.turnLength !== null && this.state == "inProgress") {
+    return this.settings.turnLength - (new Date().getTime() - this.turnStart*1000)/1000;
+  } else {
+    return null;
+  }
+}

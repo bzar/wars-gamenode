@@ -1,15 +1,6 @@
-var Server = require("../lib/gamenode/server/gameNodeServer").GameNodeServer,
-    SessionStorage = require("../lib/gamenode/server/sessionStorage").SessionStorage,
-    SubscriptionManager = require("../lib/gamenode/server/subscriptionManager").SubscriptionManager,
+var WarsServer = require("./warsServer").WarsServer,
     FileServer = require("../lib/gamenode/server/fileServer").FileServer,
-    Skeleton = require("./skeleton").Skeleton,
-    configuration = require("./configuration").configuration,
-    settings = require("./settings").settings,
-    database = require("./database"),
-    utils = require("./utils");
-
-var GameManagement = require("./game").GameManagement;
-var GameActions = require("./game").GameActions;
+    configuration = require("./configuration").configuration;
 
 if(!configuration.crashOnError) {
   process.on('uncaughtException', function (err) {
@@ -20,35 +11,6 @@ if(!configuration.crashOnError) {
   });
 }
 
-function WarsServer() {
-  this.sessionStorage = new SessionStorage();
-  this.database = database.create(configuration.database.type, configuration.database);
-  this.configuration = configuration;
-  this.settings = settings;
-  this.subscriptions = new SubscriptionManager();
-  this.gameManagement = new GameManagement(this.database);
-  this.gameActions = new GameActions(this.database);
-  this.gameMutexes = [];
-}
-
-WarsServer.prototype = new Server(Skeleton);
-
-WarsServer.prototype.gameMutex = function(gameId) {
-  var mutex = null;
-  for(var i = 0; i < this.gameMutexes.length; ++i) {
-    if(this.gameMutexes[i].gameId == gameId) {
-      mutex = this.gameMutexes[i].mutex;
-      break;
-    }
-  }
-  
-  if(mutex === null) {
-    mutex = new utils.Mutex();
-    this.gameMutexes.push({gameId: gameId, mutex: mutex});
-  }
-  
-  return mutex;
-}
 
 
 var server = new WarsServer();

@@ -11,6 +11,11 @@ exports.GameManagement = GameManagement;
 
 GameManagement.prototype.createGame = function(game, callback) {
   var this_ = this;
+  
+  if(game.settings.turnLength !== null && game.settings.turnLength < settings.minimumTurnLength) {
+    callback({success: false, reason: "Turn length must be at least " + settings.minimumTurnLength + " seconds!"});
+  }
+  
   this.database.map(game.mapId, function(result) {
     if(!result.success) {
       callback({success: false, reason: result.reason});

@@ -5,6 +5,7 @@ exports.settings = {
   maxCapturePoints: 200,
   defaultRepairRate: 20,
   defaultFundsPerProperty: 100,
-  gameElements: gameElements
+  gameElements: gameElements,
+  minimumTurnLength: 120
 }
 

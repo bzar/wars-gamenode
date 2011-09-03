@@ -49,10 +49,7 @@ Skeleton.prototype.joinGame = function(gameId, playerNumber) {
     this_.server.gameManagement.joinGame(userId, gameId, playerNumber, function(result) {
       if(result.success) {
         this_.server.database.user(userId, function(result) {
-          this_.server.subscriptions.forSubscribers(function(sub) {
-            var isMe = result.user.userId == sub.session.userId;
-            sub.client.stub.playerJoined(playerNumber, result.user.username, isMe);
-          }, "game-" + gameId);
+          this_.server.messenger.sendPlayerJoined(gameId, playerNumber, result.user.username, result.user.userId);
         });
         this_.client.sendResponse(requestId, {success: true});
         timer.end();
@@ -77,9 +74,7 @@ Skeleton.prototype.leaveGame = function(gameId, playerNumber) {
     var timer = new utils.Timer("Skeleton.leaveGame");
     this_.server.gameManagement.leaveGame(userId, gameId, playerNumber, function(result) {
       if(result.success) {
-        this_.server.subscriptions.forSubscribers(function(sub) {
-          sub.client.stub.playerLeft(playerNumber);
-        }, "game-" + gameId);
+        this_.server.messenger.sendPlayerLeft(gameId, playerNumber);
         this_.client.sendResponse(requestId, {success: true});
         timer.end();
       } else {
@@ -105,9 +100,7 @@ Skeleton.prototype.startGame = function(gameId) {
       if(result.success) {
         this_.server.gameActions.nextTurn(gameId, userId, function(result) {
           if(result.success) {
-            this_.server.subscriptions.forSubscribers(function(sub) {
-              sub.client.stub.gameStarted(gameId);
-            }, "game-" + gameId);
+            this_.server.messenger.sendGameStarted(gameId);
             this_.client.sendResponse(requestId, {success: true});
             timer.end();
           } else {
@@ -431,7 +424,7 @@ Skeleton.prototype.gameData = function(gameId) {
       for(var i = 0; i < game.players.length; ++i) {
         game.players[i].isMe = game.players[i].userId == userId;
       }
-      this_.client.sendResponse(requestId, {success: true, game: game, author: author});
+      this_.client.sendResponse(requestId, {success: true, game: game, author: author, turnRemaining: game.turnRemaining()});
       timer.end();
     } else {
       this_.client.sendResponse(requestId, {success: false, reason: result.reason});
@@ -566,18 +559,7 @@ Skeleton.prototype.unsubscribeGame = function(gameId) {
   return {success: true};
 }
 
-function prepareEvents(events) {
-  var preparedEvents = [];
-  for(var i = 0; i < events.length; ++i) {
-    var time = new Date();
-    time.setTime(events[i].time);
-    preparedEvents.push({
-      time: time.toUTCString(),
-      content: events[i].content
-    });
-  }
-  return preparedEvents;
-}
+
 Skeleton.prototype.moveAndAttack = function(gameId, unitId, destination, targetId) {
   if(this.sessionId === null)
     return {success: false, reason: "Not logged in"}
@@ -591,11 +573,8 @@ Skeleton.prototype.moveAndAttack = function(gameId, unitId, destination, targetI
     var timer = new utils.Timer("Skeleton.moveAndAttack");
     this_.server.gameActions.moveAndAttack(gameId, userId, unitId, destination, targetId, function(result) {
       if(result.success) {
-        var preparedEvents = prepareEvents(result.events);
-        this_.server.subscriptions.forSubscribers(function(sub) {
-          sub.client.stub.gameUpdate(gameId, result.changedTiles);
-          sub.client.stub.gameEvents(gameId, preparedEvents);
-        }, "game-" + gameId);
+        this_.server.messenger.sendGameUpdate(gameId, result.changedTiles);
+        this_.server.messenger.sendGameEvents(gameId, result.events);
         this_.client.sendResponse(requestId, {success: true});
         timer.end();
       } else {
@@ -619,9 +598,7 @@ Skeleton.prototype.moveAndWait = function(gameId, unitId, destination) {
     var timer = new utils.Timer("Skeleton.moveAndWait");
     this_.server.gameActions.moveAndWait(gameId, userId, unitId, destination, function(result) {
       if(result.success) {
-        this_.server.subscriptions.forSubscribers(function(sub) {
-          sub.client.stub.gameUpdate(gameId, result.changedTiles);
-        }, "game-" + gameId);
+        this_.server.messenger.sendGameUpdate(gameId, result.changedTiles);
         this_.client.sendResponse(requestId, {success: true});
         timer.end();
       } else {
@@ -645,11 +622,8 @@ Skeleton.prototype.moveAndCapture = function(gameId, unitId, destination) {
     var timer = new utils.Timer("Skeleton.moveAndCapture");
     this_.server.gameActions.moveAndCapture(gameId, userId, unitId, destination, function(result) {
       if(result.success) {
-        var preparedEvents = prepareEvents(result.events);
-        this_.server.subscriptions.forSubscribers(function(sub) {
-          sub.client.stub.gameUpdate(gameId, result.changedTiles);
-          sub.client.stub.gameEvents(gameId, preparedEvents);
-        }, "game-" + gameId);
+        this_.server.messenger.sendGameUpdate(gameId, result.changedTiles);
+        this_.server.messenger.sendGameEvents(gameId, result.events);
         this_.client.sendResponse(requestId, {success: true});
         timer.end();
       } else {
@@ -673,11 +647,8 @@ Skeleton.prototype.moveAndDeploy = function(gameId, unitId, destination) {
     var timer = new utils.Timer("Skeleton.moveAndDeploy");
     this_.server.gameActions.moveAndDeploy(gameId, userId, unitId, destination, function(result) {
       if(result.success) {
-        var preparedEvents = prepareEvents(result.events);
-        this_.server.subscriptions.forSubscribers(function(sub) {
-          sub.client.stub.gameUpdate(gameId, result.changedTiles);
-          sub.client.stub.gameEvents(gameId, preparedEvents);
-        }, "game-" + gameId);
+        this_.server.messenger.sendGameUpdate(gameId, result.changedTiles);
+        this_.server.messenger.sendGameEvents(gameId, result.events);
         this_.client.sendResponse(requestId, {success: true});
         timer.end();
       } else {
@@ -701,11 +672,8 @@ Skeleton.prototype.undeploy = function(gameId, unitId) {
     var timer = new utils.Timer("Skeleton.undeploy");
     this_.server.gameActions.undeploy(gameId, userId, unitId, function(result) {
       if(result.success) {
-        var preparedEvents = prepareEvents(result.events);
-        this_.server.subscriptions.forSubscribers(function(sub) {
-          sub.client.stub.gameUpdate(gameId, result.changedTiles);
-          sub.client.stub.gameEvents(gameId, preparedEvents);
-        }, "game-" + gameId);
+        this_.server.messenger.sendGameUpdate(gameId, result.changedTiles);
+        this_.server.messenger.sendGameEvents(gameId, result.events);
         this_.client.sendResponse(requestId, {success: true});
         timer.end();
       } else {
@@ -729,11 +697,8 @@ Skeleton.prototype.moveAndLoadInto = function(gameId, unitId, carrierId) {
     var timer = new utils.Timer("Skeleton.moveAndLoadInto");
     this_.server.gameActions.moveAndLoadInto(gameId, userId, unitId, carrierId, function(result) {
       if(result.success) {
-        var preparedEvents = prepareEvents(result.events);
-        this_.server.subscriptions.forSubscribers(function(sub) {
-          sub.client.stub.gameUpdate(gameId, result.changedTiles);
-          sub.client.stub.gameEvents(gameId, preparedEvents);
-        }, "game-" + gameId);
+        this_.server.messenger.sendGameUpdate(gameId, result.changedTiles);
+        this_.server.messenger.sendGameEvents(gameId, result.events);
         this_.client.sendResponse(requestId, {success: true});
         timer.end();
       } else {
@@ -758,11 +723,8 @@ Skeleton.prototype.moveAndUnload = function(gameId, unitId, destination, carried
     this_.server.gameActions.moveAndUnload(gameId, userId, unitId, destination, 
                                           carriedUnitId, unloadDestination, function(result) {
       if(result.success) {
-        var preparedEvents = prepareEvents(result.events);
-        this_.server.subscriptions.forSubscribers(function(sub) {
-          sub.client.stub.gameUpdate(gameId, result.changedTiles);
-          sub.client.stub.gameEvents(gameId, preparedEvents);
-        }, "game-" + gameId);
+        this_.server.messenger.sendGameUpdate(gameId, result.changedTiles);
+        this_.server.messenger.sendGameEvents(gameId, result.events);
         this_.client.sendResponse(requestId, {success: true});
         timer.end();
       } else {
@@ -786,11 +748,8 @@ Skeleton.prototype.build = function(gameId, unitTypeId, destination) {
     var timer = new utils.Timer("Skeleton.build");
     this_.server.gameActions.build(gameId, userId, unitTypeId, destination, function(result) {
       if(result.success) {
-        var preparedEvents = prepareEvents(result.events);
-        this_.server.subscriptions.forSubscribers(function(sub) {
-          sub.client.stub.gameUpdate(gameId, result.changedTiles);
-          sub.client.stub.gameEvents(gameId, preparedEvents);
-        }, "game-" + gameId);
+        this_.server.messenger.sendGameUpdate(gameId, result.changedTiles);
+        this_.server.messenger.sendGameEvents(gameId, result.events);
         this_.client.sendResponse(requestId, {success: true});
         timer.end();
       } else {
@@ -814,16 +773,19 @@ Skeleton.prototype.endTurn = function(gameId) {
     var timer = new utils.Timer("Skeleton.endTurn");
     this_.server.gameActions.nextTurn(gameId, userId, function(result) {
       if(result.success) {
-        var preparedEvents = prepareEvents(result.events);
-        this_.server.subscriptions.forSubscribers(function(sub) {
-          sub.client.stub.gameUpdate(gameId, result.changedTiles);
-          sub.client.stub.gameEvents(gameId, preparedEvents);
-          if(result.finished) {
-            sub.client.stub.gameFinished(gameId);
-          } else {
-            sub.client.stub.gameTurnChange(gameId, result.inTurnNumber, result.roundNumber);
-          }
-        }, "game-" + gameId);
+        if(result.untilNextTurn !== null) {
+          var server = this_.server;
+          this_.server.timer.addTimer(function() {
+            this_.server.gameProcedures.automaticEndTurn(gameId, server);
+          }, result.untilNextTurn);
+        }
+        this_.server.messenger.sendGameUpdate(gameId, result.changedTiles);
+        this_.server.messenger.sendGameEvents(gameId, result.events);
+        if(result.finished) {
+          this_.server.messenger.sendGameFinished(gameId);
+        } else {
+          this_.server.messenger.sendGameTurnChange(gameId, result.inTurnNumber, result.roundNumber, result.untilNextTurn/1000);
+        }
         this_.client.sendResponse(requestId, {success: true});
         timer.end();
       } else {
@@ -847,16 +809,13 @@ Skeleton.prototype.surrender = function(gameId) {
     var timer = new utils.Timer("Skeleton.surrender");
     this_.server.gameActions.surrender(gameId, userId, function(result) {
       if(result.success) {
-        var preparedEvents = prepareEvents(result.events);
-        this_.server.subscriptions.forSubscribers(function(sub) {
-          sub.client.stub.gameUpdate(gameId, result.changedTiles);
-          sub.client.stub.gameEvents(gameId, preparedEvents);
-          if(result.finished) {
-            sub.client.stub.gameFinished(gameId);
-          } else {
-            sub.client.stub.gameTurnChange(gameId, result.inTurnNumber);
-          }
-        }, "game-" + gameId);
+        this_.server.messenger.sendGameUpdate(gameId, result.changedTiles);
+        this_.server.messenger.sendGameEvents(gameId, result.events);
+        if(result.finished) {
+          this_.server.messenger.sendGameFinished(gameId);
+        } else {
+          this_.server.messenger.sendGameTurnChange(gameId, result.inTurnNumber, result.roundNumber);
+        }
         this_.client.sendResponse(requestId, {success: true});
         timer.end();
       } else {
@@ -935,7 +894,16 @@ Skeleton.prototype.gameEvents = function(gameId, count) {
   var this_ = this;
   this.server.database.gameEvents(gameId, function(result) {
     if(result.success) {
-      var preparedEvents = prepareEvents(result.gameEvents);
+      var events = result.gameEvents;
+      var preparedEvents = [];
+      for(var i = 0; i < events.length; ++i) {
+        var time = new Date();
+        time.setTime(events[i].time);
+        preparedEvents.push({
+          time: time.toUTCString(),
+          content: events[i].content
+        });
+      }
       this_.client.sendResponse(requestId, {success: true, gameEvents: preparedEvents});
       timer.end();
     } else {

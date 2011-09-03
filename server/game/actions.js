@@ -437,7 +437,8 @@ GameActions.prototype.build = function(gameId, userId, unitTypeId, destination, 
 
 GameActions.prototype.endTurn = function(game, userId, callback) {
   var database = this.database;
-  database.userPlayerInTurn(game.gameId, userId, function(result) {
+  
+  function endTurn(result) {
     if(!result.success) {
       callback({success: false, reason: result.reason});
     } else {
@@ -477,7 +478,14 @@ GameActions.prototype.endTurn = function(game, userId, callback) {
         });
       });
     }
-  });
+  };
+  
+  if(userId !== null) {
+    database.userPlayerInTurn(game.gameId, userId, endTurn);
+  } else {
+    var gameInformation = new GameInformation(database);
+    gameInformation.playerInTurn(game.gameId, endTurn);
+  }
 }
 
 GameActions.prototype.startTurn = function(game, callback) {
@@ -603,6 +611,9 @@ GameActions.prototype.startTurn = function(game, callback) {
           var gameStatistic = new entities.GameStatistic(null, game.gameId, game.turnNumber, 
                                                          game.roundNumber, game.inTurnNumber, stats);
 
+          game.turnStart = new Date().getTime() / 1000;
+          var untilNextTurn = game.settings.turnLength*1000;
+          
           // Save tiles and units
           database.updateUnits(units, function(result) {
             database.updateTiles(nextPlayerTiles, function(result) {
@@ -613,7 +624,7 @@ GameActions.prototype.startTurn = function(game, callback) {
                       database.user(nextPlayer.userId, function(result) {
                         email.sendTurnNotification(game, nextPlayer, result.user);
                         callback({success: true, finished: false, inTurnNumber: game.inTurnNumber, roundNumber: game.roundNumber,
-                                  changedTiles: nextPlayerTiles, events: events.objects});
+                                  changedTiles: nextPlayerTiles, events: events.objects, untilNextTurn: untilNextTurn});
                       });
                     });
                   });
@@ -659,7 +670,7 @@ GameActions.prototype.nextTurn = function(gameId, userId, callback) {
           var changedTiles = firstChangedTiles.concat(result.changedTiles);
           var events = firstEvents.concat(result.events);
           callback({success: true, finished: result.finished, inTurnNumber: result.inTurnNumber, roundNumber: game.roundNumber, 
-                    changedTiles: changedTiles, events: events});
+                    changedTiles: changedTiles, events: events, untilNextTurn: result.untilNextTurn});
         });
       });
     }

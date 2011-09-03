@@ -1,3 +1,5 @@
+var utils = require("../utils");
+
 function GameProcedures(database) {
   this.database = database;
 }
@@ -71,6 +73,33 @@ GameProcedures.prototype.surrenderPlayer = function(game, player, callback) {
           callback({success: true});
         });
       });
+    });
+  });
+}
+
+GameProcedures.prototype.automaticEndTurn = function(gameId, server) {
+  utils.log("game", "Automatic turn change for game " + gameId);
+  var mutex = server.gameMutex(gameId);
+  var this_ = this;
+  mutex.lock(function() {
+    server.gameActions.nextTurn(gameId, null, function(result) {
+      if(result.success) {
+        if(result.untilNextTurn !== null) {
+          server.timer.addTimer(function() {
+            this_.automaticEndTurn(gameId, server);
+          }, result.untilNextTurn);
+        }
+        server.messenger.sendGameUpdate(gameId, result.changedTiles);
+        server.messenger.sendGameEvents(gameId, result.events);
+        if(result.finished) {
+          server.messenger.sendGameFinished(gameId);
+        } else {
+          server.messenger.sendGameTurnChange(gameId, result.inTurnNumber, result.roundNumber, result.untilNextTurn/1000);
+        }
+      } else {
+        utils.log("error", "Error changing turn automatically: " + result.reason);
+      }
+      mutex.release();
     });
   });
 }

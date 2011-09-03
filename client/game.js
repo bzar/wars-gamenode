@@ -11,6 +11,7 @@ var wrap = function() {
   var theme = null;
   var map = null;
   var ticker = null;
+  var turnCounter = null;
   var gameUIState = {
     stateName: "select"
   }
@@ -44,7 +45,7 @@ var wrap = function() {
               $("#authorTools").hide();
             }
             
-            initializeGame(response.game, response.author);
+            initializeGame(response.game, response.author, response.turnRemaining);
           } else {
             alert("Error loading game!");
           }
@@ -158,10 +159,30 @@ var wrap = function() {
 
   }
   
-  function initializeGame(game, author) {
-    showGame(game, author);
+  function formatTime(t) {
+    var s = "";
+    if(t > 60*60) {
+      var h = Math.floor(t/(60*60));
+      if(h < 10) s += 0;
+      s += h + ":";
+    } 
+    if(t > 60) {
+      var m = Math.floor(t/60)%60;
+      if(m < 10) s += 0;
+      s += m + ":";
+    } 
     
-    client.skeleton.gameTurnChange = function(gameId, newTurn, newRound) {
+    var sec = Math.ceil(t)%60;
+    if(sec < 10) s += 0;
+    s += sec;
+    
+    return s;
+  }
+  
+  function initializeGame(game, author, turnRemaining) {
+    showGame(game, author, turnRemaining);
+    
+    client.skeleton.gameTurnChange = function(gameId, newTurn, newRound, turnRemaining) {
       $("#round").text(newRound);
       inTurnNumber = newTurn;
       $(".playerItem.inTurn").removeClass("inTurn");
@@ -172,6 +193,7 @@ var wrap = function() {
       } else {
         finalizeTurn();
       }
+      turnCounter = turnRemaining;
       updateStatistic();
     }
     
@@ -208,8 +230,19 @@ var wrap = function() {
     $("#mapCanvas").click(handleMapClick);
   }
   
-  function showGame(game, author) {
+  function showGame(game, author, turnRemaining) {
     $("#gameName").text(game.name);
+    
+    if(turnRemaining === null) {
+      $("#turnTimeItem").hide();
+    } else {
+      turnCounter = turnRemaining;
+      setInterval(function() {
+        $("#turnTime").text(formatTime(turnCounter));
+        turnCounter = turnCounter > 0 ? turnCounter - 1 : 0;
+      }, 1000);
+    }
+    
     client.stub.profile(function(response) {
       theme = response.profile.settings.gameTheme;
       client.stub.gameRules(gameId, function(rules) {
@@ -287,6 +320,8 @@ var wrap = function() {
     
     for(var i = 0; i < players.length; ++i) {
       var player = players[i];
+      if(player.playerName === null) continue;
+      
       var item = $("<li></li>");
       var number = $("<span></span>");
       var name = $("<span></span>");

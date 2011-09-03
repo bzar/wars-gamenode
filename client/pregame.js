@@ -122,7 +122,7 @@ var wrap = function() {
     }
     
     
-    client.skeleton.playerJoined = function(playerNumber, playerName, isMe) {
+    client.skeleton.playerJoined = function(gameId, playerNumber, playerName, isMe) {
       var nameLabel = $('.playerItem[playerNumber="' + playerNumber + '"] .playerName');
       var joinButton = $('.playerItem[playerNumber="' + playerNumber + '"] .joinButton');
       nameLabel.text(playerName)
@@ -135,7 +135,7 @@ var wrap = function() {
       }
     }
     
-    client.skeleton.playerLeft = function(playerNumber) {
+    client.skeleton.playerLeft = function(gameId, playerNumber) {
       var nameLabel = $('.playerItem[playerNumber="' + playerNumber + '"] .playerName');
       var joinButton = $('.playerItem[playerNumber="' + playerNumber + '"] .joinButton');
       joinButton.removeClass("joined");
