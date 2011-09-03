@@ -26,7 +26,6 @@ var wrap = function() {
     var loginUrl = "login.html?next=" + document.location.pathname + document.location.search;
     session = resumeSessionOrRedirect(client, undefined, loginUrl, function() {
       client.stub.subscribeGame(gameId);
-      updateStatistic();
       populateNavigation(session);
       if(gameId !== null) {
         client.stub.gameData(gameId, function(response) {
@@ -244,28 +243,31 @@ var wrap = function() {
     }
     
     client.stub.profile(function(response) {
-      theme = response.profile.settings.gameTheme;
-      client.stub.gameRules(gameId, function(rules) {
-        map = new Map(undefined, 1.0, theme, rules);
-        gameLogic = new GameLogic(map, rules);
-        map.canvas = $("#mapCanvas")[0];
-        gameMap = map;
-        
-        map.doPreload(function() {
-          inTurnNumber = game.inTurnNumber;
-          initializePlayers(game.players);
-          initializeMessageTicker();
-          refreshFunds();
-          map.currentTiles = game.tiles;
-          var mapSize = map.getMapSize();
-          var width = mapSize.w * map.tileW
-          var height = mapSize.h * map.tileH
-          map.canvas.width = width;
-          map.canvas.height = height;
-          map.refresh();
-          $("#spinner").hide();
+      theme = new Theme(response.profile.settings.gameTheme);
+      theme.load(function() {
+        updateStatistic();
+        client.stub.gameRules(gameId, function(rules) {
+          map = new Map(undefined, 1.0, theme, rules);
+          gameLogic = new GameLogic(map, rules);
+          map.canvas = $("#mapCanvas")[0];
+          gameMap = map;
+          
+          map.doPreload(function() {
+            inTurnNumber = game.inTurnNumber;
+            initializePlayers(game.players);
+            initializeMessageTicker();
+            refreshFunds();
+            map.currentTiles = game.tiles;
+            var mapSize = map.getMapSize();
+            var width = mapSize.w * map.tileW
+            var height = mapSize.h * map.tileH
+            map.canvas.width = width;
+            map.canvas.height = height;
+            map.refresh();
+            $("#spinner").hide();
+          });
         });
-      });    
+      });
     });
   }
   
@@ -341,7 +343,7 @@ var wrap = function() {
       item.attr("playerNumber", player.playerNumber);
       
       number.text(player.playerNumber);
-      number.addClass("player" + player.playerNumber);
+      number.css("background-color", theme.getPlayerColorString(player.playerNumber));
       number.addClass("playerNumber");
       
       name.text(player.playerName !== null ? player.playerName : "");
@@ -586,14 +588,14 @@ var wrap = function() {
     actionMenu.show();
     
     var actionMap = {
-      attack: {img:"/img/themes/" + theme + "/gui/action_attack.png", name:"Attack", action:"attack"}, 
-      deploy: {img:"/img/themes/" + theme + "/gui/action_deploy.png", name:"Deploy", action:"deploy"}, 
-      undeploy: {img:"/img/themes/" + theme + "/gui/action_undeploy.png", name:"Undeploy", action:"undeploy"}, 
-      capture: {img:"/img/themes/" + theme + "/gui/action_capture.png", name:"Capture", action:"capture"}, 
-      wait: {img:"/img/themes/" + theme + "/gui/action_wait.png", name:"Wait", action:"wait"}, 
-      load: {img:"/img/themes/" + theme + "/gui/action_load.png", name:"Load", action:"load"}, 
-      unload: {img:"/img/themes/" + theme + "/gui/action_unload.png", name:"Unload", action:"unload"}, 
-      cancel: {img:"/img/themes/" + theme + "/gui/action_cancel.png", name:"Cancel", action:"cancel"}
+      attack: {img:theme.getAttackIconUrl(), name:"Attack", action:"attack"}, 
+      deploy: {img:theme.getDeployIconUrl(), name:"Deploy", action:"deploy"}, 
+      undeploy: {img:theme.getUndeployIconUrl(), name:"Undeploy", action:"undeploy"}, 
+      capture: {img:theme.getCaptureIconUrl(), name:"Capture", action:"capture"}, 
+      wait: {img:theme.getWaitIconUrl(), name:"Wait", action:"wait"}, 
+      load: {img:theme.getLoadIconUrl(), name:"Load", action:"load"}, 
+      unload: {img:theme.getUnloadIconUrl(), name:"Unload", action:"unload"}, 
+      cancel: {img:theme.getCancelIconUrl(), name:"Cancel", action:"cancel"}
     }
 
     for(var i = 0; i < actions.length; ++i) {
@@ -703,7 +705,7 @@ var wrap = function() {
     for(var i = 0; i < units.length; ++i) {
       var unit = units[i];
       var item = $('<span></span>');
-      item.css("background-image", "url('/img/themes/" + theme + "/sprite_sheet.png')");
+      item.css("background-image", "url('" + theme.getSpriteSheetUrl() + "')");
       item.addClass("sprite");
       var pos = SPRITE_SHEET_MAP[SPRITE_UNIT][unit.type][inTurnNumber];
       var unitImageX = pos.x * map.tileW;
@@ -763,7 +765,7 @@ var wrap = function() {
       unitName.addClass('name');
 
       var unitImage = $('<div></div>');
-      unitImage.css("background-image", "url('/img/themes/" + theme + "/sprite_sheet.png')");
+      unitImage.css("background-image", "url('" + theme.getSpriteSheetUrl() + "')");
       unitImage.addClass("sprite");
       var pos = SPRITE_SHEET_MAP[SPRITE_UNIT][unitType.id][inTurnNumber];
       var unitImageX = pos.x * map.tileW;
@@ -825,7 +827,8 @@ var wrap = function() {
             .enter().append("div")
               .style("width", function(d) { return scale(d[property]); })
               .style("height", height)
-              .attr("class", function(d) { return "bar player" + d.playerNumber })
+              .style("background-color", function(d) { return theme.getPlayerColorString(d.playerNumber); })
+              .attr("class", function(d) { return "bar"})
               .attr("title", function(d){ return Math.round(100*d[property]/totalValue) + "%" });
         }, 0);
       }

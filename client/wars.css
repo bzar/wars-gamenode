@@ -368,6 +368,7 @@ input[type=text], input[type=password] {
 .playerSelection {
   min-width: 16px;
   height: 16px;
+  text-shadow: #333 0 0 3px;
 }
 
 #playerSelection, #paletteSelection {
@@ -489,17 +490,16 @@ input[type=text], input[type=password] {
   list-style: none;
   color: #eee;
   margin: 0;
-  padding: 8px;
+  padding: 8px 0;
   font: 16px sans-serif;
   background-color: #333;
 }
 
 #players li {
-  padding: 4px 0 4px 0;
+  padding: 8px 0 4px 8px;
   margin: 4px 0 4px 0;
   vertical-align: middle;
   display: block;
-  clear: both;
   height: 24px;
   border: 0;
 }
@@ -507,6 +507,8 @@ input[type=text], input[type=password] {
 #players li.inTurn{
   font-weight: bold;
   color: #eee;
+  text-shadow: #777 0 0 8px;
+  background-color: #444;
 }
 
 .playerNumber {
@@ -520,6 +522,10 @@ input[type=text], input[type=password] {
 .playerName {
 }
 
+.playerItem {
+  position: relative;
+}
+
 .joinButton {
   font: 14px sans-serif;
   padding: 2px;
@@ -530,7 +536,9 @@ input[type=text], input[type=password] {
   border: 2px solid #ddd;
   border-radius: 4px;
   font-weight: bold;
-  float: right;
+  position: absolute;
+  right: 10px;
+  top: 6px;
   margin: auto;
 }
 

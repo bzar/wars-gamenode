@@ -9,10 +9,12 @@ var wrap = function() {
     var loginUrl = "login.html?next=" + document.location.pathname + document.location.search;
     session = resumeSessionOrRedirect(client, undefined, loginUrl, function() {
       client.stub.profile(function(response) {
-        theme = response.profile.settings.gameTheme;
-        mapPainter = new Map(undefined, undefined, theme);
-        populateNavigation(session);
-        populateMyMaps(client);
+        theme = new Theme(response.profile.settings.gameTheme);
+        theme.load(function() {
+          mapPainter = new Map(undefined, undefined, theme);
+          populateNavigation(session);
+          populateMyMaps(client);
+        });
       });
     });
   });

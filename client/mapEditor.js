@@ -17,10 +17,12 @@ var wrap = function() {
     var loginUrl = "login.html?next=" + document.location.pathname + document.location.search;
     session = resumeSessionOrRedirect(client, undefined, loginUrl, function() {
       client.stub.profile(function(response) {
-        theme = response.profile.settings.gameTheme;
-        mapPainter = new Map(undefined, 1.0, theme);
-        populateNavigation(session);
-        initializeMapEditor(client);
+        theme = new Theme(response.profile.settings.gameTheme);
+        theme.load(function() {
+          mapPainter = new Map(undefined, 1.0, theme);
+          populateNavigation(session);
+          initializeMapEditor(client);
+        });
       });
     });
   });
@@ -388,6 +390,10 @@ var wrap = function() {
     var unitSelection = $("#unitSelection");
     var playerSelection = $("#playerSelection");
     
+    $(".playerSelection").each(function() {
+      $(this).css("background-color", theme.getPlayerColorString(parseInt($(this).attr("value"))));
+    });
+    
     $(".playerSelection").click(function(e) {
       e.preventDefault();
       if($(this).hasClass("disabled"))
@@ -416,26 +422,23 @@ var wrap = function() {
     var terrainTypePalette = $("#terrainTypePalette");
     var terrainSubtypePalette = $("#terrainSubtypePalette");
     
-    var terrains = SPRITE_SHEET_MAP[0];
-    for(var terrainType = 0; terrainType < terrains.length; ++terrainType) {
-      var terrain = terrains[terrainType][0][0];
+    for(var terrainType = 0; terrainType < theme.getNumberOfTileTypes(); ++terrainType) {
       var terrainTypeItem = $("<span></span>");
-      terrainTypeItem.css("background-image", "url('/img/themes/" + theme + "/sprite_sheet.png')");
+      terrainTypeItem.css("background-image", "url('" + theme.getSpriteSheetUrl() + "')");
       terrainTypeItem.addClass("sprite");
-      var pos = SPRITE_SHEET_MAP[SPRITE_TERRAIN][terrainType][0][0];
+      var pos = theme.getTileCoordinates(terrainType, 0, 0);
       var imageX = pos.x * mapPainter.tileW;
       var imageY = pos.y * mapPainter.tileH;
       terrainTypeItem.css("background-position", -imageX + "px " + -imageY + "px")
       terrainTypeItem.attr("type", terrainType);
       terrainTypePalette.append(terrainTypeItem);
             
-      for(var terrainSubtype = 0; terrainSubtype < terrains[terrainType].length; ++terrainSubtype) {
-        for(var terrainOwner = 0; terrainOwner < terrains[terrainType][terrainSubtype].length; ++terrainOwner) {
-          var terrain = terrains[terrainType][terrainSubtype][terrainOwner];
+      for(var terrainSubtype = 0; terrainSubtype < theme.getNumberOfTileSubtypes(terrainType); ++terrainSubtype) {
+        for(var terrainOwner = 0; terrainOwner < theme.getNumberOfTileOwners(terrainType, terrainSubtype); ++terrainOwner) {
           var terrainSubtypeItem = $("<span></span>");
-          terrainSubtypeItem.css("background-image", "url('/img/themes/" + theme + "/sprite_sheet.png')");
+          terrainSubtypeItem.css("background-image", "url('" + theme.getSpriteSheetUrl() + "')");
           terrainSubtypeItem.addClass("sprite");
-          var pos = SPRITE_SHEET_MAP[SPRITE_TERRAIN][terrainType][terrainSubtype][terrainOwner];
+          var pos = theme.getTileCoordinates(terrainType, terrainSubtype, terrainOwner);
           var imageX = pos.x * mapPainter.tileW;
           var imageY = pos.y * mapPainter.tileH;
           terrainSubtypeItem.css("background-position", -imageX + "px " + -imageY + "px")
@@ -459,26 +462,23 @@ var wrap = function() {
       updatePalette();
     });
     
-    var units = SPRITE_SHEET_MAP[1];
-    
     var unitEraserItem = $("<span></span>");
     unitEraserItem.attr("type", "null");
     unitEraserItem.attr("owner", "null");
-    unitEraserItem.css("background-image", "url(/img/themes/" + theme + "/nothing.png)");
+    unitEraserItem.css("background-image", "url(" + theme.getEraserIconUrl() + ")");
     unitEraserItem.addClass('sprite');
     unitPalette.append(unitEraserItem);
     
-    for(var unitType = 0; unitType < units.length; ++unitType) {
-      for(var unitOwner = 0; unitOwner < units[unitType].length; ++unitOwner) {
-        var unit = units[unitType][unitOwner];
+    for(var unitType = 0; unitType < theme.getNumberOfUnitTypes(); ++unitType) {
+      for(var unitOwner = 0; unitOwner < theme.getNumberOfUnitOwners(unitType); ++unitOwner) {
         var unitItem = $("<span></span>");
-        if(unit === null)
+        var pos = theme.getUnitCoordinates(unitType, unitOwner);
+        if(pos === null)
           continue;
         unitItem.attr("type", unitType);
         unitItem.attr("owner", unitOwner);
-        unitItem.css("background-image", "url('/img/themes/" + theme + "/sprite_sheet.png')");
+        unitItem.css("background-image", "url('" + theme.getSpriteSheetUrl() + "')");
         unitItem.addClass('sprite');
-        var pos = SPRITE_SHEET_MAP[SPRITE_UNIT][unitType][unitOwner];
         var imageX = pos.x * mapPainter.tileW;
         var imageY = pos.y * mapPainter.tileH;
         unitItem.css("background-position", -imageX + "px " + -imageY + "px")

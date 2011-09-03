@@ -18,20 +18,22 @@ var wrap = function() {
 
       populateNavigation(session);
       client.stub.profile(function(response) {
-        theme = response.profile.settings.gameTheme;
+        theme = new Theme(response.profile.settings.gameTheme);
         mapPainter = new Map(undefined, 1.0, theme);
         mapPainter.canvas = $("#mapCanvas")[0];
         if(gameId !== null) {
-          client.stub.gameData(gameId, function(response) {
-            if(response.success) {
-              if(response.game.state != "pregame") {
-                document.location = "game.html?gameId=" + gameId;
+          theme.load(function() {
+            client.stub.gameData(gameId, function(response) {
+              if(response.success) {
+                if(response.game.state != "pregame") {
+                  document.location = "game.html?gameId=" + gameId;
+                }
+                initializeChat(client, gameId);
+                showGame(response.game, response.author);
+              } else {
+                alert("Error loading game!" + response.reason);
               }
-              initializeChat(client, gameId);
-              showGame(response.game, response.author);
-            } else {
-              alert("Error loading game!" + response.reason);
-            }
+            });
           });
         }
       });
@@ -75,7 +77,7 @@ var wrap = function() {
       item.attr("playerNumber", player.playerNumber);
       
       number.text(player.playerNumber);
-      number.addClass("player" + player.playerNumber);
+      number.css("background-color", theme.getPlayerColorString(player.playerNumber));
       number.addClass("playerNumber");
       
       name.text(player.playerName !== null ? player.playerName : "");

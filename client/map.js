@@ -1,10 +1,5 @@
-GUI_IMAGES_HEALTH = 0;
-SPRITE_TERRAIN = 0;
-SPRITE_UNIT = 1;
-SPRITE_GUI = 2;
-
 function Map(canvas, scale, theme, rules) {
-    this.theme = theme ? theme : "default";
+    this.theme = theme ? theme : new Theme("pixel");
     this.autoscale = !scale;
     this.scale = scale;
     this.canvas = canvas;
@@ -72,7 +67,7 @@ Map.prototype.preloadTiles = function(tiles, callback, images, prefix) {
 };
 Map.prototype.doPreload = function(callback) {
     this.sprites = new Image();
-    this.sprites.src = "/img/themes/" + this.theme + "/sprite_sheet.png";
+    this.sprites.src = this.theme.getSpriteSheetUrl();
     this.sprites.onload = callback;
 };
 
@@ -104,7 +99,7 @@ Map.prototype.clear = function() {
 };
 
 Map.prototype.paintTerrainTile = function(ctx, el, xPos, yPos) {
-    var coord = SPRITE_SHEET_MAP[SPRITE_TERRAIN][el.type][el.subtype][el.owner];
+    var coord = this.theme.getTileCoordinates(el.type, el.subtype, el.owner);
     if(coord) {
         // draw tile
         ctx.drawImage(this.sprites,
@@ -135,7 +130,7 @@ Map.prototype.paintUnit = function(x, y, unit, ctx) {
     if(unit.moved) ctx.globalAlpha = 0.5;
     ctx.scale(this.getScale(), this.getScale());
 
-    var coord = unit ? SPRITE_SHEET_MAP[SPRITE_UNIT][unit.type][unit.owner] : null;
+    var coord = unit ? this.theme.getUnitCoordinates(unit.type, unit.owner) : null;
     if(coord) {
         ctx.drawImage(this.sprites,
                       coord.x*this.tileW, coord.y*this.tileH, this.tileW, this.tileH,
@@ -149,7 +144,7 @@ Map.prototype.paintUnit = function(x, y, unit, ctx) {
     }
     var en = Math.ceil(parseInt(unit.health)/10);
     if(en<10) {
-        var numCoord = SPRITE_SHEET_MAP[SPRITE_GUI][GUI_IMAGES_HEALTH][en];
+        var numCoord = this.theme.getHealthNumberCoordinates(en);
         var enX = xPos + this.tileW - 24;
         var enY = yPos + this.tileH - 24;
         ctx.drawImage(this.sprites,

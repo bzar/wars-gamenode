@@ -14,17 +14,19 @@ var wrap = function() {
     var loginUrl = "login.html?next=" + document.location.pathname + document.location.search;
     session = resumeSessionOrRedirect(client, undefined, loginUrl, function() {
       client.stub.profile(function(response) {
-        theme = response.profile.settings.gameTheme;
-        mapPainter = new Map(undefined, undefined, theme);
-        initializeControls();
-        populateNavigation(session);
-        
-        mapPainter.doPreload(function() {
-          if(mapId === null) {
-            showMaps();
-          } else {
-            showFullMapPreview();
-          }
+        theme = new Theme(response.profile.settings.gameTheme);
+        theme.load(function() {
+          mapPainter = new Map(undefined, undefined, theme);
+          initializeControls();
+          populateNavigation(session);
+          
+          mapPainter.doPreload(function() {
+            if(mapId === null) {
+              showMaps();
+            } else {
+              showFullMapPreview();
+            }
+          });
         });
       });
     });
@@ -228,9 +230,9 @@ var wrap = function() {
           if(rules.terrains[tileType].flags.indexOf(captureFlagId) != -1) {
             var item = $("<li></li>");
             var image = $("<span></span>");
-            image.css("background-image", "url('/img/themes/" + theme + "/sprite_sheet.png')");
+            image.css("background-image", "url('" + theme.getSpriteSheetUrl() + "')");
             image.addClass("sprite");
-            var pos = SPRITE_SHEET_MAP[SPRITE_TERRAIN][tileType][0][0];
+            var pos = theme.getTileCoordinates(tileType, 0, 0);
             var imageX = pos.x * mapPainter.tileW;
             var imageY = pos.y * mapPainter.tileH;
             image.css("background-position", -imageX + "px " + -imageY + "px")
