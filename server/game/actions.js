@@ -561,8 +561,6 @@ GameActions.prototype.startTurn = function(game, callback) {
             });
           });
         } else {
-          events.beginTurn(nextPlayer);
-      
           game.changeTurn(nextPlayer.playerNumber);
           
           // Handle turn start events for next player
@@ -613,7 +611,9 @@ GameActions.prototype.startTurn = function(game, callback) {
 
           game.turnStart = new Date().getTime() / 1000;
           var untilNextTurn = game.turnRemaining();
-          
+
+          events.beginTurn(nextPlayer);
+
           // Save tiles and units
           database.updateUnits(units, function(result) {
             database.updateTiles(nextPlayerTiles, function(result) {

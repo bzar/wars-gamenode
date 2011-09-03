@@ -178,8 +178,8 @@ MessageTicker.prototype.createTickerMessage = function(parts, rootElement) {
     } else if(part.type == "unit") {
       var image = $("<span></span>");
       image.addClass("sprite");
-      image.css("background-image", "url(/img/themes/" + this.map.theme + "/sprite_sheet.png)");
-      var pos = SPRITE_SHEET_MAP[SPRITE_UNIT][part.unit.type][part.unit.owner];
+      image.css("background-image", "url(" + this.map.theme.getSpriteSheetUrl() + ")");
+      var pos = this.map.theme.getUnitCoordinates(part.unit.type, part.unit.owner);
       var x = pos.x * this.map.tileW;
       var y = pos.y * this.map.tileH;
       image.css("background-position", -x + "px " + -y + "px");
@@ -187,8 +187,8 @@ MessageTicker.prototype.createTickerMessage = function(parts, rootElement) {
     } else if(part.type == "tile") {
       var image = $("<span></span>");
       image.addClass("sprite");
-      image.css("background-image", "url(/img/themes/" + this.map.theme + "/sprite_sheet.png)");
-      var pos = SPRITE_SHEET_MAP[SPRITE_TERRAIN][part.tile.type][part.tile.subtype][part.tile.owner];
+      image.css("background-image", "url(" + this.map.theme.getSpriteSheetUrl() + ")");
+      var pos = this.map.theme.getTileCoordinates(part.tile.type, part.tile.subtype, part.tile.owner);
       var x = pos.x * this.map.tileW;
       var y = pos.y * this.map.tileH;
       image.css("background-position", -x + "px " + -y + "px");
