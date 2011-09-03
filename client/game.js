@@ -187,6 +187,7 @@ var wrap = function() {
       $(".playerItem.inTurn").removeClass("inTurn");
       var playerInTurn = $('.playerItem[playerNumber="' + inTurnNumber + '"]');
       playerInTurn.addClass("inTurn");
+      $("#content").css("border-color", theme.getPlayerColorString(inTurnNumber));
       if(playerInTurn.hasClass("isMe")) {
         initializeTurn();
       } else {
@@ -254,6 +255,9 @@ var wrap = function() {
           
           map.doPreload(function() {
             inTurnNumber = game.inTurnNumber;
+            $("#content").css("border-color", theme.getPlayerColorString(inTurnNumber));
+            $("#content").css("border-width", "4px");
+            $("#content").css("border-style", "solid");
             initializePlayers(game.players);
             initializeMessageTicker();
             refreshFunds();
