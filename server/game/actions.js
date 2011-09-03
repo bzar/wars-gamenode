@@ -652,7 +652,8 @@ GameActions.prototype.nextTurn = function(gameId, userId, callback) {
           callback({success: false, reason: result.reason}); return;
         }
         callback({success: true, finished: result.finished, 
-                  inTurnNumber: result.inTurnNumber, changedTiles: result.changedTiles, events: result.events});
+                  inTurnNumber: result.inTurnNumber, changedTiles: result.changedTiles, 
+                  events: result.events, untilNextTurn: result.untilNextTurn});
       });      
     } else {
       var game = result.game;

@@ -100,6 +100,12 @@ Skeleton.prototype.startGame = function(gameId) {
       if(result.success) {
         this_.server.gameActions.nextTurn(gameId, userId, function(result) {
           if(result.success) {
+            if(result.untilNextTurn !== null) {
+              var server = this_.server;
+              this_.server.timer.addTimer(function() {
+                this_.server.gameProcedures.automaticEndTurn(gameId, server);
+              }, result.untilNextTurn);
+            }
             this_.server.messenger.sendGameStarted(gameId);
             this_.client.sendResponse(requestId, {success: true});
             timer.end();
@@ -542,11 +548,6 @@ Skeleton.prototype.myFunds = function(gameId) {
       });
     }
   });
-}
-
-Skeleton.prototype.turnRemaining = function(gameId) {
-  var timer = new utils.Timer("Skeleton.turnRemaining");
-  
 }
 
 Skeleton.prototype.subscribeGame = function(gameId) {

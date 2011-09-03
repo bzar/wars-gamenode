@@ -17,9 +17,19 @@ Timer.prototype.end = function() {
   exports.log(this.topic, "< " + this.label + ": " + ((new Date()).getTime() - this.start) + "ms");
 }
 
+function ISODateString(d){
+  function pad(n){return n<10 ? '0'+n : n}
+  return d.getUTCFullYear()+'-'
+    + pad(d.getUTCMonth()+1)+'-'
+    + pad(d.getUTCDate())+'T'
+    + pad(d.getUTCHours())+':'
+    + pad(d.getUTCMinutes())+':'
+    + pad(d.getUTCSeconds())+'Z'
+}
+
 exports.log = function(topic, message) {
   if(configuration.logTopics.indexOf(topic) != -1) {
-    console.log("[" + topic + "] " + message);
+    console.log(ISODateString(new Date()) + " [" + topic + "] " + message);
   }
 }
 
