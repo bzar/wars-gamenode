@@ -797,6 +797,8 @@ input[type=text], input[type=password] {
 
 #gameStatistic {
   padding: 5px;
+  width: 150px;
+  margin: 0 auto;
 }
 .statisticBarChart {
   padding: 5px 0 5px 0;
