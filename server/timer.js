@@ -7,11 +7,12 @@ function Timer(interval) {
 
 exports.Timer = Timer;
 
-function TimerItem(callback, timeout, prev, next) {
+function TimerItem(callback, timeout, prev, next, group) {
   this.callback = callback;
   this.timeout = timeout;
   this.next = next;
   this.prev = prev;
+  this.group = group;
 }
 
 Timer.prototype.start = function() {
@@ -38,9 +39,9 @@ Timer.prototype.timeout = function() {
   }
 }
 
-Timer.prototype.addTimer = function(callback, msec) {
+Timer.prototype.addTimer = function(callback, msec, group) {
   var tick = this.ticks + Math.round(msec / this.interval);
-  var item = new TimerItem(callback, tick, this, this.next);
+  var item = new TimerItem(callback, tick, this, this.next, group);
   
   while(item.next !== null && item.next.timeout < item.timeout) {
     item.prev = item.next;
@@ -50,5 +51,21 @@ Timer.prototype.addTimer = function(callback, msec) {
   item.prev.next = item;
   if(item.next) {
     item.next.prev = item;
+  }
+}
+
+Timer.prototype.removeGroup = function(group) {
+  var timer = this.next;
+  while(timer !== null) {
+    var next = timer.next;
+    if(timer.group == group) {
+      timer.prev.next = timer.next;
+      if(timer.next !== null) {
+          timer.next.prev = timer.prev;
+      }
+      timer.next = null;
+      timer.prev = null;
+    }
+    timer = next;
   }
 }

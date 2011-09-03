@@ -85,16 +85,17 @@ GameProcedures.prototype.automaticEndTurn = function(gameId, server) {
     server.gameActions.nextTurn(gameId, null, function(result) {
       if(result.success) {
         if(result.untilNextTurn !== null) {
+          server.timer.removeGroup(gameId);
           server.timer.addTimer(function() {
             this_.automaticEndTurn(gameId, server);
-          }, result.untilNextTurn);
+          }, result.untilNextTurn*1000, gameId);
         }
         server.messenger.sendGameUpdate(gameId, result.changedTiles);
         server.messenger.sendGameEvents(gameId, result.events);
         if(result.finished) {
           server.messenger.sendGameFinished(gameId);
         } else {
-          server.messenger.sendGameTurnChange(gameId, result.inTurnNumber, result.roundNumber, result.untilNextTurn/1000);
+          server.messenger.sendGameTurnChange(gameId, result.inTurnNumber, result.roundNumber, result.untilNextTurn);
         }
       } else {
         utils.log("error", "Error changing turn automatically: " + result.reason);

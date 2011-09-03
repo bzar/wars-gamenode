@@ -102,13 +102,15 @@ var wrap = function() {
     
     $("#surrender").click(function(e) {
       e.preventDefault();
-      $("#spinner").show();
-      client.stub.surrender(gameId, function(response) {
-        if(!response.success) {
-          alert("Could not surrender! " + response.reason);
-          $("#spinner").hide();
-        }
-      });
+      if(window.confirm("Are you sure you want to SURRENDER? This means you LOSE the game.")){
+        $("#spinner").show();
+        client.stub.surrender(gameId, function(response) {
+          if(!response.success) {
+            alert("Could not surrender! " + response.reason);
+            $("#spinner").hide();
+          }
+        });
+      };
     });
     
     var chat = $("#chat");
@@ -323,7 +325,6 @@ var wrap = function() {
   function initializePlayers(players) {
     players.sort(function(a, b) { return a.playerNumber - b.playerNumber; });
     var playerList = $("#players");
-    
     for(var i = 0; i < players.length; ++i) {
       var player = players[i];
       if(player.playerName === null) continue;
@@ -363,15 +364,13 @@ var wrap = function() {
   function initializeTurn() {
     inTurn = true;
     refreshFunds();
-    $("#endTurn").show();
-    $("#surrender").show();
+    $("#gameActions").show();
   }
   
   function finalizeTurn() {
     inTurn = false;
     refreshFunds();
-    $("#endTurn").hide();
-    $("#surrender").hide();
+    $("#gameActions").hide();
   }
   
   function handleMapClick(e) {

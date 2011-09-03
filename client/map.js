@@ -160,7 +160,7 @@ Map.prototype.paintUnit = function(x, y, unit, ctx) {
                     ctx.strokeStyle = "white";
                     ctx.fillStyle = "#111";
                     ctx.strokeRect(xPos + 2, yPos + this.tileH - (i+1)*7, 5, 5);
-                    ctx.fillRect(xPos + 2, yPos + this.tileH - (i+1)*7, 5, 5);
+                    //ctx.fillRect(xPos + 2, yPos + this.tileH - (i+1)*7, 5, 5);
                 } else {
                     ctx.strokeStyle = "#111";
                     ctx.fillStyle = "white";

@@ -611,7 +611,7 @@ GameActions.prototype.startTurn = function(game, callback) {
 
           game.turnStart = new Date().getTime() / 1000;
           var untilNextTurn = game.turnRemaining();
-
+          
           events.beginTurn(nextPlayer);
 
           // Save tiles and units
@@ -703,13 +703,15 @@ GameActions.prototype.surrender = function(gameId, userId, callback) {
         events.surrender(player);
         
         this_.nextTurn(gameId, userId, function(result) {
+          events.objects = events.objects.concat(result.events);
           var finished = result.finished;
           var inTurnNumber = result.inTurnNumber;
+          var untilNextTurn = result.untilNextTurn;
           database.tilesWithUnits(gameId, function(result) {
             var changedTiles = result.tiles;
             database.createGameEvents(events.objects, function(result) {
               callback({success: true, finished: finished, inTurnNumber: inTurnNumber, 
-                       changedTiles: changedTiles, events: events.objects});
+                       changedTiles: changedTiles, events: events.objects, untilNextTurn: untilNextTurn});
             });
           });
         });

@@ -102,9 +102,10 @@ Skeleton.prototype.startGame = function(gameId) {
           if(result.success) {
             if(result.untilNextTurn !== null) {
               var server = this_.server;
+              this_.server.timer.removeGroup(gameId);
               this_.server.timer.addTimer(function() {
                 this_.server.gameProcedures.automaticEndTurn(gameId, server);
-              }, result.untilNextTurn);
+              }, result.untilNextTurn*1000, gameId);
             }
             this_.server.messenger.sendGameStarted(gameId);
             this_.client.sendResponse(requestId, {success: true});
@@ -429,6 +430,10 @@ Skeleton.prototype.gameData = function(gameId) {
       var game = result.game;
       for(var i = 0; i < game.players.length; ++i) {
         game.players[i].isMe = game.players[i].userId == userId;
+        if(!game.players[i].isMe) {
+          game.players[i].funds = null;
+          game.players[i].settings = null;
+        }
       }
       this_.client.sendResponse(requestId, {success: true, game: game, author: author, turnRemaining: game.turnRemaining()});
       timer.end();
@@ -776,16 +781,17 @@ Skeleton.prototype.endTurn = function(gameId) {
       if(result.success) {
         if(result.untilNextTurn !== null) {
           var server = this_.server;
+          this_.server.timer.removeGroup(gameId);
           this_.server.timer.addTimer(function() {
             this_.server.gameProcedures.automaticEndTurn(gameId, server);
-          }, result.untilNextTurn);
+          }, result.untilNextTurn*1000, gameId);
         }
         this_.server.messenger.sendGameUpdate(gameId, result.changedTiles);
         this_.server.messenger.sendGameEvents(gameId, result.events);
         if(result.finished) {
           this_.server.messenger.sendGameFinished(gameId);
         } else {
-          this_.server.messenger.sendGameTurnChange(gameId, result.inTurnNumber, result.roundNumber, result.untilNextTurn/1000);
+          this_.server.messenger.sendGameTurnChange(gameId, result.inTurnNumber, result.roundNumber, result.untilNextTurn);
         }
         this_.client.sendResponse(requestId, {success: true});
         timer.end();
@@ -810,6 +816,13 @@ Skeleton.prototype.surrender = function(gameId) {
     var timer = new utils.Timer("Skeleton.surrender");
     this_.server.gameActions.surrender(gameId, userId, function(result) {
       if(result.success) {
+        if(result.untilNextTurn !== null) {
+          var server = this_.server;
+          this_.server.timer.removeGroup(gameId);
+          this_.server.timer.addTimer(function() {
+            this_.server.gameProcedures.automaticEndTurn(gameId, server);
+          }, result.untilNextTurn*1000, gameId);
+        }
         this_.server.messenger.sendGameUpdate(gameId, result.changedTiles);
         this_.server.messenger.sendGameEvents(gameId, result.events);
         if(result.finished) {
