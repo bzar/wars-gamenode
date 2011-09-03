@@ -612,7 +612,7 @@ GameActions.prototype.startTurn = function(game, callback) {
                                                          game.roundNumber, game.inTurnNumber, stats);
 
           game.turnStart = new Date().getTime() / 1000;
-          var untilNextTurn = game.settings.turnLength*1000;
+          var untilNextTurn = game.turnRemaining();
           
           // Save tiles and units
           database.updateUnits(units, function(result) {
