@@ -128,7 +128,6 @@ Map.prototype.paintUnit = function(x, y, unit, ctx) {
     var yPos = this.tileH*y + this.unitOffsetY;
     ctx.save();
     if(unit.moved) ctx.globalAlpha = 0.5;
-    ctx.scale(this.getScale(), this.getScale());
 
     var coord = unit ? this.theme.getUnitCoordinates(unit.type, unit.owner) : null;
     if(coord) {
