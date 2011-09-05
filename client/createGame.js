@@ -112,7 +112,9 @@ var wrap = function() {
         var height = mapSize.h * mapPainter.tileH
         canvas.attr("width", width);
         canvas.attr("height", height);
+        mapPainter.scale = 1.0;
         mapPainter.refresh();
+        mapPainter.scale = undefined;
       });
     }
     $("#mapSelection").hide();
