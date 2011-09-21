@@ -83,9 +83,18 @@ Map.prototype.getMapSize = function() {
 };
 
 Map.prototype.getTile = function(x, y) {
-    return this.currentTiles.filter(function(d) {
-        if(d.x == x && d.y == y) return true;
-    })[0];
+    if(x !== undefined && y !== undefined) {
+      return this.currentTiles.filter(function(d) {
+          if(d.x == x && d.y == y) return true;
+      })[0];
+    } else if(x !== undefined) {
+      var tiles = this.currentTiles.filter(function(tile){
+        return tile.tileId == x;
+      });
+      return tiles.length != 0 ? tiles[0] : null;
+    } else {
+      return null;
+    }
 };
 
 Map.prototype.capturedPercentage = function(el) {
@@ -323,6 +332,13 @@ Map.prototype.showGameEvents = function(gameEvents) {
     }
 };
 
+Map.prototype.tileWithUnit = function(unitId) {
+  var tiles = this.currentTiles.filter(function(tile){
+    return tile.unit !== null && tile.unit.unitId == unitId;
+  });
+  
+  return tiles.length != 0 ? tiles[0] : null;
+}
 Map.prototype.drawAttackArrow = function(x1, y1, x2, y2) {
     var ctx = this.canvas.getContext("2d");
     ctx.save();

@@ -103,7 +103,7 @@ GameActions.prototype.moveAndAttack = function(gameId, userId, unitId, destinati
           var updatedUnits = [];
           var deletedUnits = [];
 
-          events.attack(unit, target, power);
+          events.attack(unit, destinationTile, target, power);
           targetPlayer.score -= parseInt(Math.min(target.health, power) * target.unitType().price / 100);
           player.score += parseInt(Math.min(target.health, power) * target.unitType().price / 100);
           target.health -= power;

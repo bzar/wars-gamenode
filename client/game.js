@@ -12,6 +12,7 @@ var wrap = function() {
   var map = null;
   var ticker = null;
   var turnCounter = null;
+  var oldUnits = {};
   var gameUIState = {
     stateName: "select"
   }
@@ -200,6 +201,7 @@ var wrap = function() {
     }
     
     client.skeleton.gameUpdate = function(gameId, tileChanges) {
+      oldUnits = {};
       for(var i = 0; i < tileChanges.length; ++i) {
         var newTile = tileChanges[i];
         var tile = map.getTile(newTile.x, newTile.y);
@@ -218,9 +220,14 @@ var wrap = function() {
         if(newTile.beingCaptured !== undefined)
           tile.beingCaptured = newTile.beingCaptured;
         
+        if(tile.unit !== null) {
+          tile.unit.tile = tile;
+          oldUnits[tile.unit.unitId] = tile.unit;
+        }
+        
         if(newTile.unit !== undefined) {
-          if(newTile.unit !== null && newTile.unit.carriedUnits === undefined && tile.unit !== null) {
-            newTile.unit.carriedUnits = tile.unit.carriedUnits;
+          if(newTile.unit !== null) {
+            newTile.unit.tile = tile;
           }
           tile.unit = newTile.unit;
         }
@@ -285,6 +292,16 @@ var wrap = function() {
       ticker.showMessages(events);
       if(messageTickerContainer.css("display") == "none") {
         $("#showMessageTicker").addClass("highlight");
+      }
+      
+      for(var i = 0; i < events.length; ++i) {
+        if(events[i].content.action == "attack") {
+          var attackerTile = map.getTile(events[i].content.from.tileId);
+          var targetTile = map.tileWithUnit(events[i].content.target.unitId);
+          if(targetTile === null)
+            targetTile = oldUnits[events[i].content.target.unitId].tile;
+          map.drawAttackArrow(attackerTile.x, attackerTile.y, targetTile.x, targetTile.y);
+        }
       }
     };
     

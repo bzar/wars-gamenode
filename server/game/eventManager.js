@@ -25,10 +25,11 @@ function preparePlayer(player) {
   return player.playerNumber;
 };
 
-GameEventManager.prototype.attack = function(attacker, target, damage) {
+GameEventManager.prototype.attack = function(attacker, from, target, damage) {
   this.createTickerMessage({
     action: "attack",
     attacker: prepareUnit(attacker),
+    from: prepareTile(from),
     target: prepareUnit(target),
     damage: damage
   });
