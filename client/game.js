@@ -13,6 +13,8 @@ var wrap = function() {
   var ticker = null;
   var turnCounter = null;
   var oldUnits = {};
+  var powerMap = null;
+  
   var gameUIState = {
     stateName: "select"
   }
@@ -155,6 +157,41 @@ var wrap = function() {
         }
       });
     });
+    
+    $("#showGrid").click(function(e) {
+      e.preventDefault();
+      map.showGrid = !map.showGrid;
+      if(map.showGrid) {
+        $("#showGridStatus").text("Hide");
+      } else {
+        $("#showGridStatus").text("Show");
+      }
+      map.refresh();
+    });
+    
+    $("#showBorders").click(function(e) {
+      e.preventDefault();
+      map.showBorders = !map.showBorders;
+      if(map.showBorders) {
+        map.powerMap = getPowerMap();
+        $("#showBordersStatus").text("Hide");
+      } else {
+        $("#showBordersStatus").text("Show");
+      }
+      map.refresh();
+    });
+    
+    $("#showPowerMap").click(function(e) {
+      e.preventDefault();
+      map.showPowerMap = !map.showPowerMap;
+      if(map.showPowerMap) {
+        map.powerMap = getPowerMap();
+        $("#showPowerMapStatus").text("Hide");
+      } else {
+        $("#showPowerMapStatus").text("Show");
+      }
+      map.refresh();
+    });
   }
   
   function initializeAuthorTools() {
@@ -202,6 +239,7 @@ var wrap = function() {
     
     client.skeleton.gameUpdate = function(gameId, tileChanges) {
       oldUnits = {};
+      powerMap = null;
       for(var i = 0; i < tileChanges.length; ++i) {
         var newTile = tileChanges[i];
         var tile = map.getTile(newTile.x, newTile.y);
@@ -857,5 +895,12 @@ var wrap = function() {
       addChart(container, data, "power", "Power");
       addChart(container, data, "property", "Property");
     });
+  }
+  
+  function getPowerMap() {
+    if(powerMap === null) {
+      powerMap = gameLogic.getPowerMap();
+    }
+    return powerMap;
   }
 }();

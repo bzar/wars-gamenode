@@ -16,12 +16,6 @@ function Map(canvas, scale, theme, rules) {
     this.showBorders = false;
     this.showGrid = false;
 
-    this.playerColors = {0: [0,0,0], // neutral color
-                         1: [214,61,56],
-                         2: [56,67,214],
-                         3: [217,213,43],
-                         4: [99,173,208]}
-                         
     this.unitOffsetY = -12;
 }
 
@@ -181,7 +175,7 @@ Map.prototype.paintUnit = function(x, y, unit, ctx) {
     ctx.restore();
 };
 
-Map.prototype.paint = function(tiles) {
+Map.prototype.paintTiles = function(tiles) {
     var ctx = this.canvas.getContext("2d");
     ctx.globalCompositeOperation = "source-over";
     ctx.save();
@@ -189,12 +183,24 @@ Map.prototype.paint = function(tiles) {
     ctx.scale(this.getScale(), this.getScale());
 
     var this_ = this;
-    tiles = tiles.sort(function(a, b){return a.y - b.y});
     tiles.forEach(function(el){
         var xPos = this_.tileW*el.x+offset.x;
         var yPos = this_.tileH*el.y+offset.y;
         this_.paintTerrainTile(ctx, el, xPos, yPos);
+    });
 
+    ctx.restore();
+};
+
+Map.prototype.paintUnits = function(tiles) {
+    var ctx = this.canvas.getContext("2d");
+    ctx.globalCompositeOperation = "source-over";
+    ctx.save();
+    var offset = this.getOffset();
+    ctx.scale(this.getScale(), this.getScale());
+
+    var this_ = this;
+    tiles.forEach(function(el){
         if(el.unit) {
             this_.paintUnit(el.x, el.y, el.unit, ctx);
         }
@@ -221,11 +227,8 @@ Map.prototype.refresh = function() {
         $("#mapmask").height(h);
     }
 
-    this.paint(this.currentTiles);
+    this.paintTiles(this.currentTiles);
 
-    if(this.showGrid) {
-        this.paintGrid();
-    }
 
     if(this.powerMap != null) {
         if(this.showPowerMap) {
@@ -235,6 +238,12 @@ Map.prototype.refresh = function() {
             this.paintBorders(this.powerMap);
         }
     }
+
+    if(this.showGrid) {
+        this.paintGrid();
+    }
+
+    this.paintUnits(this.currentTiles);
 };
 
 Map.prototype.paintMask = function(ctx, x, y,color) {
@@ -244,6 +253,7 @@ Map.prototype.paintMask = function(ctx, x, y,color) {
 Map.prototype.paintAttackMask = function(attacks) {
     var maskArray = this.parseAttacks(attacks, this.getMapSize());
     this.paintMaskArray(maskArray, false, true);
+    this.paintUnits(this.currentTiles);
     this.paintDamageIndicators(attacks);
 };
 
@@ -255,6 +265,7 @@ Map.prototype.paintUnloadMask = function(unloadOptions) {
         maskArray[coord.y * mapWidth + coord.x] = {};
     }
     this.paintMaskArray(maskArray, false, "blue");
+    this.paintUnits(this.currentTiles);
 };
 
 Map.prototype.paintDamageIndicators = function(attacks) {
@@ -266,9 +277,12 @@ Map.prototype.paintDamageIndicators = function(attacks) {
     for (i in attacks) {
         var power = attacks[i].power;
         ctx.fillStyle    = '#fff';
+        ctx.strokeStyle  = '#555';
+        ctx.lineWidth    = 1;
         ctx.font         = '15px sans-serif';
         ctx.textBaseline = 'top';
-        ctx.fillText  (power + '%', attacks[i].pos.x*this.tileW+2, attacks[i].pos.y*this.tileH+2 - this.unitOffsetY);
+        ctx.strokeText(power + '%', attacks[i].pos.x*this.tileW+2, attacks[i].pos.y*this.tileH+2 - this.unitOffsetY);
+        ctx.fillText(power + '%', attacks[i].pos.x*this.tileW+2, attacks[i].pos.y*this.tileH+2 - this.unitOffsetY);
     }
     ctx.restore();
 };
@@ -278,6 +292,7 @@ Map.prototype.paintMovementMask = function(maskArray, inverse) {
 
     var maskArray2 = this.createMovementMask(maskArray);
     this.paintMaskArray(maskArray2, !inverse);
+    this.paintUnits(this.currentTiles);
 };
 
 Map.prototype.paintMaskArray = function(maskArray, inverse, useColor) {
@@ -414,10 +429,11 @@ Map.prototype.getMapArray = function() {
 };
 
 Map.prototype.interpolateColor = function(baseColor, targetColor, scalar) {
-    var color = [0,0,0];
-    for(i in color) {
-        color[i] = parseFloat(baseColor[i]) + parseFloat(scalar) * (parseFloat(targetColor[i]) - parseFloat(baseColor[i]));
-    }
+    var color = {
+      r: baseColor.r + scalar * (targetColor.r - baseColor.r),
+      g: baseColor.g + scalar * (targetColor.g - baseColor.g),
+      b: baseColor.b + scalar * (targetColor.b - baseColor.b)
+    };
     return color;
 };
 
@@ -425,17 +441,17 @@ Map.prototype.paintPowerMap = function(powerMap) {
     var ctx = this.canvas.getContext("2d");
     ctx.save();
     ctx.globalAlpha = 0.8;
+    var neutralColor = this.theme.getPlayerColor(0);
     for(y in powerMap.tiles) {
         for(x in powerMap.tiles[y]) {
             y = parseInt(y);
             x = parseInt(x);
             var maxValuePlayer = powerMap.tiles[y][x].maxValuePlayer;
-            if(maxValuePlayer in this.playerColors) {
-                var valueScale = parseFloat(powerMap.tiles[y][x].maxValue) / parseFloat(powerMap.maxValue);
-                var color = this.interpolateColor(this.playerColors[0], this.playerColors[maxValuePlayer], valueScale);
-                ctx.fillStyle = "rgb(" + parseInt(color[0]) + "," + parseInt(color[1]) + "," + parseInt(color[2]) + ")";
-                this.paintMask(ctx, x, y);
-            }
+            var playerColor = this.theme.getPlayerColor(maxValuePlayer);
+            var valueScale = (parseFloat(powerMap.tiles[y][x].maxValue) / parseFloat(powerMap.maxValue))/2 + 0.5;
+            var color = this.interpolateColor(neutralColor, playerColor, valueScale);
+            ctx.fillStyle = "rgba(" + parseInt(color.r) + "," + parseInt(color.g) + "," + parseInt(color.b) + "," + valueScale + ")";
+            this.paintMask(ctx, x, y);
         }
     }
     ctx.restore();
@@ -455,12 +471,12 @@ Map.prototype.paintBorders = function(powerMap) {
             }
 
             var x1 = x*this.tileW;
-            var y1 = y*this.tileH + this.unitOffsetY;
+            var y1 = y*this.tileH - this.unitOffsetY;
             var x2 = (x+1)*this.tileW;
-            var y2 = (y+1)*this.tileH + this.unitOffsetY;
+            var y2 = (y+1)*this.tileH - this.unitOffsetY;
 
-            var color = this.playerColors[maxValuePlayer];
-            ctx.strokeStyle = "rgb(" + parseInt(color[0]) + "," + parseInt(color[1]) + "," + parseInt(color[2]) + ")";
+            var color = this.theme.getPlayerColorString(maxValuePlayer);
+            ctx.strokeStyle = color;
             ctx.lineWidth = 3;
             ctx.beginPath();
 
