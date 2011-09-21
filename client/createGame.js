@@ -108,8 +108,8 @@ var wrap = function() {
         mapPainter.canvas = canvas[0];
         mapPainter.currentTiles = mapData;
         var mapSize = mapPainter.getMapSize();
-        var width = mapSize.w * mapPainter.tileW
-        var height = mapSize.h * mapPainter.tileH
+        var width = mapSize.w * mapPainter.tileW;
+        var height = mapSize.h * mapPainter.tileH - mapPainter.unitOffsetY;
         canvas.attr("width", width);
         canvas.attr("height", height);
         mapPainter.scale = 1.0;

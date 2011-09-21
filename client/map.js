@@ -113,7 +113,7 @@ Map.prototype.paintTerrainTile = function(ctx, el, xPos, yPos) {
         // draw tile
         ctx.drawImage(this.sprites,
                       coord.x*this.tileW, coord.y*this.tileH, this.tileW, this.tileH,
-                      xPos, yPos, this.tileW, this.tileH);
+                      xPos, yPos - this.unitOffsetY, this.tileW, this.tileH);
         if(el.capturePoints<200) {
             // draw capture bar
             if(el.beingCaptured) {
@@ -134,8 +134,14 @@ Map.prototype.paintTerrainTile = function(ctx, el, xPos, yPos) {
 Map.prototype.paintUnit = function(x, y, unit, ctx) {
     var ctx = ctx ? ctx : this.canvas.getContext("2d");
     var xPos = this.tileW*x;
-    var yPos = this.tileH*y + this.unitOffsetY;
+    var yPos = this.tileH*y;
     ctx.save();
+    
+    if(unit.deployed) {
+        ctx.strokeStyle = "white";
+        ctx.strokeRect(xPos, yPos - this.unitOffsetY, this.tileW-1, this.tileH-1);
+    }
+    
     if(unit.moved) ctx.globalAlpha = 0.5;
 
     var coord = unit ? this.theme.getUnitCoordinates(unit.type, unit.owner) : null;
@@ -146,10 +152,6 @@ Map.prototype.paintUnit = function(x, y, unit, ctx) {
     } 
 
     ctx.globalAlpha = 1.0;
-    if(unit.deployed) {
-        ctx.strokeStyle = "white";
-        ctx.strokeRect(xPos, yPos, this.tileW-1, this.tileH-1);
-    }
     var en = Math.ceil(parseInt(unit.health)/10);
     if(en<10) {
         var numCoord = this.theme.getHealthNumberCoordinates(en);
@@ -163,17 +165,15 @@ Map.prototype.paintUnit = function(x, y, unit, ctx) {
     if(this.rules) {
         var unitType = this.rules.units[unit.type];
         if(unitType.carryNum > 0) {
+            ctx.strokeStyle = "#111";
+            ctx.fillStyle = "#fff";
             for(var i = 0; i < unitType.carryNum; ++i) {
                 if(i < unit.carriedUnits.length) {
-                    ctx.strokeStyle = "white";
-                    ctx.fillStyle = "#111";
-                    ctx.strokeRect(xPos + 2, yPos + this.tileH - (i+1)*7, 5, 5);
-                    //ctx.fillRect(xPos + 2, yPos + this.tileH - (i+1)*7, 5, 5);
-                } else {
-                    ctx.strokeStyle = "#111";
-                    ctx.fillStyle = "white";
-                    ctx.strokeRect(xPos + 2, yPos + this.tileH - (i+1)*7, 5, 5);
                     ctx.fillRect(xPos + 2, yPos + this.tileH - (i+1)*7, 5, 5);
+                    ctx.strokeRect(xPos + 2, yPos + this.tileH - (i+1)*7, 5, 5);
+                } else {
+                    ctx.strokeStyle = "#fff";
+                    ctx.strokeRect(xPos + 2, yPos + this.tileH - (i+1)*7, 5, 5);
                 }
             }
         }
@@ -210,7 +210,7 @@ Map.prototype.refresh = function() {
         var mapSize = this.getMapSize();
 
         var w = this.getScale() * mapSize.w * this.tileW;
-        var h = this.getScale() * mapSize.h * this.tileH;
+        var h = this.getScale() * mapSize.h * this.tileH - this.unitOffsetY;
 
         this.canvas.width = w;
         this.canvas.height = h;
@@ -238,7 +238,7 @@ Map.prototype.refresh = function() {
 };
 
 Map.prototype.paintMask = function(ctx, x, y,color) {
-    ctx.fillRect(x * this.tileW, y * this.tileH, this.tileW, this.tileH);
+    ctx.fillRect(x * this.tileW, y * this.tileH - this.unitOffsetY, this.tileW, this.tileH);
 };
 
 Map.prototype.paintAttackMask = function(attacks) {
@@ -268,7 +268,7 @@ Map.prototype.paintDamageIndicators = function(attacks) {
         ctx.fillStyle    = '#fff';
         ctx.font         = '15px sans-serif';
         ctx.textBaseline = 'top';
-        ctx.fillText  (power + '%', attacks[i].pos.x*this.tileW+2, attacks[i].pos.y*this.tileH+2);
+        ctx.fillText  (power + '%', attacks[i].pos.x*this.tileW+2, attacks[i].pos.y*this.tileH+2 - this.unitOffsetY);
     }
     ctx.restore();
 };
@@ -320,7 +320,7 @@ Map.prototype.eventToTileX = function(event) {
     return Math.floor((event.pageX - $(this.canvas).offset().left)/ (this.getScale() * this.tileW));
 };
 Map.prototype.eventToTileY = function(event) {
-    return Math.floor((event.pageY - $(this.canvas).offset().top)/ (this.getScale() * this.tileW));
+    return Math.floor((event.pageY - $(this.canvas).offset().top + this.unitOffsetY)/ (this.getScale() * this.tileW));
 };
 
 Map.prototype.showGameEvents = function(gameEvents) {
@@ -455,9 +455,9 @@ Map.prototype.paintBorders = function(powerMap) {
             }
 
             var x1 = x*this.tileW;
-            var y1 = y*this.tileH;
+            var y1 = y*this.tileH + this.unitOffsetY;
             var x2 = (x+1)*this.tileW;
-            var y2 = (y+1)*this.tileH;
+            var y2 = (y+1)*this.tileH + this.unitOffsetY;
 
             var color = this.playerColors[maxValuePlayer];
             ctx.strokeStyle = "rgb(" + parseInt(color[0]) + "," + parseInt(color[1]) + "," + parseInt(color[2]) + ")";
@@ -498,13 +498,13 @@ Map.prototype.paintGrid = function() {
     var mapSize = this.getMapSize();
 
     for(var y = 0; y < mapSize.h - 1; ++y) {
-        ctx.moveTo(0, (y+1) * this.tileH);
-        ctx.lineTo(mapSize.w * this.tileW, (y+1) * this.tileH);
+        ctx.moveTo(0, (y+1) * this.tileH - this.unitOffsetY);
+        ctx.lineTo(mapSize.w * this.tileW, (y+1) * this.tileH - this.unitOffsetY);
     }
 
     for(var x = 0; x < mapSize.w - 1; ++x) {
-        ctx.moveTo((x+1) * this.tileW, 0);
-        ctx.lineTo((x+1) * this.tileW, mapSize.h * this.tileH);
+        ctx.moveTo((x+1) * this.tileW, -this.unitOffsetY);
+        ctx.lineTo((x+1) * this.tileW, mapSize.h * this.tileH - this.unitOffsetY);
     }
 
     ctx.stroke();

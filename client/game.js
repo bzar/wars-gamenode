@@ -272,8 +272,8 @@ var wrap = function() {
             refreshFunds();
             map.currentTiles = game.tiles;
             var mapSize = map.getMapSize();
-            var width = mapSize.w * map.tileW
-            var height = mapSize.h * map.tileH
+            var width = mapSize.w * map.tileW;
+            var height = mapSize.h * map.tileH - map.unitOffsetY;
             map.canvas.width = width;
             map.canvas.height = height;
             map.refresh();
@@ -398,7 +398,7 @@ var wrap = function() {
                           y: e.offsetY !== undefined ? e.offsetY : e.layerY};
     var windowPosition = {x: e.pageX, y: e.pageY};
     var tilePosition = {x: parseInt(canvasPosition.x / (map.getScale() * map.tileW)),
-                        y: parseInt(canvasPosition.y / (map.getScale() * map.tileH))};
+                        y: parseInt((canvasPosition.y + map.unitOffsetY) / (map.getScale() * map.tileH))};
     if(inTurn) {
       buildMenu.hide();
       var playerNumber = parseInt($(".playerItem.inTurn").attr("playerNumber"));
