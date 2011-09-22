@@ -412,6 +412,12 @@ var wrap = function() {
       item.append(number);
       item.append(name);
 
+      if(player.isMe) {
+        var star = $("<span>\u2605</span>");
+        star.addClass("selfIndicator");
+        item.append(star);
+      }
+      
       playerList.append(item);
     }
   }

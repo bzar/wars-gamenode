@@ -522,6 +522,12 @@ input[type=text], input[type=password] {
 .playerName {
 }
 
+.selfIndicator {
+  color: yellow;
+  position: absolute;
+  right: 8;
+}
+
 .playerItem {
   position: relative;
 }
