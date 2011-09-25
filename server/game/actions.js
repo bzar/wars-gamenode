@@ -15,7 +15,8 @@ function GameActions(database) {
 exports.GameActions = GameActions;
 
 function checkMove(database, gameId, userId, unitId, destination, callback) {
-  database.unitWithTile(unitId, function(result) {
+  var gameInformation = new GameInformation(database);
+  gameInformation.unitWithTile(unitId, function(result) {
     if(!result.success) {
       callback({success: false, reason: result.reason}); return;
     }
@@ -27,14 +28,13 @@ function checkMove(database, gameId, userId, unitId, destination, callback) {
       callback({success: false, reason: "Unit already moved!"}); return;
     } 
     
-    var gameInformation = new GameInformation(database);
     gameInformation.gameData(gameId, function(result) {
       if(!result.success) {
         callback({success: false, reason: result.reason}); return;
       } 
       
       var game = result.game;
-      if(game.state != "inProgress") {
+      if(game.state != game.STATE_IN_PROGRESS) {
         callback({success: false, reason: "Game not in progress!"}); return;
       } 
       
@@ -284,7 +284,8 @@ GameActions.prototype.undeploy = function(gameId, userId, unitId, callback) {
 
 GameActions.prototype.moveAndLoadInto = function(gameId, userId, unitId, carrierId, callback) {
   var database = this.database;
-  database.unitWithTile(carrierId, function(result) {
+  var gameInformation = new GameInformation(database);
+  gameInformation.unitWithTile(carrierId, function(result) {
     if(!result.success) {
       callback({success: false, reason: result.reason}); return;
     }
@@ -377,7 +378,7 @@ GameActions.prototype.build = function(gameId, userId, unitTypeId, destination, 
   database.game(gameId, function(result) {
     if(!result.success) {
       callback({success: false, reason: result.reason}); return;
-    } else if(result.game.state != "inProgress") {
+    } else if(result.game.state != result.game.STATE_IN_PROGRESS) {
       callback({success: false, reason: "Game not in progress!"}); return;
     }
     
@@ -415,7 +416,7 @@ GameActions.prototype.build = function(gameId, userId, unitTypeId, destination, 
         player.funds -= unitType.price;
         
         database.updatePlayer(player, function(result) {
-          database.createUnit(unit, function(result) {
+          database.createUnit(gameId, unit, function(result) {
             tile.unitId = result.unitId;
             unit.unitId = result.unitId;
             tile.unit = unit;
@@ -553,7 +554,7 @@ GameActions.prototype.startTurn = function(game, callback) {
         // Change turn
         var events = new GameEventManager(game.gameId);
         if(nextPlayer.playerNumber == game.inTurnNumber || numAlivePlayers < 2) {
-          game.state = "finished";
+          game.state = game.STATE_FINISHED;
           events.gameFinished(nextPlayer);
           database.updateGame(game, function(result) {
             database.createGameEvents(events.objects, function(result) {
@@ -644,7 +645,7 @@ GameActions.prototype.nextTurn = function(gameId, userId, callback) {
   this.database.game(gameId, function(result) {
     if(!result.success) {
       callback({success: false, reason: result.reason});
-    } else if(result.game.state != "inProgress") {
+    } else if(result.game.state != result.game.STATE_IN_PROGRESS) {
       callback({success: false, reason: "Game not in progress!"});
     } else if(result.game.inTurnNumber == 0) {
       this_.startTurn(result.game, function(result) {
@@ -684,7 +685,7 @@ GameActions.prototype.surrender = function(gameId, userId, callback) {
   database.game(gameId, function(result) {
     if(!result.success) {
       callback({success: false, reason: result.reason}); return;
-    } else if(result.game.state != "inProgress") {
+    } else if(result.game.state != result.game.STATE_IN_PROGRESS) {
       callback({success: false, reason: "Game not in progress!"}); return;
     }
     var game = result.game;
@@ -707,7 +708,7 @@ GameActions.prototype.surrender = function(gameId, userId, callback) {
           var finished = result.finished;
           var inTurnNumber = result.inTurnNumber;
           var untilNextTurn = result.untilNextTurn;
-          database.tilesWithUnits(gameId, function(result) {
+          this_.gameInformation.tilesWithUnits(gameId, function(result) {
             var changedTiles = result.tiles;
             database.createGameEvents(events.objects, function(result) {
               callback({success: true, finished: finished, inTurnNumber: inTurnNumber, 

@@ -19,7 +19,7 @@ var wrap = function() {
     stateName: "select"
   }
   
-  var gameId = /[?&]gameId=(\d+)/.exec(window.location.search);
+  var gameId = /[?&]gameId=([0-9a-f]+)/.exec(window.location.search);
   if(gameId !== null)
     gameId = gameId[1];
   else
@@ -200,12 +200,12 @@ var wrap = function() {
   
   function formatTime(t) {
     var s = "";
-    if(t > 60*60) {
+    if(t >= 60*60) {
       var h = Math.floor(t/(60*60));
       if(h < 10) s += 0;
       s += h + ":";
     } 
-    if(t > 60) {
+    if(t >= 60) {
       var m = Math.floor(t/60)%60;
       if(m < 10) s += 0;
       s += m + ":";
@@ -781,7 +781,7 @@ var wrap = function() {
     }
     
     $(".unloadItem").click(function(e) {
-      var carriedUnitId = parseInt($(this).attr("unitId"));
+      var carriedUnitId = $(this).attr("unitId");
       var unloadTargetOptions = gameLogic.unitUnloadTargetOptions(gameUIState.x, gameUIState.y, gameUIState.dx, 
                                                                   gameUIState.dy, carriedUnitId);
       gameUIState = {

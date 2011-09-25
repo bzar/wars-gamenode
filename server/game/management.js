@@ -85,7 +85,7 @@ GameManagement.prototype.joinGame = function(userId, gameId, playerNumber, callb
   this.database.game(gameId, function(result) {
     if(!result.success) {
       callback({success: false, reason: result.reason});
-    } else if(result.game.state != "pregame") {
+    } else if(result.game.state != result.game.STATE_PREGAME) {
       callback({success: false, reason: "Can only join during pregame!"});
     } else {
       this_.database.gamePlayer(gameId, playerNumber, function(result) {
@@ -123,7 +123,7 @@ GameManagement.prototype.leaveGame = function(userId, gameId, playerNumber, call
   this.database.game(gameId, function(result) {
     if(!result.success) {
       callback({success: false, reason: result.reason});
-    } else if(result.game.state != "pregame") {
+    } else if(result.game.state != result.game.STATE_PREGAME) {
       callback({success: false, reason: "Can only leave during pregame!"});
     } else {
       var game = result.game;
@@ -159,7 +159,7 @@ GameManagement.prototype.startGame = function(userId, gameId, callback) {
       callback({success: false, reason: result.reason});
     } else if(result.game.authorId != userId) {
       callback({success: false, reason: "Not the game author!"});
-    } else if(result.game.state != "pregame") {
+    } else if(result.game.state != game.STATE_PREGAME) {
       callback({success: false, reason: "Can start during pregame!"});
     } else {
       var game = result.game;
@@ -182,7 +182,7 @@ GameManagement.prototype.startGame = function(userId, gameId, callback) {
             callback({success: false, reason: "Need at least two players to start!"});
           } else {
             gameProcedures.surrenderPlayers(game, playersWithoutUsers, function(response) {
-              game.state = "inProgress";
+              game.state = game.STATE_IN_PROGRESS;
               database.updateGame(game, function(result) {
                 if(result.success) {
                   callback({success: true});

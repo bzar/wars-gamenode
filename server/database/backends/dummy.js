@@ -1,274 +1,214 @@
 var entities = require("../../entities");
+var settings = require("../../settings").settings;
+var utils = require("../../utils");
 
 var DummyDatabase = function() {
 }
 
 exports.implementation = DummyDatabase;
 
+
 // GAME MANAGEMENT
 
 DummyDatabase.prototype.game = function(gameId, callback) {
-  setTimeout(function() {
-    callback(new entities.Game());
-  }, 0);
+  callback({success: true, game: null});
 }
 
-DummyDatabase.prototype.createGame = function(game, callback) {
-  setTimeout(function() {
-    callback(null);
-  }, 0);
+DummyDatabase.prototype.createGame = function(game, gameData, players, callback) {
+  callback({success: true, gameId: 0});
 }
 
-DummyDatabase.prototype.joinGame = function(userId, gameId, playerNumber, callback) {
-  setTimeout(function() {
-    callback(null);
-  }, 0);
+DummyDatabase.prototype.updateGame = function(game, callback) {
+  callback({success: true});
 }
-
-DummyDatabase.prototype.leaveGame = function(userId, gameId, playerNumber, callback) {
-  setTimeout(function() {
-    callback(null);
-  }, 0);
-}
-
-DummyDatabase.prototype.startGame = function(gameId, callback) {
-  setTimeout(function() {
-    callback(null);
-  }, 0);
-}
-
 DummyDatabase.prototype.deleteGame = function(gameId, callback) {
-  setTimeout(function() {
-    callback(null);
-  }, 0);
+  callback({success: true});
 }
 
 DummyDatabase.prototype.openGames = function(callback) {
-  setTimeout(function() {
-    callback(new Array());
-  }, 0);
+  callback({success: true, games: []});
+}
+
+DummyDatabase.prototype.publicGames = function(callback) {
+  callback({success: true, games: []});
 }
 
 DummyDatabase.prototype.myGames = function(userId, callback) {
-  setTimeout(function() {
-    callback(new Array());
-  }, 0);
+  callback({success: true, games: []});
 }
 
 DummyDatabase.prototype.players = function(gameId, callback) {
-  setTimeout(function() {
-    callback(new Object());
-  }, 0);
+  callback({success: true, players: []});
 }
 
-DummyDatabase.prototype.player = function(gameId, playerId, callback) {
-  setTimeout(function() {
-    callback(new entities.Player());
-  }, 0);
+DummyDatabase.prototype.playersWithUsers = function(gameId, callback) {
+  callback({success: true, players: []});
 }
 
-DummyDatabase.prototype.updatePlayer = function(gameId, playerId, player, callback) {
-  setTimeout(function() {
-    callback(null);
-  }, 0);
+DummyDatabase.prototype.gamePlayer = function(gameId, playerNumber, callback) {
+  callback({success: true, player: null});
+}
+
+DummyDatabase.prototype.userPlayerInTurn = function(gameId, userId, callback) {
+  callback({success: true, player: null});
+}
+
+DummyDatabase.prototype.player = function(playerId, callback) {
+  callback({success: true, player: null});
+}
+
+DummyDatabase.prototype.updatePlayer = function(player, callback) {
+  callback({success: true});
+}
+
+DummyDatabase.prototype.updatePlayers = function(players, callback) {
+  callback({success: true});
 }
 
 // MAP MANAGEMENT
 
 DummyDatabase.prototype.createMap = function(newMap, callback) {
-  setTimeout(function() {
-    callback(null);
-  }, 0);
+  callback({success: true, mapId: 0});
 }
 
-DummyDatabase.prototype.updateMap = function(mapId, map, callback) {
-  setTimeout(function() {
-    callback(null);
-  }, 0);
+DummyDatabase.prototype.updateMap = function(map, callback) {
+  callback({success: true});
 }
 
 DummyDatabase.prototype.map = function(mapId, callback) {
-  setTimeout(function() {
-    callback(new entities.Map());
-  }, 0);
+  callback({success: true, map: null});
 }
 
-DummyDatabase.prototype.mapTiles = function(mapId, callback) {
-  setTimeout(function() {
-    callback(new Array());
-  }, 0);
+DummyDatabase.prototype.mapData = function(mapId, callback) {
+  callback({success: true, mapData: null});
 }
 
 DummyDatabase.prototype.maps = function(callback) {
-  setTimeout(function() {
-    callback(new Array());
-  }, 0);
+  callback({success: true, maps: []});
 }
 
 DummyDatabase.prototype.myMaps = function(userId, callback) {
-  setTimeout(function() {
-    callback(new Array());
-  }, 0);
-}
-
-// PROFILE MANAGEMENT
-
-DummyDatabase.prototype.saveProfile = function(userId, profile, callback) {
-  setTimeout(function() {
-    callback(null);
-  }, 0);
-}
-
-DummyDatabase.prototype.profile = function(userId, callback) {
-  setTimeout(function() {
-    callback(null);
-  }, 0);
+  callback({success: true, maps: []});
 }
 
 // USER MANAGEMENT
 
 DummyDatabase.prototype.userId = function(username, password, callback) {
-  setTimeout(function() {
-    callback(null);
-  }, 0);
+  callback({success: true, userId: 0});
 }
 
 DummyDatabase.prototype.user = function(userId, callback) {
-  setTimeout(function() {
-    callback(new entities.User());
-  }, 0);
+  callback({success: true, user: null});
 }
 
-DummyDatabase.prototype.updateUser = function(userId, newUser, callback) {
-  setTimeout(function() {
-    callback(null);
-  }, 0);
+DummyDatabase.prototype.updateUser = function(user, callback) {
+  callback({success: true});
 }
 
 DummyDatabase.prototype.register = function(newUser, callback) {
-  setTimeout(function() {
-    callback(null);
-  }, 0);
+  callback({success: true, userId: 0});
 }
 
 // GAME ENTITY MANAGEMENT
 
-DummyDatabase.prototype.unit = function(gameId, unitId, callback) {
-  setTimeout(function() {
-    callback(new entities.Unit());
-  }, 0);
+DummyDatabase.prototype.unit = function(unitId, callback) {
+  callback({success: true, unit: null});
 }
 
 DummyDatabase.prototype.unitAt = function(gameId, x, y, callback) {
-  setTimeout(function() {
-    callback(new entities.Unit());
-  }, 0);
+  callback({success: true, unit: null})
 }
 
 DummyDatabase.prototype.units = function(gameId, callback) {
-  setTimeout(function() {
-    callback(new Array());
-  }, 0);
+  callback({success: true, units: []});
 }
 
-DummyDatabase.prototype.myUnits = function(gameId, playerId, callback) {
-  setTimeout(function() {
-    callback(new Array());
-  }, 0);
+DummyDatabase.prototype.playerUnits = function(gameId, playerNumber, callback) {
+  callback({success: true, units: []});
 }
 
-DummyDatabase.prototype.createUnit = function(gameId, unit, callback) {
-  setTimeout(function() {
-    callback(null);
-  }, 0);
+DummyDatabase.prototype.createUnit = function(gameId, newUnit, callback) {
+  callback({success: true, unitId: 0});
 }
 
-DummyDatabase.prototype.updateUnit = function(gameId, unitId, unit, callback) {
-  setTimeout(function() {
-    callback(null);
-  }, 0);
+DummyDatabase.prototype.updateUnit = function(unit, callback) {
+  callback({success: true});
 }
 
-DummyDatabase.prototype.deleteUnit = function(gameId, unitId, callback) {
-  setTimeout(function() {
-    callback(null);
-  }, 0);
+DummyDatabase.prototype.updateUnits = function(units, callback) {
+  callback({success: true});
 }
 
-DummyDatabase.prototype.tile = function(gameId, tileId, callback) {
-  setTimeout(function() {
-    callback();
-  }, 0);
+DummyDatabase.prototype.deleteUnit = function(unit, callback) {
+  callback({success: true});
+}
+
+DummyDatabase.prototype.deleteUnits = function(units, callback) {
+  callback({success: true});
+}
+
+DummyDatabase.prototype.tile = function(tileId, callback) {
+  callback({success: true, tile: null});
 }
 
 DummyDatabase.prototype.tileAt = function(gameId, x, y, callback) {
-  setTimeout(function() {
-    callback(new entities.Tile());
-  }, 0);
+  callback({success: true, tile: null})
 }
 
 DummyDatabase.prototype.tiles = function(gameId, callback) {
-  setTimeout(function() {
-    callback(new Array());
-  }, 0);
+  callback({success: true, tiles: []});
 }
 
-DummyDatabase.prototype.myTiles = function(gameId, playerId, callback) {
-  setTimeout(function() {
-    callback(new Array());
-  }, 0);
+DummyDatabase.prototype.playerTiles = function(gameId, playerNumber, callback) {
+  callback({success: true, tiles: []});
 }
 
-DummyDatabase.prototype.createTile = function(gameId, tile, callback) {
-  setTimeout(function() {
-    callback(null);
-  }, 0);
+DummyDatabase.prototype.updateTile = function(tile, callback) {
+  callback({success: true});
 }
 
-DummyDatabase.prototype.updateTile = function(gameId, tileId, tile, callback) {
-  setTimeout(function() {
-    callback(null);
-  }, 0);
+DummyDatabase.prototype.updateTiles = function(tiles, callback) {
+  callback({success: true});
 }
 
 // CHAT
 
-DummyDatabase.prototype.createChatMessage = function(gameId, chatMessage, callback) {
-  setTimeout(function() {
-    callback(null);
-  }, 0);
+DummyDatabase.prototype.createChatMessage = function(newChatMessage, callback) {
+  callback({success: true, chatMessageId: 0});
 }
 
 DummyDatabase.prototype.chatMessages = function(gameId, callback) {
-  setTimeout(function() {
-    callback(new Array());
-  }, 0);
+  callback({success: true, chatMessages: []});
 }
 
-// GAME EVENT TICKER
+// GAME EVENTS
 
-DummyDatabase.prototype.createTickerMessage = function(gameId, content, callback) {
-  setTimeout(function() {
-    callback(null);
-  }, 0);
+DummyDatabase.prototype.createGameEvent = function(newGameEvent, callback) {
+  callback({success: true});
 }
 
-DummyDatabase.prototype.tickerMessages = function(gameId, count, callback) {
-  setTimeout(function() {
-    callback(new Array());
-  }, 0);
+DummyDatabase.prototype.createGameEvents = function(newGameEvents, callback) {
+  callback({success: true});
+}
+
+DummyDatabase.prototype.gameEvents = function(gameId, callback) {
+  callback({success: true, gameEvents: []});
 }
 
 // GAME STATISTICS
 
-DummyDatabase.prototype.gameStatistics = function(gameId, callback) {
-  setTimeout(function() {
-    callback(new Array());
-  }, 0);
+DummyDatabase.prototype.createGameStatistic = function(newGameStatistic, callback) {
+  callback({success: true});
 }
 
-DummyDatabase.prototype.createTurnStatistics = function(gameId, turnStatistics, callback) {
-  setTimeout(function() {
-    callback(null);
-  }, 0);
+DummyDatabase.prototype.createGameStatistics = function(newGameStatistics, callback) {
+  callback({success: true});
+}
+
+DummyDatabase.prototype.gameStatistics = function(gameId, callback) {
+  callback({success: true, gameStatistics: []});
+}
+
+DummyDatabase.prototype.gameLatestStatistic = function(gameId, callback) {
+  callback({success: true, latestStatistic: null});
 }

@@ -7,7 +7,10 @@ var configuration = {
   crashOnError: true,
 
   database: {
-    type: "jsonfile"
+    type: "mongodb",
+    host: "localhost",
+    port: 27017,
+    database: "wars"
   },
   
   io: {

@@ -2,9 +2,9 @@ var wrap = function() {
   var client = new GameNodeClient(Skeleton);
   var session = null;
 
-  var mapId = /[?&]mapId=(\d+)/.exec(window.location.search);
+  var mapId = /[?&]mapId=([0-9a-f]+)/.exec(window.location.search);
   if(mapId !== null)
-    mapId = parseInt(mapId[1]);
+    mapId = mapId[1];
   
   var theme = null;
   var mapPainter = null;
@@ -234,7 +234,7 @@ var wrap = function() {
     if(mapId === null) {
       client.stub.createMap(name, funds, mapData, function(response) {
         if(response.success) {
-          mapId = parseInt(response.mapId);
+          mapId = response.mapId;
           history.pushState(undefined, undefined, document.location.pathname + "?mapId=" + mapId);
           var message = $("#mapSavedMessage")
           message.show();

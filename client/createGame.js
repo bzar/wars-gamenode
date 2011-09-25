@@ -3,7 +3,7 @@ var wrap = function() {
   var session = null;
 
   var lastMapId = null;
-  var mapId = /[?&]mapId=(\d+)/.exec(window.location.search);
+  var mapId = /[?&]mapId=([0-9a-f]+)/.exec(window.location.search);
   if(mapId !== null)
     mapId = mapId[1];
   

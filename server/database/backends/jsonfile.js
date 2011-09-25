@@ -356,7 +356,7 @@ JSONFileDatabase.prototype.openGames = function(callback) {
     var openGames = [];
     for(var i = 0; i < database.games.length; ++i) {
       var game = database.games[i];
-      if(game.settings.public && game.state == "pregame") {
+      if(game.settings.public && game.state == game.STATE_PREGAME) {
         var numPlayers = 0;
         for(var j = 0; j < database.players.length; ++j) {
           var player = database.players[j];
@@ -390,7 +390,7 @@ JSONFileDatabase.prototype.publicGames = function(callback) {
     var publicGames = [];
     for(var i = 0; i < database.games.length; ++i) {
       var game = database.games[i];
-      if(game.settings.public && game.state == "inProgress") {
+      if(game.settings.public && game.state == game.STATE_IN_PROGRESS) {
         var numPlayers = 0;
         for(var j = 0; j < database.players.length; ++j) {
           var player = database.players[j];
@@ -790,28 +790,6 @@ JSONFileDatabase.prototype.unit = function(unitId, callback) {
   });
 }
 
-JSONFileDatabase.prototype.unitWithTile = function(unitId, callback) {
-  var timer = new utils.Timer("JSONFileDatabase.unitWithTile");
-  var this_ = this;
-  this.loadDatabase(function(database) {
-    var unit = database.unit(unitId);
-    if(unit === null) {
-      callback({success: false, reason: "No such unit!"});
-    } else {
-      unit = unit.clone();
-      getCarriedUnits(database, unit);
-      var tile = null;
-      if(unit.tileId !== null) {
-        tile = database.tile(unit.tileId).clone();
-        tile.setUnit(unit);
-      }
-      
-      timer.end();
-      callback({success: true, unit: unit, tile: tile});
-    }
-  });
-}
-
 JSONFileDatabase.prototype.unitAt = function(gameId, x, y, callback) {
   var timer = new utils.Timer("JSONFileDatabase.unitAt");
   var this_ = this;
@@ -877,24 +855,7 @@ JSONFileDatabase.prototype.playerUnits = function(gameId, playerNumber, callback
   });
 }
 
-JSONFileDatabase.prototype.carriedUnits = function(carrierId, callback) {
-  var timer = new utils.Timer("JSONFileDatabase.carriedUnits");
-  var this_ = this;
-  this.loadDatabase(function(database) {
-    var units = [];
-    for(var i = 0; i < database.units.length; ++i) {
-      var unit = database.units[i];
-      if(unit.carriedBy == carrierId) {
-        units.push(unit.clone());
-      }
-    }
-    
-    timer.end();
-    callback({success: true, units: units});
-  });
-}
-
-JSONFileDatabase.prototype.createUnit = function(newUnit, callback) {
+JSONFileDatabase.prototype.createUnit = function(gameId, newUnit, callback) {
   var timer = new utils.Timer("JSONFileDatabase.createUnit");
   var this_ = this;
   this.loadDatabase(function(database) {
@@ -1036,29 +997,6 @@ JSONFileDatabase.prototype.tiles = function(gameId, callback) {
       }
     }
     
-    timer.end();
-    callback({success: true, tiles: tiles});
-  });
-}
-
-JSONFileDatabase.prototype.tilesWithUnits = function(gameId, callback) {
-  var timer = new utils.Timer("JSONFileDatabase.tilesWithUnits");
-  var this_ = this;
-  this.loadDatabase(function(database) {
-    var tiles = [];
-    
-    for(var i = 0; i < database.tiles.length; ++i) {
-      if(database.tiles[i].gameId == gameId) {
-        var tile = database.tiles[i].clone();
-        tile.unit = null;
-        if(tile.unitId !== null) {
-          tile.unit = database.unit(tile.unitId).clone();
-          getCarriedUnits(database, tile.unit);
-          
-        }
-        tiles.push(tile);
-      }
-    }
     timer.end();
     callback({success: true, tiles: tiles});
   });

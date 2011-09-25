@@ -2,7 +2,7 @@ var wrap = function() {
   var client = new GameNodeClient(Skeleton);
   var session = null;
 
-  var gameId = /[?&]gameId=(\d+)/.exec(window.location.search);
+  var gameId = /[?&]gameId=([0-9a-f]+)/.exec(window.location.search);
   if(gameId !== null)
     gameId = gameId[1];
   else

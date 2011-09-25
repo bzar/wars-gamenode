@@ -119,7 +119,7 @@ MessageTicker.prototype.parseMessage = function(message) {
     player = data.unit.owner;
   } else if(data.action == "regenerateCapturePoints") {
     msg = [{type:"tile", tile:data.tile},
-           {type:"text", text:"regenerates capture points (" + data.newCapturepoints + " left)"}];
+           {type:"text", text:"regenerates capture points (" + data.newCapturePoints + " left)"}];
     player = data.tile.owner;
   } else if(data.action == "produceFunds") {
     msg = [{type:"tile", tile:data.tile},

@@ -16,6 +16,10 @@ function Game(gameId, authorId, name, mapId, state, turnStart, turnNumber, round
 
 exports.Game = Game;
 
+Game.prototype.STATE_IN_PROGRESS = "inProgress";
+Game.prototype.STATE_PREGAME = "pregame";
+Game.prototype.STATE_FINISHED = "finished";
+
 Game.prototype.clone = function() {
   var g = new Game(this.gameId, this.authorId, this.name, this.mapId, this.state, this.turnStart, 
                    this.turnNumber, this.roundNumber, this.inTurnNumber, 
