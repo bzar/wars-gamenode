@@ -768,13 +768,19 @@ MongoDBDatabase.prototype.updateUnits = function(units, callback) {
 
 MongoDBDatabase.prototype.deleteUnit = function(unit, callback) {
   var timer = new utils.Timer("MongoDBDatabase.deleteUnit");
+  var this_ = this;
   var unitId = this.toObjectID(unit.unitId);
   this.database.collection("units", function(err, collection) {
     if(err) { callback({success: false, reason: err}); return; }
     collection.remove({_id:unitId}, function(err) {
       if(err) { callback({success: false, reason: err}); return; }
-      timer.end();
-      callback({success: true});
+      this_.database.collection("tiles", function(err, collection) {
+        collection.update({unitId:unitId}, {$set: {unitId: null}}, function(err) {
+          if(err) { callback({success: false, reason: err}); return; }
+          timer.end();
+          callback({success: true});
+        });
+      });
     });
   });
 }
@@ -787,8 +793,13 @@ MongoDBDatabase.prototype.deleteUnits = function(units, callback) {
     if(err) { callback({success: false, reason: err}); return; }
     collection.remove({_id:{$in: unitIds}}, function(err) {
       if(err) { callback({success: false, reason: err}); return; }
-      timer.end();
-      callback({success: true});
+      this_.database.collection("tiles", function(err, collection) {
+        collection.update({unitId:{$in: unitIds}}, {$set: {unitId: null}}, {multi: true}, function(err) {
+          if(err) { callback({success: false, reason: err}); return; }
+          timer.end();
+          callback({success: true});
+        });
+      });
     });
   });
 }
