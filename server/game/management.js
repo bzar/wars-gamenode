@@ -159,7 +159,7 @@ GameManagement.prototype.startGame = function(userId, gameId, callback) {
       callback({success: false, reason: result.reason});
     } else if(result.game.authorId != userId) {
       callback({success: false, reason: "Not the game author!"});
-    } else if(result.game.state != game.STATE_PREGAME) {
+    } else if(result.game.state != result.game.STATE_PREGAME) {
       callback({success: false, reason: "Can start during pregame!"});
     } else {
       var game = result.game;
