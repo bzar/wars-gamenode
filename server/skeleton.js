@@ -306,8 +306,13 @@ Skeleton.prototype.saveProfile = function(username, password, email, theme, defa
   this.server.database.user(this.session.userId, function(result) {
     if(result.success) {
       result.user.username = username;
-      if(password !== null) 
-        result.user.password = password;
+      if(password !== null) {
+        var hash = crypto.createHash("sha256");
+        hash.update(password);
+        hash.update(this_.server.configuration.salt);
+        var digest = hash.digest("hex");
+        result.user.password = digest;
+      }
       result.user.email = email;
       result.user.settings.emailNotifications = defaultEmailSetting;
       result.user.settings.gameTheme = theme;
