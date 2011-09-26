@@ -194,8 +194,8 @@ function fetchGamesByQuery(database, query, callback) {
             collection.find({gameId: {$in: gameIds}, userId: {"$ne": null}}, function(err, players) {
               players.toArray(function(err, players) {
                 result.forEach(function(game) {
-                  game.numPlayers = players.filter(function(d){ 
-                    return d.gameId.toString() == game.gameId;
+                  game.numPlayers = players.filter(function(player){ 
+                    return player.gameId == game.gameId;
                   }).length;
                 });
               });
@@ -209,7 +209,8 @@ function fetchGamesByQuery(database, query, callback) {
                         game.map.mapData = undefined;
                       });
                     } else {
-                      callback({success: true, games: result});                }
+                      callback({success: true, games: result});
+                    }
                   });
                 });
               });
