@@ -93,7 +93,7 @@ DummyDatabase.prototype.myMaps = function(userId, callback) {
 
 // USER MANAGEMENT
 
-DummyDatabase.prototype.userId = function(username, password, callback) {
+DummyDatabase.prototype.userByName = function(username, callback) {
   callback({success: true, userId: 0});
 }
 

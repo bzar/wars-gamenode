@@ -678,15 +678,15 @@ JSONFileDatabase.prototype.myMaps = function(userId, callback) {
 
 // USER MANAGEMENT
 
-JSONFileDatabase.prototype.userId = function(username, password, callback) {
+JSONFileDatabase.prototype.userByName = function(username, callback) {
   var timer = new utils.Timer("JSONFileDatabase.userId");
   var this_ = this;
   this.loadDatabase(function(database) {
     for(var i = 0; i < database.users.length; ++i) {
       var user = database.users[i];
-      if(user.username == username && user.password == password) {
+      if(user.username == username) {
         timer.end();
-        callback({success: true, userId: user.userId});
+        callback({success: true, user: user.clone()});
         return;
       }
     }

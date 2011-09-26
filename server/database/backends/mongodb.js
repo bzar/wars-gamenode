@@ -520,15 +520,17 @@ MongoDBDatabase.prototype.myMaps = function(userId, callback) {
 
 // USER MANAGEMENT
 
-MongoDBDatabase.prototype.userId = function(username, password, callback) {
+MongoDBDatabase.prototype.userByName = function(username, callback) {
   var timer = new utils.Timer("MongoDBDatabase.userId");
   this.database.collection("users", function(err, collection) {
     if(err) { callback({success: false, reason: err}); return; }
-    collection.findOne({username:username, password:password}, function(err, user) {
+    collection.findOne({username:username}, function(err, user) {
       if(err) { callback({success: false, reason: err}); return; }
       if(user !== null) {
+        var result = new entities.User(user._id.toString(), user.username, user.password, 
+                                     user.email, user.settings);
         timer.end();
-        callback({success: true, userId: user._id.toString()});
+        callback({success: true, user: result});
       }
     });
   });
@@ -569,7 +571,8 @@ MongoDBDatabase.prototype.register = function(newUser, callback) {
   var timer = new utils.Timer("MongoDBDatabase.register");
   this.database.collection("users", function(err, collection) {
     if(err) { callback({success: false, reason: err}); return; }
-    var user = {username: newUser.username, password: newUser.password, email: newUser.email, settings: newUser.settings};
+    var user = {username: newUser.username, password: newUser.password, 
+                email: newUser.email, settings: newUser.settings};
     collection.insert(user, function(err, docs) {
       if(err) { callback({success: false, reason: err}); return; }
       var result = newUser.clone();

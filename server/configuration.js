@@ -12,6 +12,8 @@ var configuration = {
     port: 27017,
     database: "wars"
   },
+
+  salt: "Change this to a random string to salt the passwords with",
   
   io: {
     logLevel: 0,

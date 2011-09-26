@@ -1,5 +1,6 @@
 var entities = require("./entities");
 var utils = require("./utils");
+var crypto = require("crypto");
 
 function Skeleton(client) {
   this.client = client;
@@ -347,11 +348,20 @@ Skeleton.prototype.profile = function() {
 Skeleton.prototype.newSession = function(credentials) {
   var requestId = this.client.requestId;
   var this_ = this;
-  this.server.database.userId(credentials.username, credentials.password, function(result) {
+  this.server.database.userByName(credentials.username, function(result) {
     if(result.success) {
-      this_.session = {userId: result.userId};
-      this_.sessionId = this_.server.sessionStorage.createSession(this_.session);
-      this_.client.sendResponse(requestId, {success: true, sessionId: this_.sessionId});
+      var hash = crypto.createHash("sha256");
+      hash.update(credentials.password);
+      hash.update(this_.server.configuration.salt);
+      var digest = hash.digest("hex");
+      
+      if(digest == result.user.password) {
+          this_.session = {userId: result.userId};
+          this_.sessionId = this_.server.sessionStorage.createSession(this_.session);
+          this_.client.sendResponse(requestId, {success: true, sessionId: this_.sessionId});
+        } else {
+          this_.client.sendResponse(requestId, {success: false, sessionId: null, reason: "Invalid credentials"});
+        }
     } else {
       this_.client.sendResponse(requestId, {success: false, sessionId: null, reason: result.reason});
     }
@@ -378,7 +388,11 @@ Skeleton.prototype.closeSession = function() {
 
 Skeleton.prototype.register = function(username, password, email) {
   var timer = new utils.Timer("Skeleton.register");
-  var user = new entities.User(null, username, password, email, 
+  var hash = crypto.createHash("sha256");
+  hash.update(password);
+  hash.update(this.server.configuration.salt);
+  var digest = hash.digest("hex");
+  var user = new entities.User(null, username, digest, email, 
                                {emailNotifications: true, gameTheme: "pixel"});
   var requestId = this.client.requestId;
   var this_ = this;
