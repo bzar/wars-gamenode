@@ -356,7 +356,7 @@ Skeleton.prototype.newSession = function(credentials) {
       var digest = hash.digest("hex");
       
       if(digest == result.user.password) {
-          this_.session = {userId: result.userId};
+          this_.session = {userId: result.user.userId};
           this_.sessionId = this_.server.sessionStorage.createSession(this_.session);
           this_.client.sendResponse(requestId, {success: true, sessionId: this_.sessionId});
         } else {
