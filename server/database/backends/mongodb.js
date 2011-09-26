@@ -198,19 +198,18 @@ function fetchGamesByQuery(database, query, callback) {
                     return player.gameId == game.gameId;
                   }).length;
                 });
-              });
-            
-              database.collection("maps", function(err, collection) {
-                collection.find({_id: {$in: mapIds}}, function(err, maps) {
-                  maps.each(function(err, map) {
-                    if(map !== null) {
-                      result.filter(function(game) { return game.mapId == map._id }).forEach(function(game) {
-                        game.map = new entities.Map(map._id.toString(), map.authorId, map.name, map.funds, map.mapData);
-                        game.map.mapData = undefined;
-                      });
-                    } else {
-                      callback({success: true, games: result});
-                    }
+                database.collection("maps", function(err, collection) {
+                  collection.find({_id: {$in: mapIds}}, function(err, maps) {
+                    maps.each(function(err, map) {
+                      if(map !== null) {
+                        result.filter(function(game) { return game.mapId == map._id }).forEach(function(game) {
+                          game.map = new entities.Map(map._id.toString(), map.authorId, map.name, map.funds, map.mapData);
+                          game.map.mapData = undefined;
+                        });
+                      } else {
+                        callback({success: true, games: result});
+                      }
+                    });
                   });
                 });
               });
