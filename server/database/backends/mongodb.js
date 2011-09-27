@@ -58,10 +58,11 @@ MongoDBDatabase.prototype.createGame = function(game, gameData, players, callbac
   database.collection("games", function(err, collection) {
     if(err) { callback({success: false, reason: err}); return; }
     var gameId = collection.pkFactory.createPk();
-    var gameValues = {_id: gameId, authorId: game.authorId, name: game.name, mapId: game.mapId, 
-                      state: game.state, turnStart: game.turnStart, turnNumber: game.turnNumber, 
-                      roundNumber: game.roundNumber, inTurnNumber: game.inTurnNumber, 
-                      public: game.settings.public, turnLength: game.settings.turnLength};
+    var gameValues = {_id: gameId, authorId: this_.toObjectID(game.authorId), name: game.name, 
+                      mapId: game.mapId, state: game.state, turnStart: game.turnStart, 
+                      turnNumber: game.turnNumber, roundNumber: game.roundNumber, 
+                      inTurnNumber: game.inTurnNumber, public: game.settings.public, 
+                      turnLength: game.settings.turnLength};
     collection.insert(gameValues, function(err, game) {
       if(err) { callback({success: false, reason: err}); return; }
       database.collection("players", function(err, collection) {
@@ -245,11 +246,17 @@ MongoDBDatabase.prototype.myGames = function(userId, callback) {
     collection.find({userId: userId}, function(err, players) {
       if(err) { callback({success: false, reason: err}); return; }
       var gameIds = [];
+      var hiddenIds = [];
       players.each(function(err, player) {
         if(player !== null) {
-          gameIds.push(player.gameId);
+          if(!player.settings.hidden) {
+            gameIds.push(player.gameId);
+          } else {
+            hiddenIds.push(player.gameId);
+          }
         } else {
-          fetchGamesByQuery(database, {_id: {$in: gameIds}}, function(result) {
+          fetchGamesByQuery(database, {$or: [{_id: {$in: gameIds}}, {authorId: userId}], 
+                                       _id: {$nin: hiddenIds}}, function(result) {
             timer.end();
             callback(result);
           });

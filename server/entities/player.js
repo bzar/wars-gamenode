@@ -7,7 +7,8 @@ function Player(playerId, gameId, userId, playerNumber, playerName, funds, score
   this.funds = funds;
   this.score = score;
   this.settings = {
-    emailNotifications: settings.emailNotifications
+    emailNotifications: settings.emailNotifications,
+    hidden: settings.hidden ? settings.hidden : false
   };
 };
 
@@ -28,7 +29,8 @@ Player.prototype.cloneFrom = function(other) {
   this.funds = other.funds;
   this.score = other.score;
   this.settings = {
-    emailNotifications: other.settings.emailNotifications
+    emailNotifications: other.settings.emailNotifications,
+    hidden: other.settings.hidden ? other.settings.hidden : false
   };
   
   return this;

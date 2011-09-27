@@ -14,6 +14,7 @@ var wrap = function() {
   var turnCounter = null;
   var oldUnits = {};
   var powerMap = null;
+  var finished = false;
   
   var gameUIState = {
     stateName: "select"
@@ -111,6 +112,21 @@ var wrap = function() {
           if(!response.success) {
             alert("Could not surrender! " + response.reason);
             $("#spinner").hide();
+          }
+        });
+      };
+    });
+    
+    $("#leaveGame").click(function(e) {
+      e.preventDefault();
+      if(window.confirm("Are you sure you want to leave the game?")){
+        $("#spinner").show();
+        client.stub.leaveGame(gameId, function(response) {
+          if(!response.success) {
+            alert("Could not leave game! " + response.reason);
+            $("#spinner").hide();
+          } else {
+            document.location = "home.html";
           }
         });
       };
@@ -237,6 +253,12 @@ var wrap = function() {
       updateStatistic();
     }
     
+    client.skeleton.gameFinished = function(gameId) {
+      $("#leaveGame").show();
+      finalizeTurn();
+      finished = true;
+    }
+    
     client.skeleton.gameUpdate = function(gameId, tileChanges) {
       oldUnits = {};
       powerMap = null;
@@ -279,6 +301,11 @@ var wrap = function() {
   
   function showGame(game, author, turnRemaining) {
     $("#gameName").text(game.name);
+    
+    finished = game.state == "finished";
+    if(!finished) {
+      $("#leaveGame").hide();
+    } 
     
     if(turnRemaining === null) {
       $("#turnTimeItem").hide();
@@ -391,7 +418,7 @@ var wrap = function() {
       item.addClass("playerItem");
       if(player.playerNumber == inTurnNumber) {
         item.addClass("inTurn");
-        if(player.isMe) {
+        if(player.isMe && !finished) {
           initializeTurn(player.playerNumber);
         } else {
           finalizeTurn();
@@ -425,16 +452,20 @@ var wrap = function() {
   function initializeTurn() {
     inTurn = true;
     refreshFunds();
-    $("#gameActions").show();
+    $("#endTurn").show();
+    $("#surrender").show();
   }
   
   function finalizeTurn() {
     inTurn = false;
     refreshFunds();
-    $("#gameActions").hide();
+    $("#endTurn").hide();
+    $("#surrender").hide();
   }
   
   function handleMapClick(e) {
+    if(finished) return;
+    
     var buildMenu = $("#buildMenu");
     var canvas = $("#mapCanvas");
     var content = $("#content");

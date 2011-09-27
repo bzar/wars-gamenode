@@ -119,15 +119,16 @@ GameManagement.prototype.joinGame = function(userId, gameId, playerNumber, callb
 }
 
 GameManagement.prototype.leaveGame = function(userId, gameId, playerNumber, callback) {
+  var database = this.database;
   var this_ = this;
-  this.database.game(gameId, function(result) {
+  database.game(gameId, function(result) {
     if(!result.success) {
       callback({success: false, reason: result.reason});
-    } else if(result.game.state != result.game.STATE_PREGAME) {
-      callback({success: false, reason: "Can only leave during pregame!"});
-    } else {
+    } else if(result.game.state == result.game.STATE_IN_PROGRESS) {
+      callback({success: false, reason: "Can not leave while the game is in progress!"});
+    } else if(result.game.state == result.game.STATE_PREGAME) {
       var game = result.game;
-      this_.database.gamePlayer(gameId, playerNumber, function(result) {
+      database.gamePlayer(gameId, playerNumber, function(result) {
         if(!result.success) {
           callback({success: false, reason: result.reason});
         } else if(result.player.userId != userId && game.authorId != userId) {
@@ -136,7 +137,7 @@ GameManagement.prototype.leaveGame = function(userId, gameId, playerNumber, call
         } else {
           result.player.userId = null;
           result.player.playerName = null;
-          this_.database.updatePlayer(result.player, function(result) {
+          database.updatePlayer(result.player, function(result) {
             if(result.success) {
               callback({success: true});
             } else {
@@ -144,6 +145,23 @@ GameManagement.prototype.leaveGame = function(userId, gameId, playerNumber, call
             }
           });
         }
+      });
+    } else if(result.game.state == result.game.STATE_FINISHED) {
+      database.players(gameId, function(result) {
+        if(!result.success) { callback({success: false, reason: result.reason}); return; }
+        var players = [];
+        for(var i = 0; i < result.players.length; ++i) {
+          var player = result.players[i];
+          if(player.userId == userId) {
+            player.settings.hidden = true;
+            players.push(player);
+          }
+        }
+        
+        database.updatePlayers(players, function(result) {
+          if(!result.success) { callback({success: false, reason: result.reason}); return; }
+          callback({success: true});
+        });
       });
     }
   });

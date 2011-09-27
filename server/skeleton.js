@@ -128,12 +128,12 @@ Skeleton.prototype.deleteGame = function(gameId) {
     return {success: false, reason: "Not logged in"}
   
   var this_ = this;
+  var requestId = this.client.requestId;
+  var userId = this.session.userId;
+  
   var mutex = this.server.gameMutex(gameId);
   mutex.lock(function() {
     var timer = new utils.Timer("Skeleton.deleteGame");
-    var requestId = this.client.requestId;
-    var this_ = this;
-    var userId = this.session.userId;
     this_.server.gameManagement.deleteGame(userId, gameId, function(result) {
       if(result.success) {
         this_.client.sendResponse(requestId, {success: true});

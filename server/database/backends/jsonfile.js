@@ -428,10 +428,10 @@ JSONFileDatabase.prototype.myGames = function(userId, callback) {
       for(var j = 0; j < database.players.length; ++j) {
         var player = database.players[j];
         if(player.gameId == game.gameId) {
-          if(database.players[j].userId !== null) {
+          if(player.userId !== null) {
             numPlayers += 1;
           }
-          if(database.players[j].userId == userId) {
+          if(player.userId == userId && !player.settings.hidden) {
             isMyGame = true;
           }
         }
