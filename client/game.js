@@ -63,6 +63,8 @@ var wrap = function() {
     var gameMenu = $("#gameMenu");
     var navigation = $("#navigation");
     
+    $("#gameStatistics").attr("href", "gameStatistics.html?gameId=" + gameId);
+    
     showGameMenu.click(function(e) {
       e.preventDefault();
       showGameMenu.hide();

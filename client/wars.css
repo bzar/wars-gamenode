@@ -70,6 +70,11 @@ h2 {
   display: block;
 }
 
+.navigation.small li a {
+  padding: 5px;
+  font: 16px sans-serif;  
+}
+
 .navigation li a.highlight {
   background-color: #448;
 }
@@ -836,4 +841,14 @@ input[type=text], input[type=password] {
   border-radius: 0 0 5px 0;
   display: none;
   padding: 3px;
+}
+
+h3 {
+  padding: 4px;
+  margin-bottom: 8px;
+  font: 20px sans-serif;
+}
+
+.chart {
+  padding: 8px;
 }

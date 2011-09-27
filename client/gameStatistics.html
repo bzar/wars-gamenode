@@ -1,0 +1,38 @@
+<html>
+  <head>
+    <script type="text/javascript" src="jquery-1.6.2.min.js"></script>
+    <script type="text/javascript" src="/socket.io/socket.io.js"></script> 
+    <script type="text/javascript" src="/d3/d3.js"></script>
+    <script type="text/javascript" src="/gamenode/gameNodeClient.js"></script>
+    <script type="text/javascript" src="/gamenode/session.js"></script>
+    <script type="text/javascript" src="skeleton.js"></script>
+    <script type="text/javascript" src="theme.js"></script>
+    <script type="text/javascript" src="base.js"></script>
+    <script type="text/javascript" src="gameStatistics.js"></script>
+
+    <link rel="stylesheet" href="wars.css" type="text/css"/>
+
+    <title>Wars - Game statistics</title>
+  </head>
+
+  <body>
+    <div id="sidebar">
+      <h1>Wars</h1>
+      <ul id="navigation" class="navigation">
+      </ul>
+      <ul id="gameNavigation" class="navigation">
+        <li><a id="backToGame" href="#">Back to game</a></li>
+      </ul>
+    </div>
+
+    <div id="content">
+      <h2>Game statistics - <span id="gameTitle"></span></h2>
+      <h3>Score</h3>
+      <div id="scoreChart" class="chart"></div>
+      <h3>Power</h3>
+      <div id="powerChart" class="chart"></div>
+      <h3>Property</h3>
+      <div id="propertyChart" class="chart"></div>
+    </div>
+  </body>
+</html>
