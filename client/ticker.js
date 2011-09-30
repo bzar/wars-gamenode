@@ -28,7 +28,16 @@ MessageTicker.prototype.setMessages = function(msgArray) {
   }
 }
 
-MessageTicker.prototype.showMessages = function(msgArray, noAnimation) {
+MessageTicker.prototype.showOldMessages = function(msgArray) {
+  if(msgArray && msgArray.length > 0) {
+    for(var i = 0; i < msgArray.length; ++i) {
+      var msg = this.parseMessage(msgArray[i]);
+      this.box.append(msg);
+    }
+  }
+}
+
+MessageTicker.prototype.showMessages = function(msgArray) {
   if(msgArray && msgArray.length > 0) {
     for(var i = 0; i < msgArray.length; ++i) {
       var msg = this.parseMessage(msgArray[i]);

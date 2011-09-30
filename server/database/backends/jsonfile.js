@@ -1109,7 +1109,7 @@ JSONFileDatabase.prototype.gameEvents = function(gameId, first, count, callback)
   this.loadDatabase(function(database) {
     var gameEvents = [];
     var n = 0;
-    for(var i = 0; i < database.gameEvents.length; ++i) {
+    for(var i = database.gameEvents.length - 1; i >= 0 ; --i) {
       var gameEvent = database.gameEvents[i];
       if(gameEvent.gameId == gameId) {
         if(n >= first && (!count || n < count + first)) {

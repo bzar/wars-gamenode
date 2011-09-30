@@ -411,7 +411,7 @@ var wrap = function() {
           if(!response.success) {
             alert("Could not get game events! " + response.reason);
           } else {
-            ticker.showMessages(response.gameEvents, true);
+            ticker.showOldMessages(response.gameEvents);
           }
         });
       }

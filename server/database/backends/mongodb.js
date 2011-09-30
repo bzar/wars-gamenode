@@ -999,7 +999,8 @@ MongoDBDatabase.prototype.gameEvents = function(gameId, first, count, callback) 
   var this_ = this;
   this.database.collection("gameEvents", function(err, collection) {
     if(err) { callback({success: false, reason: err}); return; }
-    collection.find({gameId: gameId}, {skip: first, limit: (count ? count : undefined)}, function(err, eventCursor) {
+    collection.find({gameId: gameId}, {skip: first, limit: (count ? count : undefined), 
+                                       sort: {time: -1}}, function(err, eventCursor) {
       if(err) { callback({success: false, reason: err}); return; }
       var events = [];
       eventCursor.each(function(err, event) {
