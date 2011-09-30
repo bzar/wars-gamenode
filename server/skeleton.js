@@ -918,14 +918,16 @@ Skeleton.prototype.chat = function(gameId, message) {
 
 // GAME EVENTS
 
-Skeleton.prototype.gameEvents = function(gameId, count) {
+Skeleton.prototype.gameEvents = function(gameId, first, count) {
   var timer = new utils.Timer("Skeleton.gameEvents");
   if(this.sessionId === null)
     return {success: false, reason: "Not logged in"}
 
+  first = first === undefined ? 0 : first;
   var requestId = this.client.requestId;
   var this_ = this;
-  this.server.database.gameEvents(gameId, function(result) {
+  
+  this.server.database.gameEvents(gameId, first, count, function(result) {
     if(result.success) {
       var events = result.gameEvents;
       var preparedEvents = [];

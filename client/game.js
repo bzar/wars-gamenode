@@ -372,7 +372,7 @@ var wrap = function() {
       }
     };
     
-    client.stub.gameEvents(gameId, function(response) {
+    client.stub.gameEvents(gameId, 0, 10, function(response) {
       if(!response.success) {
         alert("Could not get game events! " + response.reason);
       } else {
@@ -402,6 +402,18 @@ var wrap = function() {
         $("#showMessageTickerStatus").text("Hide");
         $("#showMessageTicker").removeClass("highlight");
         $("#content").css("bottom", messageTickerContainer.outerHeight());
+      }
+    });
+    
+    messageTicker.scroll(function(e) {
+      if($(this).scrollTop() + $(this).innerHeight() >= this.scrollHeight - 16) {
+        client.stub.gameEvents(gameId, messageTicker.children().length, 10, function(response) {
+          if(!response.success) {
+            alert("Could not get game events! " + response.reason);
+          } else {
+            ticker.showMessages(response.gameEvents, true);
+          }
+        });
       }
     });
   }

@@ -7,10 +7,8 @@ var configuration = {
   crashOnError: true,
 
   database: {
-    type: "mongodb",
-    host: "localhost",
-    port: 27017,
-    database: "wars"
+    //type: "jsonfile"
+    type: "mongodb", host: "localhost", port: 27017, database: "wars"
   },
 
   salt: "Change this to a random string to salt the passwords with",

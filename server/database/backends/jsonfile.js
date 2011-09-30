@@ -1103,15 +1103,19 @@ JSONFileDatabase.prototype.createGameEvents = function(newGameEvents, callback) 
   });
 }
 
-JSONFileDatabase.prototype.gameEvents = function(gameId, callback) {
+JSONFileDatabase.prototype.gameEvents = function(gameId, first, count, callback) {
   var timer = new utils.Timer("JSONFileDatabase.gameEvents");
   var this_ = this;
   this.loadDatabase(function(database) {
     var gameEvents = [];
+    var n = 0;
     for(var i = 0; i < database.gameEvents.length; ++i) {
       var gameEvent = database.gameEvents[i];
       if(gameEvent.gameId == gameId) {
-        gameEvents.push(gameEvent.clone());
+        if(n >= first && (!count || n < count + first)) {
+          gameEvents.push(gameEvent.clone());
+        }
+        n = n + 1;
       }
     }
     

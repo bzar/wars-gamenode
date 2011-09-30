@@ -191,7 +191,7 @@ DummyDatabase.prototype.createGameEvents = function(newGameEvents, callback) {
   callback({success: true});
 }
 
-DummyDatabase.prototype.gameEvents = function(gameId, callback) {
+DummyDatabase.prototype.gameEvents = function(gameId, first, count, callback) {
   callback({success: true, gameEvents: []});
 }
 

@@ -993,13 +993,13 @@ MongoDBDatabase.prototype.createGameEvents = function(newGameEvents, callback) {
   });
 }
 
-MongoDBDatabase.prototype.gameEvents = function(gameId, callback) {
+MongoDBDatabase.prototype.gameEvents = function(gameId, first, count, callback) {
   var timer = new utils.Timer("MongoDBDatabase.gameEvents");
   gameId = this.toObjectID(gameId);
   var this_ = this;
   this.database.collection("gameEvents", function(err, collection) {
     if(err) { callback({success: false, reason: err}); return; }
-    collection.find({gameId: gameId}, function(err, eventCursor) {
+    collection.find({gameId: gameId}, {skip: first, limit: (count ? count : undefined)}, function(err, eventCursor) {
       if(err) { callback({success: false, reason: err}); return; }
       var events = [];
       eventCursor.each(function(err, event) {

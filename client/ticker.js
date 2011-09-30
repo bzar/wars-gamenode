@@ -28,20 +28,22 @@ MessageTicker.prototype.setMessages = function(msgArray) {
   }
 }
 
-MessageTicker.prototype.showMessages = function(msgArray) {
+MessageTicker.prototype.showMessages = function(msgArray, noAnimation) {
   if(msgArray && msgArray.length > 0) {
     for(var i = 0; i < msgArray.length; ++i) {
       var msg = this.parseMessage(msgArray[i]);
-      msg.hide();
       this.box.prepend(msg);
-      var wrap = function(i, msg, ticker) {
-        setTimeout(function() {          
-          msg.show();
-          if(!this.showAll) {
-            $(".tickerMessage:last", ticker.box).hide();
-          }
-        }, i * 500);
-      }(i, msg, this)
+      if(!noAnimation) {
+        msg.hide();
+        var wrap = function(i, msg, ticker) {
+          setTimeout(function() {          
+            msg.show();
+            if(!this.showAll) {
+              $(".tickerMessage:last", ticker.box).hide();
+            }
+          }, i * 500);
+        }(i, msg, this)
+      }
     }    
   }
 }
