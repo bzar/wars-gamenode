@@ -42,18 +42,16 @@ MessageTicker.prototype.showMessages = function(msgArray) {
     for(var i = 0; i < msgArray.length; ++i) {
       var msg = this.parseMessage(msgArray[i]);
       this.box.prepend(msg);
-      if(!noAnimation) {
-        msg.hide();
-        var wrap = function(i, msg, ticker) {
-          setTimeout(function() {          
-            msg.show();
-            if(!this.showAll) {
-              $(".tickerMessage:last", ticker.box).hide();
-            }
-          }, i * 500);
-        }(i, msg, this)
-      }
-    }    
+      msg.hide();
+      var wrap = function(i, msg, ticker) {
+        setTimeout(function() {          
+          msg.show();
+          if(!this.showAll) {
+            $(".tickerMessage:last", ticker.box).hide();
+          }
+        }, i * 500);
+      }(i, msg, this)
+    }
   }
 }
 
