@@ -111,3 +111,45 @@ function initializeChat(client, gameId) {
     }
   });
 }
+
+function Paginator(data, clearItemsFunc, addItemFunc) {
+  this.data = data;
+  this.pageSize = 10;
+  this.addItemFunc = addItemFunc;
+  this.clearItemsFunc = clearItemsFunc;
+  this.currentPage = 0;
+}
+
+Paginator.prototype.pages = function() {
+  return Math.ceil(this.data.length / this.pageSize);
+};
+
+Paginator.prototype.setPage = function(pageNum) {
+  if(pageNum <= this.lastPage() && pageNum >= this.firstPage()) {
+    this.currentPage = pageNum;
+    var firstElem = Math.min((pageNum - 1) * this.pageSize, this.data.length - 1);
+    var lastElem = Math.min(pageNum * this.pageSize, this.data.length);
+    this.clearItemsFunc();
+    for(var i = firstElem; i < lastElem; ++i) {
+      this.addItemFunc(this.data[i]);
+    }
+  }
+  
+  return this;
+};
+
+Paginator.prototype.nextPage = function() {
+  return Math.min(this.currentPage + 1, this.lastPage());
+};
+
+Paginator.prototype.prevPage = function() {
+  return Math.max(this.currentPage - 1, this.firstPage());
+};
+
+Paginator.prototype.firstPage = function() {
+  return 1;
+};
+
+Paginator.prototype.lastPage = function() {
+  return this.pages();
+};

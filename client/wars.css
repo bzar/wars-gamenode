@@ -852,3 +852,50 @@ h3 {
 .chart {
   padding: 8px;
 }
+
+#pageControls {
+  /*background-color: #aaa;
+  margin: 0;
+  padding: 0;
+  height: 24px;
+  border-width: 1px;
+  border-color: #ddd;
+  border-style: solid none;*/
+}
+
+#pages {
+  margin: 0;
+  padding: 0;
+}
+
+.pageControl {
+  width: 40px ;
+}
+
+.pageControl, .pageLink{
+  border-radius: 4px;
+  display: inline-block;
+  color: #333 !important;
+  background-color: #ddd;
+  text-decoration: none;
+  font-weight: bold;
+  margin: 0 4px;
+  padding: 0 8px;
+  font: 18px sans-serif;
+  border: 1px solid #ccc;
+  text-align: center;
+  vertical-align: middle;
+}
+
+.pageControl:hover, .pageLink:hover {
+  color: #111 !important;
+  background-color: #e8e8e8;
+}
+
+.pageControl:visited, .pageLink:visited {
+  color: inherit;
+}
+
+.pageLink.current {
+  background-color: #ddf !important;
+}

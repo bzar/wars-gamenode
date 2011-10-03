@@ -2,6 +2,15 @@ var wrap = function() {
   var client = new GameNodeClient(Skeleton);
   var session = null;
 
+  var paginator = null;
+  var initialPage = /(\d+)/.exec(window.location.hash);
+  if(initialPage !== null) {
+    initialPage = parseInt(initialPage[1]);
+  } else {
+    initialPage = 1;
+    window.location.hash = initialPage;
+  }
+  
   var lastMapId = null;
   var mapId = /[?&]mapId=([0-9a-f]+)/.exec(window.location.search);
   if(mapId !== null)
@@ -126,6 +135,7 @@ var wrap = function() {
     history.pushState(undefined, undefined, document.location.pathname + "?mapId=" + mapId);
     lastMapId = mapId;
   }
+  
   function showGameSettings() {
     $("#mapSelection").hide();
     $("#mapFullPreview").hide();
@@ -135,12 +145,21 @@ var wrap = function() {
     $("#createGameControls").show();
   }
   
+  function updatePageControls() {
+    $("#firstPage").attr("href", "#" + paginator.firstPage()).toggle(paginator.currentPage != paginator.firstPage());
+    $("#lastPage").attr("href", "#" + paginator.lastPage()).toggle(paginator.currentPage != paginator.lastPage());
+    $("#prevPage").attr("href", "#" + paginator.prevPage()).toggle(paginator.currentPage != paginator.firstPage());
+    $("#nextPage").attr("href", "#" + paginator.nextPage()).toggle(paginator.currentPage != paginator.lastPage());
+    $(".pageLink").removeClass("current");
+    $(".pageLink[page=\"" + paginator.currentPage + "\"]").addClass("current");
+  }
+
   function populateMaps(client) {
     client.stub.maps(null, function(response) {
       var maps = response.maps;
       var mapList = $("#maps");
-      for(var i = 0; i < maps.length; ++i) {
-        var map = maps[i];
+      
+      paginator = new Paginator(maps, function(){ mapList.empty() }, function(map) {
         var container = $("<a></a>");
         var name = $("<div></div>");
         var preview = $("<div></div>");
@@ -177,16 +196,44 @@ var wrap = function() {
         
         mapList.append(container);
         
-        var hack2 = function(canvas, mapId) {
-          client.stub.mapData(mapId, function(response) {
-            var mapData = response.mapData;
-            mapPainter.canvas = canvas;
-            mapPainter.currentTiles = mapData;
-            mapPainter.refresh();
-          });
-        }(previewCanvas[0], map.mapId);
-      }        
-    });
+        client.stub.mapData(map.mapId, function(response) {
+          var mapData = response.mapData;
+          mapPainter.canvas = previewCanvas[0];
+          mapPainter.currentTiles = mapData;
+          mapPainter.refresh();
+        });
+      });
+      paginator.setPage(initialPage);
+      
+      var pages = $("#pages");
+      for(var i = 0; i < paginator.pages(); ++i) {
+        var pageLink = $("<a></a>");
+        pageLink.text(i + 1);
+        pageLink.attr("href", "#" + (i + 1));
+        pageLink.attr("page", i + 1);
+        pageLink.addClass("pageLink");
+        pages.append(pageLink);
+      }
+      
+      function changePage(e, page) {
+        e.preventDefault();
+        paginator.setPage(page);
+        window.location.hash = page;
+        updatePageControls();
+      }
+      
+      updatePageControls();
+      
+      $(".pageLink").click(function(e) { changePage(e, parseInt($(this).attr("page"))); });
+      $("#firstPage").click(function(e) { changePage(e, paginator.firstPage()); });
+      $("#lastPage").click(function(e) { changePage(e, paginator.lastPage()); });
+      $("#nextPage").click(function(e) { changePage(e, paginator.nextPage()); });
+      $("#prevPage").click(function(e) { changePage(e, paginator.prevPage()); });
+      
+      if(paginator.pages() == 1) {
+        $("#pageControls").hide();
+      }
+    });        
   }
   
   function populateMapInfo(map) {
