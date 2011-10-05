@@ -90,17 +90,17 @@
           <form id="mapSaveForm" class="toolForm">
             <ul>
               <li>
-                <label for="mapName">Map name</label>
-                <input id= "mapName" name="mapName" type="text" value="my awesome map"/>
+                <label for="mapName" class="left">Map name</label>
+                <input id= "mapName" class="right" name="mapName" type="text" value="my awesome map"/>
               </li>
               <li>
-                <label for="mapFunds">Map funds</label>
-                <input id="mapFunds" name="mapFunds" type="text" value="0"/>
+                <label for="mapFunds" class="left">Map funds</label>
+                <input id="mapFunds" class="right" name="mapFunds" type="text" value="0"/>
               </li>
               <li>
-                <input name="" type="submit" value="Save map" class="alignRight"/>
+                <span id="mapSavedMessage" style="display:none" class="left">Map saved!</span>
+                <input name="" type="submit" value="Save map" class="right"/>
               </li>
-              <li><span id="mapSavedMessage" style="display:none">Map saved successfully!</span></li>
             </ul>
           </form>
           <form id="mapImportExportForm" class="toolForm">

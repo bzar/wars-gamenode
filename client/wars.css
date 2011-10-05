@@ -413,14 +413,25 @@ input[type=text], input[type=password] {
   padding: 4px;
 }
 
+
 .toolForm ul {
   list-style: none;
   padding: 0;
   margin: 0;
 }
 
-.toolForm label {
-  width: 48%;
+.toolForm li {
+  position: relative;
+  min-height: 24px;
+}
+.toolForm .left {
+  position: absolute;
+  left: 0;
+}
+
+.toolForm .right {
+  position: absolute;
+  right: 0;
 }
 
 .toolForm input[type=text] {

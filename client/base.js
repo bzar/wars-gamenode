@@ -121,14 +121,17 @@ function Paginator(data, clearItemsFunc, addItemFunc) {
 }
 
 Paginator.prototype.pages = function() {
-  return Math.ceil(this.data.length / this.pageSize);
+  if(this.data.length > 0)
+    return Math.ceil(this.data.length / this.pageSize);
+  else
+    return 1;
 };
 
 Paginator.prototype.setPage = function(pageNum) {
   if(pageNum <= this.lastPage() && pageNum >= this.firstPage()) {
     this.currentPage = pageNum;
-    var firstElem = Math.min((pageNum - 1) * this.pageSize, this.data.length - 1);
-    var lastElem = Math.min(pageNum * this.pageSize, this.data.length);
+    var firstElem = Math.max(0, Math.min((pageNum - 1) * this.pageSize, this.data.length - 1));
+    var lastElem = Math.max(0, Math.min(pageNum * this.pageSize, this.data.length));
     this.clearItemsFunc();
     for(var i = firstElem; i < lastElem; ++i) {
       this.addItemFunc(this.data[i]);

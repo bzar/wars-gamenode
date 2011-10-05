@@ -101,6 +101,7 @@ var wrap = function() {
     $("#mapFullPreview").hide();
     $("#gameSettings").hide();
     $("#navigation").show();
+    $("#selectMapControls").show();
     $("#mapPreviewControls").hide();
     $("#createGameControls").hide();
     if(document.location.search.length != 0)
@@ -130,6 +131,7 @@ var wrap = function() {
     $("#mapFullPreview").show();
     $("#gameSettings").hide();
     $("#navigation").hide();
+    $("#selectMapControls").hide();
     $("#mapPreviewControls").show();
     $("#createGameControls").hide();
     history.pushState(undefined, undefined, document.location.pathname + "?mapId=" + mapId);
@@ -141,17 +143,41 @@ var wrap = function() {
     $("#mapFullPreview").hide();
     $("#gameSettings").show();
     $("#navigation").hide();
+    $("#selectMapControls").hide();
     $("#mapPreviewControls").hide();
     $("#createGameControls").show();
   }
   
+  function changePage(e, page) {
+    if(e !== undefined)
+      e.preventDefault();
+    paginator.setPage(page);
+    window.location.hash = page;
+    updatePageControls();
+  }
+      
   function updatePageControls() {
+    var pages = $("#pages");
+    pages.empty();
+    for(var i = 0; i < paginator.pages(); ++i) {
+      var pageLink = $("<a></a>");
+      pageLink.text(i + 1);
+      pageLink.attr("href", "#" + (i + 1));
+      pageLink.attr("page", i + 1);
+      pageLink.addClass("pageLink");
+      pages.append(pageLink);
+    }
+      
     $("#firstPage").attr("href", "#" + paginator.firstPage()).toggle(paginator.currentPage != paginator.firstPage());
     $("#lastPage").attr("href", "#" + paginator.lastPage()).toggle(paginator.currentPage != paginator.lastPage());
     $("#prevPage").attr("href", "#" + paginator.prevPage()).toggle(paginator.currentPage != paginator.firstPage());
     $("#nextPage").attr("href", "#" + paginator.nextPage()).toggle(paginator.currentPage != paginator.lastPage());
+    
     $(".pageLink").removeClass("current");
     $(".pageLink[page=\"" + paginator.currentPage + "\"]").addClass("current");
+    $(".pageLink").click(function(e) { changePage(e, parseInt($(this).attr("page"))); });
+    
+    $("#pageControls").toggle(paginator.pages() > 1);
   }
 
   function populateMaps(client) {
@@ -203,37 +229,86 @@ var wrap = function() {
           mapPainter.refresh();
         });
       });
-      paginator.setPage(initialPage);
       
-      var pages = $("#pages");
-      for(var i = 0; i < paginator.pages(); ++i) {
-        var pageLink = $("<a></a>");
-        pageLink.text(i + 1);
-        pageLink.attr("href", "#" + (i + 1));
-        pageLink.attr("page", i + 1);
-        pageLink.addClass("pageLink");
-        pages.append(pageLink);
-      }
-      
-      function changePage(e, page) {
-        e.preventDefault();
-        paginator.setPage(page);
-        window.location.hash = page;
-        updatePageControls();
-      }
-      
-      updatePageControls();
-      
-      $(".pageLink").click(function(e) { changePage(e, parseInt($(this).attr("page"))); });
       $("#firstPage").click(function(e) { changePage(e, paginator.firstPage()); });
       $("#lastPage").click(function(e) { changePage(e, paginator.lastPage()); });
       $("#nextPage").click(function(e) { changePage(e, paginator.nextPage()); });
       $("#prevPage").click(function(e) { changePage(e, paginator.prevPage()); });
-      
-      if(paginator.pages() == 1) {
-        $("#pageControls").hide();
-      }
+
+      changePage(undefined, initialPage);
+      populateMapFilter(maps);
     });        
+  }
+  
+  function filterMaps(maps) {
+    var minPlayers = parseInt($("#minPlayers").val());
+    var maxPlayers = parseInt($("#maxPlayers").val());
+    var authorId = $("#mapAuthor").val();
+    var namePart = $("#mapName").val().toLowerCase();
+    
+    paginator.data = maps.filter(function(map) {
+      return map.players >= minPlayers && 
+             map.players <= maxPlayers && 
+             (authorId == "" || map.authorId == authorId) &&
+             (namePart == "" || map.name.toLowerCase().indexOf(namePart) != -1);
+    });
+    paginator.setPage(paginator.firstPage());
+    updatePageControls();
+  }
+  
+  function populateMapFilter(maps) {
+    var minPlayers = null;
+    var maxPlayers = null;
+    var authors = [{name: "Anyone", authorId: ""}];
+    maps.forEach(function(map) {
+      minPlayers = minPlayers && minPlayers < map.players ? minPlayers : map.players;
+      maxPlayers = maxPlayers && maxPlayers > map.players ? maxPlayers : map.players;
+      if(!authors.some(function(author){ return author.authorId == new String(map.authorId); })) {
+        authors.push({name: map.authorName, authorId: map.authorId});
+      }
+    });
+    
+    var minPlayersSelect = $("#minPlayers");
+    var maxPlayersSelect = $("#maxPlayers");
+    
+    for(var i = minPlayers; i <= maxPlayers; ++i) {
+      var minOption = $("<option></option>");
+      minOption.attr("value", i);
+      minOption.text(i);
+      minOption.prop("selected", i == minPlayers);
+      minPlayersSelect.append(minOption);
+      
+      var maxOption = $("<option></option>");
+      maxOption.attr("value", i);
+      maxOption.text(i);
+      maxOption.prop("selected", i == maxPlayers);
+      maxPlayersSelect.append(maxOption);
+    }
+    
+    var mapAuthorSelect = $("#mapAuthor");
+    authors.forEach(function(author) {
+      var option = $("<option></option>");
+      option.attr("value", author.authorId);
+      option.text(author.name);
+      mapAuthorSelect.append(option);
+    });
+    
+    minPlayersSelect.change(function() {
+      if(parseInt(maxPlayersSelect.val()) < parseInt($(this).val())) {
+        maxPlayersSelect.val($(this).val());
+      }
+    });
+    
+    maxPlayersSelect.change(function() {
+      if(parseInt(minPlayersSelect.val()) > parseInt($(this).val())) {
+        minPlayersSelect.val($(this).val());
+      }
+    });
+    
+    $("#mapFilterForm").submit(function(e) {
+      e.preventDefault();
+      filterMaps(maps);
+    });
   }
   
   function populateMapInfo(map) {

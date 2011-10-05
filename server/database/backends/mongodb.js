@@ -484,19 +484,35 @@ MongoDBDatabase.prototype.mapData = function(mapId, callback) {
 
 MongoDBDatabase.prototype.maps = function(callback) {
   var timer = new utils.Timer("MongoDBDatabase.maps");
-  this.database.collection("maps", function(err, collection) {
+  var database = this.database;
+  database.collection("users", function(err, collection) {
     if(err) { callback({success: false, reason: err}); return; }
-    collection.find(function(err, cursor) {
+    collection.find(function(err, userCursor) {
       if(err) { callback({success: false, reason: err}); return; }
-      var maps = [];
-      cursor.each(function(err, map) {
-        if(map !== null) {
-          var mapObj = new entities.Map(map._id.toString(), map.authorId, map.name, map.funds, map.mapData);
-          mapObj.mapData = undefined;
-          maps.push(mapObj);
+      var users = {};
+      userCursor.each(function(err, user) {
+        if(err) { callback({success: false, reason: err}); return; }
+        if(user !== null) {
+          users[user._id] = user.username;
         } else {
-          timer.end();
-          callback({success: true, maps: maps});
+          database.collection("maps", function(err, collection) {
+            if(err) { callback({success: false, reason: err}); return; }
+            collection.find(function(err, cursor) {
+              if(err) { callback({success: false, reason: err}); return; }
+              var maps = [];
+              cursor.each(function(err, map) {
+                if(map !== null) {
+                  var mapObj = new entities.Map(map._id.toString(), map.authorId, map.name, map.funds, map.mapData);
+                  mapObj.mapData = undefined;
+                  mapObj.authorName = users[mapObj.authorId];
+                  maps.push(mapObj);
+                } else {
+                  timer.end();
+                  callback({success: true, maps: maps});
+                }
+              });
+            });
+          });
         }
       });
     });

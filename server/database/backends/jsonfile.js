@@ -650,6 +650,8 @@ JSONFileDatabase.prototype.maps = function(callback) {
     for(var i = 0; i < database.maps.length; ++i) {
       var map = database.maps[i].clone();
       map.mapData = undefined;
+      var user = database.user(map.authorId);
+      map.authorName = user.username;
       maps.push(map);
     }
     
