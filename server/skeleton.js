@@ -393,6 +393,9 @@ Skeleton.prototype.closeSession = function() {
 
 Skeleton.prototype.register = function(username, password, email) {
   var timer = new utils.Timer("Skeleton.register");
+  if(username.length < this.server.settings.minimumUsernameLength)  {
+    return {success: false, reason: "Username must be at least " + this.server.settings.minimumUsernameLength + " characters long!"};
+  }
   var hash = crypto.createHash("sha256");
   hash.update(password);
   hash.update(this.server.configuration.salt);

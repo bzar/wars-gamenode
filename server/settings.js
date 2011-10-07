@@ -1,6 +1,7 @@
 var gameElements = require("./gameElements");
 
 exports.settings = {
+  minimumUsernameLength: 4,
   capturePointRegenerationRate: 50,
   maxCapturePoints: 200,
   defaultRepairRate: 20,
