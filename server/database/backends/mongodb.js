@@ -246,17 +246,26 @@ MongoDBDatabase.prototype.myGames = function(userId, callback) {
     collection.find({userId: userId}, function(err, players) {
       if(err) { callback({success: false, reason: err}); return; }
       var gameIds = [];
+      var playerNumbers = {};
       var hiddenIds = [];
       players.each(function(err, player) {
         if(player !== null) {
           if(!player.settings.hidden) {
             gameIds.push(player.gameId);
+            if(playerNumbers[player.gameId] === undefined)
+              playerNumbers[player.gameId] = [];
+            playerNumbers[player.gameId].push(player.playerNumber);
           } else {
             hiddenIds.push(player.gameId);
           }
         } else {
           fetchGamesByQuery(database, {$or: [{_id: {$in: gameIds}}, {authorId: userId}], 
                                        _id: {$nin: hiddenIds}}, function(result) {
+            if(result.success) {
+              result.games.forEach(function(game) {
+                game.inTurn = playerNumbers[game.gameId] && playerNumbers[game.gameId].indexOf(game.inTurnNumber) != -1;
+              });
+            }
             timer.end();
             callback(result);
           });

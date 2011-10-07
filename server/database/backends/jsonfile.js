@@ -424,6 +424,7 @@ JSONFileDatabase.prototype.myGames = function(userId, callback) {
     for(var i = 0; i < database.games.length; ++i) {
       var game = database.games[i];
       var isMyGame = game.authorId == userId;
+      var inTurn = false;
       var numPlayers = 0;
       for(var j = 0; j < database.players.length; ++j) {
         var player = database.players[j];
@@ -433,6 +434,9 @@ JSONFileDatabase.prototype.myGames = function(userId, callback) {
           }
           if(player.userId == userId && !player.settings.hidden) {
             isMyGame = true;
+            if(player.playerNumber == game.inTurnNumber) {
+              inTurn = true;
+            }
           }
         }
       }
@@ -443,6 +447,7 @@ JSONFileDatabase.prototype.myGames = function(userId, callback) {
         myGame.map = map.clone();
         myGame.map.mapData = undefined;
         myGame.numPlayers = numPlayers;
+        myGame.inTurn = inTurn;
         myGames.push(myGame);
       }
     }
