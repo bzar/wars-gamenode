@@ -29,14 +29,36 @@ var wrap = function() {
   });
   
   function updatePageControls() {
+    var pages = $("#pages");
+    pages.empty();
+    for(var i = 0; i < paginator.pages(); ++i) {
+      var pageLink = $("<a></a>");
+      pageLink.text(i + 1);
+      pageLink.attr("href", "#" + (i + 1));
+      pageLink.attr("page", i + 1);
+      pageLink.addClass("pageLink");
+      pages.append(pageLink);
+    }
+      
     $("#firstPage").attr("href", "#" + paginator.firstPage()).toggle(paginator.currentPage != paginator.firstPage());
     $("#lastPage").attr("href", "#" + paginator.lastPage()).toggle(paginator.currentPage != paginator.lastPage());
     $("#prevPage").attr("href", "#" + paginator.prevPage()).toggle(paginator.currentPage != paginator.firstPage());
     $("#nextPage").attr("href", "#" + paginator.nextPage()).toggle(paginator.currentPage != paginator.lastPage());
+    
     $(".pageLink").removeClass("current");
     $(".pageLink[page=\"" + paginator.currentPage + "\"]").addClass("current");
+    $(".pageLink").click(function(e) { changePage(e, parseInt($(this).attr("page"))); });
+    
+    $("#pageControls").toggle(paginator.pages() > 1);
   }
   
+  function changePage(e, page) {
+    if(e !== undefined)
+      e.preventDefault();
+    paginator.setPage(page);
+    window.location.hash = page;
+    updatePageControls();
+  }
   function populateMyMaps(client) {
     mapPainter.doPreload(function() {
       client.stub.myMaps(null, function(response) {
@@ -91,25 +113,72 @@ var wrap = function() {
           pages.append(pageLink);
         }
         
-        function changePage(e, page) {
-          e.preventDefault();
-          paginator.setPage(page);
-          window.location.hash = page;
-          updatePageControls();
-        }
-        
-        updatePageControls();
-        
         $(".pageLink").click(function(e) { changePage(e, parseInt($(this).attr("page"))); });
         $("#firstPage").click(function(e) { changePage(e, paginator.firstPage()); });
         $("#lastPage").click(function(e) { changePage(e, paginator.lastPage()); });
         $("#nextPage").click(function(e) { changePage(e, paginator.nextPage()); });
         $("#prevPage").click(function(e) { changePage(e, paginator.prevPage()); });
       
-        if(paginator.pages() == 1) {
-          $("#pageControls").hide();
-        }
+        changePage(undefined, initialPage);
+        populateMapFilter(maps);
       });
+    });
+  }
+  
+  function filterMaps(maps) {
+    var minPlayers = parseInt($("#minPlayers").val());
+    var maxPlayers = parseInt($("#maxPlayers").val());
+    var namePart = $("#mapName").val().toLowerCase();
+    
+    paginator.data = maps.filter(function(map) {
+      return map.players >= minPlayers && 
+             map.players <= maxPlayers && 
+             (namePart == "" || map.name.toLowerCase().indexOf(namePart) != -1);
+    });
+    paginator.setPage(paginator.firstPage());
+    updatePageControls();
+  }
+  
+  function populateMapFilter(maps) {
+    var minPlayers = null;
+    var maxPlayers = null;
+    maps.forEach(function(map) {
+      minPlayers = minPlayers && minPlayers < map.players ? minPlayers : map.players;
+      maxPlayers = maxPlayers && maxPlayers > map.players ? maxPlayers : map.players;
+    });
+    
+    var minPlayersSelect = $("#minPlayers");
+    var maxPlayersSelect = $("#maxPlayers");
+    
+    for(var i = minPlayers; i <= maxPlayers; ++i) {
+      var minOption = $("<option></option>");
+      minOption.attr("value", i);
+      minOption.text(i);
+      minOption.prop("selected", i == minPlayers);
+      minPlayersSelect.append(minOption);
+      
+      var maxOption = $("<option></option>");
+      maxOption.attr("value", i);
+      maxOption.text(i);
+      maxOption.prop("selected", i == maxPlayers);
+      maxPlayersSelect.append(maxOption);
+    }
+    
+    minPlayersSelect.change(function() {
+      if(parseInt(maxPlayersSelect.val()) < parseInt($(this).val())) {
+        maxPlayersSelect.val($(this).val());
+      }
+    });
+    
+    maxPlayersSelect.change(function() {
+      if(parseInt(minPlayersSelect.val()) > parseInt($(this).val())) {
+        minPlayersSelect.val($(this).val());
+      }
+    });
+    
+    $("#mapFilterForm").submit(function(e) {
+      e.preventDefault();
+      filterMaps(maps);
     });
   }
 }();

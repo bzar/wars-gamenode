@@ -25,6 +25,14 @@
       <ul id="tools" class="navigation">
         <li><a href="mapEditor.html">Create a new map</a></li>
       </ul>
+      <form id="mapFilterForm" class="toolForm">
+        <ul>
+          <li><label for="minPlayers" class="left">Minimum players</label> <select name="minPlayers" id="minPlayers" class="right"></select></li>
+          <li><label for="maxPlayers" class="left">Maximum players</label> <select name="maxPlayers" id="maxPlayers" class="right"></select></li>
+          <li><label for="mapName" class="left">Map name</label> <input type="text" id="mapName" name="mapName" class="right"/></li>
+          <li><input type="submit" value="Filter maps" class="right" /></li>
+        </ul>
+      </form>
     </div>
 
     <div id="content">
