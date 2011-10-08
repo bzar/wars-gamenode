@@ -13,7 +13,6 @@ var wrap = function() {
   });
   
   function populateInfo(rules) {
-    console.log(rules);
     populateArmorNames(rules);
     populateTerrainNames(rules);
     populateRangeNumbers(rules);
