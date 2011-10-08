@@ -6,6 +6,8 @@
     <script type="text/javascript" src="/gamenode/session.js"></script>
     <script type="text/javascript" src="skeleton.js"></script>
     <script type="text/javascript" src="base.js"></script>
+    <script type="text/javascript" src="image_map.js"></script>
+    <script type="text/javascript" src="theme.js"></script>
     <script type="text/javascript" src="info.js"></script>
 
     <link rel="stylesheet" href="wars.css" type="text/css"/>
@@ -23,7 +25,7 @@
       <h2>Game info</h2>
       <h3>Units</h3>
       <table class="infoTable" id="units">
-        <thead><tr><th>Name</th><th>Class</th><th>Price</th><th>Armor</th><th>Primary weapon</th><th>Secondary weapon</th><th>Movement</th><th>Movement type</th><th>Carries</th><th>Other</th></tr></thead>
+        <thead><tr><th></th><th>Name</th><th>Class</th><th>Price</th><th>Armor</th><th>Primary weapon</th><th>Secondary weapon</th><th>Movement</th><th>Movement type</th><th>Carries</th><th>Other</th></tr></thead>
         <tbody></tbody>
       </table>
 
@@ -55,7 +57,8 @@
       <h3>Defense bonuses</h3>
       <table class="infoTable" id="defenses">
         <thead>
-          <tr><th rowspan="2">Name</th><th class="numTerrains" colspan="1">Defense bonus% in terrain</th></tr>
+          <tr><th rowspan="3"></th><th rowspan="3">Name</th><th class="numTerrains" colspan="1">Defense bonus% in terrain</th></tr>
+          <tr class="terrainImages"></tr>
           <tr class="terrainNames"></tr>
         </thead>
         <tbody></tbody>
@@ -64,7 +67,8 @@
       <h3>Movement cost</h3>
       <table class="infoTable" id="movement">
         <thead>
-          <tr><th rowspan="2">Name</th><th class="numTerrains" colspan="1">Movement cost on terrain</th></tr>
+          <tr><th rowspan="3">Name</th><th class="numTerrains" colspan="1">Movement cost on terrain</th></tr>
+          <tr class="terrainImages"></tr>
           <tr class="terrainNames"></tr>
         </thead>
         <tbody></tbody>

@@ -1,13 +1,19 @@
 var wrap = function() {
   var client = new GameNodeClient(Skeleton);
   var session = null;
-
+  var theme = null;
+  
   $(document).ready(function() {
     var loginUrl = "login.html?next=" + document.location.pathname + document.location.search;
     session = resumeSessionOrRedirect(client, undefined, loginUrl, function() {
       populateNavigation(session);
-      client.stub.gameRules(null, function(rules) {
-        populateInfo(rules);
+      client.stub.profile(function(response) {
+        theme = new Theme(response.profile.settings.gameTheme);
+        theme.load(function() {
+          client.stub.gameRules(null, function(rules) {
+            populateInfo(rules);
+          });
+        });
       });
     });
   });
@@ -46,6 +52,21 @@ var wrap = function() {
         item.text(terrain.name);
         $(this).append(item);
       });
+      
+      $(".terrainImages").each(function() {
+        var item = $("<td></td>");
+        var image = $("<span></span>");
+        
+        image.css("background-image", "url('" + theme.getSpriteSheetUrl() + "')");
+        image.addClass("sprite");
+        var pos = theme.getTileCoordinates(terrain.id, 0, 0);
+        var imageX = pos.x * 48;
+        var imageY = pos.y * 48;
+        image.css("background-position", -imageX + "px " + -imageY + "px")
+        item.append(image);
+        $(this).append(item);
+      });
+      
     });
     $(".numTerrains").attr("colspan", numTerrains);
   }
@@ -77,6 +98,7 @@ var wrap = function() {
     var units = $("#units tbody");
     forEachProperty(rules.units, function(unit) {
       var item = $("<tr></tr>");
+      var image = $("<td></td>");
       var name = $("<td></td>");
       var className = $("<td></td>");
       var price = $("<td></td>");
@@ -87,8 +109,16 @@ var wrap = function() {
       var movementTypeName = $("<td></td>");
       var carry = $("<td></td>");
       var flags = $("<td></td>");
-      
+
+      image.css("background-image", "url('" + theme.getSpriteSheetUrl() + "')");
+      image.addClass("sprite");
+      var pos = theme.getUnitCoordinates(unit.id, 1);
+      var imageX = pos.x * 48;
+      var imageY = pos.y * 48;
+      image.css("background-position", -imageX + "px " + -imageY + "px")
+
       name.text(unit.name);
+      name.addClass("name");
       className.text(rules.unitClasses[unit.unitClass].name);
       price.text(unit.price);
       armorName.text(rules.armors[unit.armor].name);
@@ -100,6 +130,7 @@ var wrap = function() {
       carry.text(unit.carryNum > 0 ? unit.carryNum + "x " + carryClasses : "-");
       flags.text(unit.flags.map(function(flagId) {return rules.unitFlags[flagId].name; }).join(", "));
       
+      item.append(image);
       item.append(name);
       item.append(className);
       item.append(price);
@@ -166,8 +197,18 @@ var wrap = function() {
       var movementType = rules.movementTypes[unit.movementType];
       var item = $("<tr></tr>");
       var name = $("<td></td>");
+      var image = $("<td></td>");
+      
+      image.css("background-image", "url('" + theme.getSpriteSheetUrl() + "')");
+      image.addClass("sprite");
+      var pos = theme.getUnitCoordinates(unit.id, 1);
+      var imageX = pos.x * 48;
+      var imageY = pos.y * 48;
+      image.css("background-position", -imageX + "px " + -imageY + "px")
       
       name.text(unit.name);
+      
+      item.append(image);
       item.append(name);
       
       forEachProperty(rules.terrains, function(terrain) {
