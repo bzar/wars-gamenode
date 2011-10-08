@@ -107,7 +107,7 @@ Map.prototype.paintTerrainTile = function(ctx, el, xPos, yPos) {
         // draw tile
         ctx.drawImage(this.sprites,
                       coord.x*this.tileW, coord.y*this.tileH, this.tileW, this.tileH,
-                      xPos, yPos - this.unitOffsetY, this.tileW, this.tileH);
+                      xPos, yPos, this.tileW, this.tileH);
         if(el.capturePoints<200) {
             // draw capture bar
             if(el.beingCaptured) {
@@ -183,9 +183,13 @@ Map.prototype.paintTiles = function(tiles) {
     ctx.scale(this.getScale(), this.getScale());
 
     var this_ = this;
+    
+    var offset = this.getOffset();
+    ctx.translate(offset.x, offset.y - this.unitOffsetY);
+
     tiles.forEach(function(el){
-        var xPos = this_.tileW*el.x+offset.x;
-        var yPos = this_.tileH*el.y+offset.y;
+        var xPos = this_.tileW*el.x;
+        var yPos = this_.tileH*el.y;
         this_.paintTerrainTile(ctx, el, xPos, yPos);
     });
 
@@ -196,10 +200,11 @@ Map.prototype.paintUnits = function(tiles) {
     var ctx = this.canvas.getContext("2d");
     ctx.globalCompositeOperation = "source-over";
     ctx.save();
-    var offset = this.getOffset();
     ctx.scale(this.getScale(), this.getScale());
 
     var this_ = this;
+    var offset = this.getOffset();
+    ctx.translate(offset.x, offset.y);
     tiles.forEach(function(el){
         if(el.unit) {
             this_.paintUnit(el.x, el.y, el.unit, ctx);

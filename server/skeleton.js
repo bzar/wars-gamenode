@@ -28,6 +28,7 @@ Skeleton.prototype.createGame = function(name, mapId, public, turnLength) {
   var this_ = this;
   this.server.gameManagement.createGame(game, function(result) {
     if(result.success) {
+      utils.log("game", "New game: " + name + " (" + result.gameId + ")");
       this_.client.sendResponse(requestId, {success: true, gameId: result.gameId});
       timer.end();
     } else {
@@ -136,6 +137,7 @@ Skeleton.prototype.deleteGame = function(gameId) {
     var timer = new utils.Timer("Skeleton.deleteGame");
     this_.server.gameManagement.deleteGame(userId, gameId, function(result) {
       if(result.success) {
+        utils.log("game", "Game " + gameId + " deleted");
         this_.client.sendResponse(requestId, {success: true});
         timer.end();
       } else {
@@ -204,9 +206,11 @@ Skeleton.prototype.createMap = function(name, initialFunds, mapData) {
   if(this.sessionId === null)
     return {success: false, reason: "Not logged in"}
     
-  var map = new entities.Map(null, this.session.userId, name, initialFunds, mapData);
   var requestId = this.client.requestId;
   var this_ = this;
+  var map = new entities.Map(null, this.session.userId, name, initialFunds, mapData);
+  if(map.players < 2) return {success: false, reason: "Map must have at least two players!"};
+  
   this.server.database.createMap(map, function(result) {
     if(result.success) {
       this_.client.sendResponse(requestId, {success: true, mapId: result.mapId});
@@ -225,6 +229,8 @@ Skeleton.prototype.updateMap = function(mapId, name, initialFunds, mapData) {
   var requestId = this.client.requestId;
   var this_ = this;
   var map = new entities.Map(mapId, this.session.userId, name, initialFunds, mapData);
+  if(map.players < 2) return {success: false, reason: "Map must have at least two players!"};
+  
   this.server.database.updateMap(map, function(result) {
     if(result.success) {
       this_.client.sendResponse(requestId, {success: true});
@@ -354,21 +360,25 @@ Skeleton.prototype.newSession = function(credentials) {
   var requestId = this.client.requestId;
   var this_ = this;
   this.server.database.userByName(credentials.username, function(result) {
-    if(result.success) {
-      var hash = crypto.createHash("sha256");
-      hash.update(credentials.password);
-      hash.update(this_.server.configuration.salt);
-      var digest = hash.digest("hex");
-      
-      if(digest == result.user.password) {
-          this_.session = {userId: result.user.userId};
-          this_.sessionId = this_.server.sessionStorage.createSession(this_.session);
-          this_.client.sendResponse(requestId, {success: true, sessionId: this_.sessionId});
-        } else {
-          this_.client.sendResponse(requestId, {success: false, sessionId: null, reason: "Invalid credentials"});
-        }
-    } else {
+    if(!result.success) {
+      utils.log("login", "Unknown user " + credentials.username);
       this_.client.sendResponse(requestId, {success: false, sessionId: null, reason: result.reason});
+      return;
+    }
+    
+    var hash = crypto.createHash("sha256");
+    hash.update(credentials.password);
+    hash.update(this_.server.configuration.salt);
+    var digest = hash.digest("hex");
+    
+    if(digest == result.user.password) {
+      this_.session = {userId: result.user.userId};
+      this_.sessionId = this_.server.sessionStorage.createSession(this_.session);
+      utils.log("login", credentials.username + " logged in");
+      this_.client.sendResponse(requestId, {success: true, sessionId: this_.sessionId});
+    } else {
+      utils.log("login", "Invalid login attempt for user " + credentials.username);
+      this_.client.sendResponse(requestId, {success: false, sessionId: null, reason: "Invalid credentials"});
     }
   });
 }

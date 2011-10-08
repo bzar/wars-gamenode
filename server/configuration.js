@@ -3,7 +3,7 @@ var configuration = {
   port: 8888,
   host: "localhost",
   enableFileServer: true,
-  logTopics: ["error", "performance", "email", "game"],
+  logTopics: ["error", "performance", "email", "game", "login"],
   crashOnError: true,
 
   database: {

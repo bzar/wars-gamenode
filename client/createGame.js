@@ -119,12 +119,12 @@ var wrap = function() {
         mapPainter.currentTiles = mapData;
         var mapSize = mapPainter.getMapSize();
         var width = mapSize.w * mapPainter.tileW;
-        var height = mapSize.h * mapPainter.tileH - mapPainter.unitOffsetY;
+        var height = mapSize.h * mapPainter.tileH + mapPainter.unitOffsetY;
         canvas.attr("width", width);
         canvas.attr("height", height);
         mapPainter.scale = 1.0;
+        mapPainter.autoscale = false;
         mapPainter.refresh();
-        mapPainter.scale = undefined;
       });
     }
     $("#mapSelection").hide();
@@ -226,6 +226,7 @@ var wrap = function() {
           var mapData = response.mapData;
           mapPainter.canvas = previewCanvas[0];
           mapPainter.currentTiles = mapData;
+          mapPainter.autoscale = true;
           mapPainter.refresh();
         });
       });
