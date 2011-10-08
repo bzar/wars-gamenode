@@ -6,6 +6,8 @@ function populateNavigation(session) {
     {title: "Join a game", href: "join.html"},
     {title: "Spectate", href: "spectate.html"},
     {title: "My profile", href: "profile.html"},
+    {title: "Manual", href: "manual.html"},
+    {title: "Info", href: "info.html"},
     {title: "Logout", href: "#", id: "logout"},
   ]
   
@@ -156,3 +158,18 @@ Paginator.prototype.firstPage = function() {
 Paginator.prototype.lastPage = function() {
   return this.pages();
 };
+
+function forEachProperty(object, callback) {
+  for(var key in object) {
+    if(object.hasOwnProperty(key))
+      callback(object[key], key, object);
+  }
+}
+
+function getObjectWithId(from, id) {
+  var object = null;
+  forEachProperty(from, function(value) {
+    object = value.id == id ? value : object;
+  });
+  return object;
+}

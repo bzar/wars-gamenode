@@ -910,3 +910,49 @@ h3 {
 .pageLink.current {
   background-color: #ddf !important;
 }
+
+.infoTable {
+  border-collapse: collapse;
+  margin-left: 16px;
+  border: 3px solid #777;
+  
+}
+.infoTable tr {
+  margin: 0;  
+  padding: 0;
+}
+
+.infoTable tbody tr:nth-child(even) {
+  background-color: #e8e8e8;
+}
+
+.infoTable tbody tr:nth-child(odd) {
+  background-color: #f8f8f8;
+}
+
+.infoTable tr {
+  margin: 0;  
+  padding: 0;
+}
+
+.infoTable td {
+  border-collapse: collapse;
+  border: 1px solid #222;
+  text-align: center;
+  padding: 2px 4px;  
+}
+
+.infoTable td:first-child {
+  text-align: left;
+}
+
+.infoTable th {
+  border-collapse: collapse;
+  border: 1px solid #222;
+  padding: 2px 4px;
+}
+
+.infoTable thead {
+  border-bottom: 2px solid #888;
+}
+
