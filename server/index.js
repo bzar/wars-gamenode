@@ -33,7 +33,7 @@ if(configuration.enableFileServer) {
     "join.html", "join.js", "game.html", "game.js", "gamelogic.js",
     "profile.html", "profile.js", "spectate.html", "spectate.js",
     "ticker.js", "theme.js", "gameStatistics.html", "gameStatistics.js",
-    "manual.html", "manual.js", "info.html", "info.js",
+    "manual.html", "manual.js", "info.html", "info.js", "settings.js"
     ], 
     { 
       gamenode: "../lib/gamenode/web", 
