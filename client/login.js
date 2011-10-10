@@ -25,7 +25,8 @@ var wrap = function() {
       session.authenticate($("#username").val(), $("#password").val());
     });
     
-    client.connect();
+    client.connect(WARS_CLIENT_SETTINGS.gameServer);
+    
   });
 }();
 

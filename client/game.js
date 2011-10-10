@@ -28,7 +28,7 @@ var wrap = function() {
   
   $(document).ready(function() {
     var loginUrl = "login.html?next=" + document.location.pathname + document.location.search;
-    session = resumeSessionOrRedirect(client, undefined, loginUrl, function() {
+    session = resumeSessionOrRedirect(client, WARS_CLIENT_SETTINGS.gameServer, loginUrl, function() {
       client.stub.subscribeGame(gameId);
       populateNavigation(session);
       if(gameId !== null) {

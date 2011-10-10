@@ -32,7 +32,7 @@ var wrap = function() {
       });
     });
     
-    client.connect();
+    client.connect(WARS_CLIENT_SETTINGS.gameServer);
   });
 }();
 

@@ -2,7 +2,7 @@ var configuration = {
   interface: "0.0.0.0",
   port: 8888,
   host: "localhost",
-  enableFileServer: true,
+  enableFileServer: false,
   logTopics: ["error", "performance", "email", "game", "login"],
   crashOnError: true,
 
@@ -14,13 +14,13 @@ var configuration = {
   salt: "Change this to a random string to salt the passwords with",
   
   io: {
-    logLevel: 0,
+    logLevel: 3,
     transports: [
-      //    'websocket'
+          'websocket'
       //, 'flashsocket'
-      , 'htmlfile'
-      , 'xhr-polling'
-      , 'jsonp-polling'
+      //, 'htmlfile'
+      //, 'xhr-polling'
+      //, 'jsonp-polling'
     ]
   },
   
