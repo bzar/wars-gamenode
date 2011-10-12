@@ -992,7 +992,6 @@ MongoDBDatabase.prototype.chatMessages = function(gameId, callback) {
           
           messages.push(message);
         } else {
-          console.log(userIds);
           this_.database.collection("users", function(err, collection) {
             if(err) { callback({success: false, reason: err}); return; }
             collection.find({_id: {$in: userIds}}, function(err, userCursor) {
