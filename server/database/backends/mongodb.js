@@ -978,14 +978,38 @@ MongoDBDatabase.prototype.chatMessages = function(gameId, callback) {
     collection.find({gameId: gameId}, function(err, messageCursor) {
       if(err) { callback({success: false, reason: err}); return; }
       var messages = [];
+      var messagesByUserId = {};
+      var userIds = [];
       messageCursor.each(function(err, message) {
         if(message !== null) {
+          if(!(message.userId.toString() in messagesByUserId)) {
+            messagesByUserId[message.userId.toString()] = [];
+            userIds.push(message.userId);
+          }
           message = new entities.ChatMessage(message._id.toString(), message.gameId.toString(), 
                                              message.userId.toString(), message.time, message.content);
+          messagesByUserId[message.userId.toString()].push(message);
+          
           messages.push(message);
         } else {
-          timer.end();
-          callback({success: true, chatMessages: messages});
+          console.log(userIds);
+          this_.database.collection("users", function(err, collection) {
+            if(err) { callback({success: false, reason: err}); return; }
+            collection.find({_id: {$in: userIds}}, function(err, userCursor) {
+              if(err) { callback({success: false, reason: err}); return; }
+              userCursor.each(function(err, user) {
+                if(err) { callback({success: false, reason: err}); return; }
+                if(user !== null) {
+                  messagesByUserId[user._id.toString()].forEach(function(message) {
+                    message.sender = user.username;
+                  });
+                } else {
+                  timer.end();
+                  callback({success: true, chatMessages: messages});
+                }
+              });
+            });
+          });
         }
       });
     });

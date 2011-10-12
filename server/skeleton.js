@@ -905,9 +905,7 @@ Skeleton.prototype.lobbyChat = function(message) {
   var time = (new Date()).toUTCString();
   this.server.database.user(this.session.userId, function(result) {
     var sender = result.user.username;
-    this_.server.subscriptions.forSubscribers(function(sub) {
-      sub.client.stub.chatMessage(time, sender, message);
-    }, "lobbyChat");
+    this_.server.messenger.sendChatMessage("lobbyChat", time, sender, message)
   });
 }
 
@@ -921,9 +919,7 @@ Skeleton.prototype.chat = function(gameId, message) {
     } else {
       this_.server.database.user(this_.session.userId, function(result) {
         var sender = result.user.username;
-        this_.server.subscriptions.forSubscribers(function(sub) {
-          sub.client.stub.chatMessage(time.toUTCString(), sender, message);
-        }, "game-" + gameId);
+        this_.server.messenger.sendChatMessage("game-" + gameId, time.toUTCString(), sender, message);
       });
     }
   });
