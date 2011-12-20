@@ -980,7 +980,7 @@ MongoDBDatabase.prototype.chatMessages = function(gameId, callback) {
       var messages = [];
       var messagesByUserId = {};
       var userIds = [];
-      messageCursor.each(function(err, message) {
+      messageCursor.sort({time:1}).each(function(err, message) {
         if(message !== null) {
           if(!(message.userId.toString() in messagesByUserId)) {
             messagesByUserId[message.userId.toString()] = [];
@@ -1047,11 +1047,10 @@ MongoDBDatabase.prototype.gameEvents = function(gameId, first, count, callback) 
   var this_ = this;
   this.database.collection("gameEvents", function(err, collection) {
     if(err) { callback({success: false, reason: err}); return; }
-    collection.find({gameId: gameId}, {skip: first, limit: (count ? count : undefined), 
-                                       sort: {time: -1}}, function(err, eventCursor) {
+    collection.find({gameId: gameId}, function(err, eventCursor) {
       if(err) { callback({success: false, reason: err}); return; }
       var events = [];
-      eventCursor.each(function(err, event) {
+      eventCursor.sort({time:-1}).skip(first).limit(count ? count : undefined).each(function(err, event) {
         if(event !== null) {
           event = new entities.GameEvent(event._id.toString(), event.gameId.toString(), 
                                          event.time, event.content);

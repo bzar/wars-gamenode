@@ -705,7 +705,7 @@ input[type=text], input[type=password] {
 
 #chatMessages .messageTime {
   display: inline-block;
-  width: 3em;
+  width: 10em;
 }
 
 #chatMessages .messageSender {

@@ -3,7 +3,8 @@ function MessageTicker(box, map) {
   this.map = map;
   this.showAll = false;
   this.numMessages = 10;
-}  
+}
+
 MessageTicker.prototype.showToggle = function() {
   this.showAll = !this.showAll;
   if(this.showAll) {
@@ -22,7 +23,7 @@ MessageTicker.prototype.setMessages = function(msgArray) {
   if(msgArray && msgArray.length > 0) {
     for(var i = 0; i < msgArray.length; ++i) {
       var msg = this.parseMessage(msgArray[i]);
-      this.box.prepend(msg);
+      this.box.append(msg);
     }
     $(".tickerMessage:gt(" + (this.numMessages-1) + ")", this.box).hide();
   }
@@ -163,7 +164,7 @@ MessageTicker.prototype.parseMessage = function(message) {
   var tickerMessage = $("<li></li>");
   tickerMessage.addClass("tickerMessage");
   if(player) {
-    tickerMessage.addClass("player" + player);
+    tickerMessage.css("background-color", this.map.theme.getPlayerColorString(parseInt(player)));
   }
   this.createTickerMessage(msg, tickerMessage);
   return tickerMessage;
@@ -178,9 +179,12 @@ MessageTicker.prototype.createTickerMessage = function(parts, rootElement) {
       rootElement.append(text);
     } else if (part.type == "time") {
       var text = $("<span></span>");
-      var timeString = "[" + zeroPad(part.time.getHours(), 2) + ":" + 
-                              zeroPad(part.time.getMinutes(), 2) + ":" + 
-                              zeroPad(part.time.getSeconds(), 2) + "] ";
+      var timeString = "[" + part.time.getFullYear() + "-" + 
+                             zeroPad(part.time.getMonth()+1, 2) + "-" + 
+                             zeroPad(part.time.getDate(), 2) + " " + 
+                             zeroPad(part.time.getHours(), 2) + ":" + 
+                             zeroPad(part.time.getMinutes(), 2) + ":" + 
+                             zeroPad(part.time.getSeconds(), 2) + "] ";
       text.text(timeString);
       text.addClass("time");
       rootElement.append(text);

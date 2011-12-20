@@ -294,6 +294,11 @@ var wrap = function() {
           tile.unit = newTile.unit;
         }
       }
+      
+      if(map.showPowerMap || map.showBorders) {
+        map.powerMap = getPowerMap();
+      }
+      
       map.refresh();
       $("#spinner").hide();
     }
@@ -924,7 +929,7 @@ var wrap = function() {
         
         // Needed to have all the chart elements laid out correctly before adding content
         setTimeout(function() {
-          var width = $(".statisticBarChart[chartProperty=\"" + property + "\"]").innerWidth();
+          var width = $(".statisticBarChart[chartProperty=\"" + property + "\"]").innerWidth() - 10;
           var height = 8;
           var totalValue = d3.sum(data, function(d){ return d[property]; });
           var scale = d3.scale.linear()

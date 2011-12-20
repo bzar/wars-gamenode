@@ -37,7 +37,7 @@ var wrap = function() {
         map.text(game.map.name);
         players.text(game.state == "pregame" ? game.numPlayers + "/" + game.map.players : game.numPlayers);
         state.text(game.state);
-        if(game.state == "pregame") {
+        if(game.state == "pregame" || game.state == "finished") {
           turn.text("N/A");
         } else if(game.inTurn) {
           turn.text("Your turn!");

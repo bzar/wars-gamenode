@@ -46,7 +46,7 @@ function addChatMessage(time, sender, content) {
   var messageContent = $("<span></span>");
   
   var t = new Date(Date.parse(time));
-  messageTime.text(zeroPad(t.getHours(), 2) + ":" + zeroPad(t.getMinutes(), 2));
+  messageTime.text(t.getFullYear() + "-" + zeroPad(t.getMonth()+1, 2) + "-" + zeroPad(t.getDate(), 2) + " " + zeroPad(t.getHours(), 2) + ":" + zeroPad(t.getMinutes(), 2));
   messageTime.addClass("messageTime");
   
   messageSender.text(sender);
