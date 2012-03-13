@@ -213,6 +213,9 @@ h2 {
   display: inline-block;
 }
 
+label.small {
+  font-size: 14px;
+}
 .centeredForm input[type=text], .centeredForm input[type=password], .columnForm input[type=text], .columnForm input[type=password] {
   width: 48%;
 }

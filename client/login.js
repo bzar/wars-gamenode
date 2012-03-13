@@ -22,7 +22,11 @@ var wrap = function() {
       session.onAuthenticationFailure = function() {
         alert("Invalid username/password!");
       }
-      session.authenticate($("#username").val(), $("#password").val());
+      
+      var username = $("#username").val();
+      var password = $("#password").val();
+      var remember = $("#remember").prop("checked");
+      session.authenticate(username, password, remember);
     });
     
     client.connect(WARS_CLIENT_SETTINGS.gameServer);
