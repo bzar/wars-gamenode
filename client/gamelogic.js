@@ -94,6 +94,7 @@ GameLogic.prototype.unitCanMoveTo = function(x, y, dx, dy) {
   var unit = mapArray[y][x].unit;
 
   if(unit === null) {
+    console.log("no unit at (" + x + ", " + y + ")");
     return null;
   }
   

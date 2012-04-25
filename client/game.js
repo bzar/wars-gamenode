@@ -290,6 +290,7 @@ var wrap = function() {
         if(newTile.unit !== undefined) {
           if(newTile.unit !== null) {
             newTile.unit.tile = tile;
+            map.updateUnitEntity(newTile.unit, newTile.x, newTile.y);
           }
           tile.unit = newTile.unit;
         }
@@ -329,9 +330,8 @@ var wrap = function() {
       theme.load(function() {
         updateStatistic();
         client.stub.gameRules(gameId, function(rules) {
-          map = new Map(undefined, 1.0, theme, rules);
+          map = new AnimatedMap("mapCanvas", 1.0, theme, rules);
           gameLogic = new GameLogic(map, rules);
-          map.canvas = $("#mapCanvas")[0];
           gameMap = map;
           
           map.doPreload(function() {
@@ -346,9 +346,9 @@ var wrap = function() {
             var mapSize = map.getMapSize();
             var width = mapSize.w * map.tileW;
             var height = mapSize.h * map.tileH - map.unitOffsetY;
-            map.canvas.width = width;
-            map.canvas.height = height;
+            map.canvas.resize(width, height);
             map.refresh();
+            map.initUnitEntities();
             $("#spinner").hide();
           });
         });
@@ -500,7 +500,7 @@ var wrap = function() {
         if(gameLogic.tileHasMovableUnit(playerNumber, tilePosition.x, tilePosition.y)) {
           var movementOptions = gameLogic.unitMovementOptions(tilePosition.x, tilePosition.y);
           map.paintMovementMask(movementOptions);
-          map.paintUnit(tilePosition.x, tilePosition.y, map.getTile(tilePosition.x, tilePosition.y).unit);
+          //map.paintUnit(tilePosition.x, tilePosition.y, map.getTile(tilePosition.x, tilePosition.y).unit);
           
           if(movementOptions.length > 1) {
             gameUIState = {
@@ -609,7 +609,7 @@ var wrap = function() {
   
   function switchToActionState(x, y, dx, dy, movementOptions, canvasPosition) {
     map.paintMovementMask(movementOptions, true);
-    map.paintUnit(dx, dy, map.getTile(x, y).unit);
+    //map.paintUnit(dx, dy, map.getTile(x, y).unit);
   
     gameUIState = {
       stateName: "action",

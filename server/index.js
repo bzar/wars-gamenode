@@ -33,12 +33,14 @@ if(configuration.enableFileServer) {
     "join.html", "join.js", "game.html", "game.js", "gamelogic.js",
     "profile.html", "profile.js", "spectate.html", "spectate.js",
     "ticker.js", "theme.js", "gameStatistics.html", "gameStatistics.js",
-    "manual.html", "manual.js", "info.html", "info.js", "settings.js"
+    "manual.html", "manual.js", "info.html", "info.js", "settings.js",
+    "animatedMap.js"
     ], 
     { 
       gamenode: "../lib/gamenode/web", 
       img: "img",
-      d3: "d3"
+      d3: "d3",
+      aja: "aja"
     }, 
     __dirname + "/../client", "login.html");
   fileServer.attachTo(server);
