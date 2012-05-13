@@ -127,57 +127,7 @@ AnimatedMap.prototype.paintTerrainTile = function(ctx, el, xPos, yPos) {
         ctx.fillRect(xPos + 12, yPos + 12, this.tileW/2, this.tileH/2);
     }
 };
-/*
-AnimatedMap.prototype.paintUnit = function(x, y, unit, ctx) {
-    var ctx = ctx ? ctx : this.canvas.getContext("2d");
-    var xPos = this.tileW*x;
-    var yPos = this.tileH*y;
-    ctx.save();
-    
-    if(unit.deployed) {
-        ctx.strokeStyle = "white";
-        ctx.strokeRect(xPos, yPos - this.unitOffsetY, this.tileW-1, this.tileH-1);
-    }
-    
-    if(unit.moved) ctx.globalAlpha = 0.5;
 
-    var coord = unit ? this.theme.getUnitCoordinates(unit.type, unit.owner) : null;
-    if(coord) {
-        ctx.drawImage(this.sprites,
-                      coord.x*this.tileW, coord.y*this.tileH, this.tileW, this.tileH,
-                      xPos, yPos, this.tileW, this.tileH);
-    } 
-
-    ctx.globalAlpha = 1.0;
-    var en = Math.ceil(parseInt(unit.health)/10);
-    if(en<10) {
-        var numCoord = this.theme.getHealthNumberCoordinates(en);
-        var enX = xPos + this.tileW - 24;
-        var enY = yPos + this.tileH - 24;
-        ctx.drawImage(this.sprites,
-                      numCoord.x*this.tileW, numCoord.y*this.tileH, this.tileW/2, this.tileH/2,
-                      enX, enY, this.tileW/2, this.tileH/2);
-    }
-    
-    if(this.rules) {
-        var unitType = this.rules.units[unit.type];
-        if(unitType.carryNum > 0) {
-            ctx.strokeStyle = "#111";
-            ctx.fillStyle = "#fff";
-            for(var i = 0; i < unitType.carryNum; ++i) {
-                if(i < unit.carriedUnits.length) {
-                    ctx.fillRect(xPos + 2, yPos + this.tileH - (i+1)*7, 5, 5);
-                    ctx.strokeRect(xPos + 2, yPos + this.tileH - (i+1)*7, 5, 5);
-                } else {
-                    ctx.strokeStyle = "#fff";
-                    ctx.strokeRect(xPos + 2, yPos + this.tileH - (i+1)*7, 5, 5);
-                }
-            }
-        }
-    }
-    ctx.restore();
-};
-*/
 AnimatedMap.prototype.paintTiles = function(tiles) {
     var ctx = this.canvas.background.getContext("2d");
     ctx.globalCompositeOperation = "source-over";
@@ -201,25 +151,7 @@ AnimatedMap.prototype.paintTiles = function(tiles) {
 
     ctx.restore();
 };
-/*
-AnimatedMap.prototype.paintUnits = function(tiles) {
-    var ctx = this.canvas.getContext("2d");
-    ctx.globalCompositeOperation = "source-over";
-    ctx.save();
-    ctx.scale(this.getScale(), this.getScale());
 
-    var this_ = this;
-    var offset = this.getOffset();
-    ctx.translate(offset.x, offset.y);
-    tiles.forEach(function(el){
-        if(el.unit) {
-            this_.paintUnit(el.x, el.y, el.unit, ctx);
-        }
-    });
-
-    ctx.restore();
-};
-*/
 AnimatedMap.prototype.refresh = function() {
     this.clear();
 
@@ -229,8 +161,10 @@ AnimatedMap.prototype.refresh = function() {
         var w = this.getScale() * mapSize.w * this.tileW;
         var h = this.getScale() * mapSize.h * this.tileH - this.unitOffsetY;
 
-        this.canvas.resize(w, h);
-
+        if(w !== this.canvas.width || h !== this.canvas.height) {
+          this.canvas.resize(w, h);
+        }
+        
         $("#mapcontainer").width(w);
         $("#mapcontainer").height(h);
         $("#mapmask").width(w);
@@ -253,7 +187,6 @@ AnimatedMap.prototype.refresh = function() {
         this.paintGrid();
     }
 
-    //this.paintUnits(this.currentTiles);
     this.canvas.forceRedraw();
 };
 
@@ -264,7 +197,6 @@ AnimatedMap.prototype.paintMask = function(ctx, x, y,color) {
 AnimatedMap.prototype.paintAttackMask = function(attacks) {
     var maskArray = this.parseAttacks(attacks, this.getMapSize());
     this.paintMaskArray(maskArray, false, true);
-    //this.paintUnits(this.currentTiles);
     this.paintDamageIndicators(attacks);
 };
 
@@ -276,7 +208,6 @@ AnimatedMap.prototype.paintUnloadMask = function(unloadOptions) {
         maskArray[coord.y * mapWidth + coord.x] = {};
     }
     this.paintMaskArray(maskArray, false, "blue");
-    //this.paintUnits(this.currentTiles);
     this.canvas.forceRedraw();
 };
 
@@ -305,7 +236,6 @@ AnimatedMap.prototype.paintMovementMask = function(maskArray, inverse) {
 
     var maskArray2 = this.createMovementMask(maskArray);
     this.paintMaskArray(maskArray2, !inverse);
-    //this.paintUnits(this.currentTiles);
 };
 
 AnimatedMap.prototype.paintMaskArray = function(maskArray, inverse, useColor) {
@@ -823,22 +753,6 @@ AnimatedMap.prototype.surrender = function(player, callback) {
   if(callback !== undefined) 
     callback();
 };
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 
 AnimatedMap.PHASE_SELECT = 1;
 AnimatedMap.PHASE_MOVE = 2;
