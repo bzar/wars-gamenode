@@ -151,7 +151,7 @@ GameLogic.prototype.unitCanMoveTo = function(x, y, dx, dy) {
         path.push({x: current.tile.x, y: current.tile.y});
         current = from[current.tile.y][current.tile.x];
       }
-      return path;
+      return path.reverse();
     }
     
     // Process neighbors

@@ -25,6 +25,22 @@ function preparePlayer(player) {
   return player.playerNumber;
 };
 
+GameEventManager.prototype.move = function(unit, tile, path) {
+  this.createTickerMessage({
+    action: "move",
+    tile: prepareTile(tile),
+    unit: prepareUnit(unit),
+    path: path
+  });
+};
+
+GameEventManager.prototype.wait = function(unit) {
+  this.createTickerMessage({
+    action: "wait",
+    unit: prepareUnit(unit),
+  });
+};
+
 GameEventManager.prototype.attack = function(attacker, from, target, damage) {
   this.createTickerMessage({
     action: "attack",
@@ -150,11 +166,12 @@ GameEventManager.prototype.load = function(unit, carrier) {
   });
 };
 
-GameEventManager.prototype.unload = function(unit, carrier) {
+GameEventManager.prototype.unload = function(unit, carrier, tile) {
   this.createTickerMessage({
     action: "unload",
     unit: prepareUnit(unit),
-    carrier: prepareUnit(carrier)
+    carrier: prepareUnit(carrier),
+    tile: prepareTile(tile)
   });
 };
 

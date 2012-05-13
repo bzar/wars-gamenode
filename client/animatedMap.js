@@ -189,7 +189,10 @@ AnimatedMap.prototype.paintTiles = function(tiles) {
     
     var offset = this.getOffset();
     ctx.translate(offset.x, offset.y - this.unitOffsetY);
-
+    
+    ctx.fillStyle = "#eee";
+    ctx.fillRect(0, this.unitOffsetY, this.canvas.width, -this.unitOffsetY);
+    
     tiles.forEach(function(el){
         var xPos = this_.tileW*el.x;
         var yPos = this_.tileH*el.y;
@@ -226,8 +229,7 @@ AnimatedMap.prototype.refresh = function() {
         var w = this.getScale() * mapSize.w * this.tileW;
         var h = this.getScale() * mapSize.h * this.tileH - this.unitOffsetY;
 
-        this.canvas.width = w;
-        this.canvas.height = h;
+        this.canvas.resize(w, h);
 
         $("#mapcontainer").width(w);
         $("#mapcontainer").height(h);
@@ -565,21 +567,279 @@ AnimatedMap.prototype.getUnitEntity = function(unitId) {
   return null;
 }
 
-AnimatedMap.prototype.updateUnitEntity = function(unit, tx, ty) {
-  var u = this.getUnitEntity(unit.unitId);
+AnimatedMap.prototype.moveUnit = function(unitId, tileId, path, callback) {
+  var u = this.getUnitEntity(unitId);
+  var prevTile = this.getTile(u.tx, u.ty);
+  var t = this.getTile(tileId);
   if(u !== null) {
-    if(tx !== u.tx || ty !== u.ty) {
-      this.canvas.addAnimation(new aja.PositionAnimation(u, u.x, u.y, tx * this.tileW, ty * this.tileH, 1000, function() {
-        u.unit = unit;
+    if(path.length > 1) {
+      var pathSegments = [];
+      for(var i = 1; i < path.length; ++i) {
+        var prev = path[i - 1];
+        var next = path[i];
+        pathSegments.push(new aja.PositionAnimation(u, prev.x * this.tileW, prev.y * this.tileH, next.x * this.tileW, next.y * this.tileH, 200));
+      }
+      this.canvas.addAnimation(new aja.SequentialAnimation(pathSegments, function() {
+        prevTile.unit = null;
+        if(t.unit === null)
+          t.unit = u.unit;
+        if(callback !== undefined) 
+          callback();
       }));
     } else {
-      u.unit = unit;
+      if(callback !== undefined) 
+        callback();
     }
   } else {
-    var unit = new MapUnit(unit, tx, ty, this);
-    this.canvas.addEntity(unit);
+    console.log("ERROR: unknown tile id: " + tileId);
   }
 };
+
+AnimatedMap.prototype.waitUnit = function(unitId, callback) {
+  var u = this.getUnitEntity(unitId);
+  u.unit.moved = true;
+  this.canvas.redrawEntity(u);
+  if(callback !== undefined) 
+    callback();
+};
+
+AnimatedMap.prototype.attackUnit = function(unitId, targetId, damage, callback) {
+  var attacker = this.getUnitEntity(unitId);
+  var target = this.getUnitEntity(targetId);
+  
+  if(attacker !== null && target !== null) {
+    var va = new Vec2D(attacker.x, attacker.y);
+    var vt = new Vec2D(target.x, target.y);
+    
+    var vx = vt.subtract(va).uniti();
+    vx.x *= this.tileW/2;
+    vx.y *= this.tileH/2;
+
+    var parts = [];
+    parts.push(new aja.PositionDeltaAnimation(attacker, vx.x, vx.y, 100));
+    parts.push(new aja.PositionDeltaAnimation(attacker, -vx.x, -vx.y, 200));
+    
+    var canvas = this.canvas;
+    this.canvas.addAnimation(new aja.SequentialAnimation(parts, function() {
+      target.unit.health -= damage;
+      attacker.unit.moved = true;
+      canvas.redrawEntities([target, attacker]);
+      
+      if(callback !== undefined) 
+        callback();
+    }));
+  } else {
+    console.log("ERROR: unknown unit id");
+  }
+};
+
+AnimatedMap.prototype.counterattackUnit = function(unitId, targetId, damage, callback) {
+  if(damage === null) {
+    if(callback !== undefined) 
+      callback();
+    return;
+  }
+  
+  var attacker = this.getUnitEntity(unitId);
+  var target = this.getUnitEntity(targetId);
+  
+  if(attacker !== null && target !== null) {
+    var va = new Vec2D(attacker.x, attacker.y);
+    var vt = new Vec2D(target.x, target.y);
+    
+    var vx = vt.subtract(va).uniti();
+    vx.x *= this.tileW/2;
+    vx.y *= this.tileH/2;
+
+    var parts = [];
+    parts.push(new aja.PositionDeltaAnimation(attacker, vx.x, vx.y, 100));
+    parts.push(new aja.PositionDeltaAnimation(attacker, -vx.x, -vx.y, 200));
+    
+    var canvas = this.canvas;
+    this.canvas.addAnimation(new aja.SequentialAnimation(parts, function() {
+      target.unit.health -= damage;
+      canvas.redrawEntities([target, attacker]);
+      
+      if(callback !== undefined) 
+        callback();
+    }));
+  } else {
+    console.log("ERROR: unknown unit id");
+  }
+};
+
+AnimatedMap.prototype.captureTile = function(unitId, tileId, left, callback) {
+  var u = this.getUnitEntity(unitId);
+  var t = this.getTile(tileId);
+  t.capturePoints = left;
+  t.beingCaptured = true;
+  u.unit.moved = true;
+  this.refresh();
+  if(callback !== undefined) 
+    callback();
+};
+
+AnimatedMap.prototype.capturedTile = function(unitId, tileId, callback) {
+  var u = this.getUnitEntity(unitId);
+  var t = this.getTile(tileId);
+  t.capturePoints = 1;
+  t.beingCaptured = false;
+  t.owner = u.unit.owner;
+  u.unit.moved = true;
+  this.refresh();
+  if(callback !== undefined) 
+    callback();
+};
+
+AnimatedMap.prototype.deployUnit = function(unitId, callback) {
+  var u = this.getUnitEntity(unitId);
+  u.unit.deployed = true;
+  u.unit.moved = true;
+  this.canvas.redrawEntity(u);
+  if(callback !== undefined) 
+    callback();
+};
+
+AnimatedMap.prototype.undeployUnit = function(unitId, callback) {
+  var u = this.getUnitEntity(unitId);
+  u.unit.deployed = false;
+  u.unit.moved = true;
+  this.canvas.redrawEntity(u);
+  if(callback !== undefined) 
+    callback();
+};
+
+AnimatedMap.prototype.loadUnit = function(unitId, carrierId, callback) {
+  var u = this.getUnitEntity(unitId);
+  var carrier = this.getUnitEntity(carrierId);
+  carrier.unit.carriedUnits.push(u.unit);
+  u.visible = false;
+  this.canvas.redrawEntity(u);
+  if(callback !== undefined) 
+    callback();
+};
+
+AnimatedMap.prototype.unloadUnit = function(unitId, carrierId, tileId, callback) {
+  var u = this.getUnitEntity(unitId);
+  var t = this.getTile(tileId);
+  var carrier = this.getUnitEntity(carrierId);
+  
+  carrier.unit.carriedUnits = carrier.unit.carriedUnits.filter(function(unit) { 
+    return unit.unitId !== unitId;
+  });
+  
+  u.visible = true;
+  u.tx = t.x;
+  u.ty = t.y;
+  u.x = carrier.x;
+  u.y = carrier.y;
+  console.log(carrier.x + " " + carrier.y);
+  console.log(u);
+  console.log(carrier);
+  t.unit = u.unit;
+  
+  var dx = t.x * this.tileW - u.x;
+  var dy = t.y * this.tileH - u.y;
+  
+  console.log(dx + " " + dy);
+  this.canvas.addAnimation(new aja.PositionDeltaAnimation(u, dx, dy, 200, callback));
+};
+
+AnimatedMap.prototype.destroyUnit = function(unitId, callback) {
+  var u = this.getUnitEntity(unitId);
+  var t = this.getTile(u.tx, u.ty);
+  this.canvas.removeEntity(u);
+  t.unit = null;
+  if(callback !== undefined) 
+    callback();
+};
+
+AnimatedMap.prototype.repairUnit = function(unitId, newHealth, callback) {
+  var u = this.getUnitEntity(unitId);
+  u.unit.health = newHealth;
+  this.canvas.redrawEntity(u);
+  if(callback !== undefined) 
+    callback();
+};
+
+AnimatedMap.prototype.buildUnit = function(tileId, unit, callback) {
+  var t = this.getTile(tileId);
+  
+  t.unit = unit;
+  unit.health = 100;
+  unit.deployed = false;
+  unit.moved = true;
+  unit.carriedUnits = [];
+  
+  var u = new MapUnit(unit, t.x, t.y, this);
+  this.canvas.addEntity(u);
+
+  if(callback !== undefined) 
+    callback();
+};
+
+AnimatedMap.prototype.regenerateCapturePointsTile = function(tileId, newCapturePoints, callback) {
+  var t = this.getTile(tileId);
+  t.capturePoints = newCapturePoints;
+  t.beingCaptured = false;
+  this.refresh();
+  if(callback !== undefined) 
+    callback();
+};
+
+AnimatedMap.prototype.produceFundsTile = function(tileId, callback) {
+  if(callback !== undefined) 
+    callback();
+};
+
+AnimatedMap.prototype.beginTurn = function(player, callback) {
+  if(callback !== undefined) 
+    callback();
+};
+
+AnimatedMap.prototype.endTurn = function(player, callback) {
+  this.currentTiles.forEach(function(el){
+    if(el.unit) {
+      el.unit.moved = false;
+    }
+  });
+
+  this.refresh();
+  if(callback !== undefined) 
+    callback();
+};
+
+AnimatedMap.prototype.turnTimeout = function(player, callback) {
+  if(callback !== undefined) 
+    callback();
+};
+
+AnimatedMap.prototype.finished = function(winner, callback) {
+  if(callback !== undefined) 
+    callback();
+};
+
+AnimatedMap.prototype.surrender = function(player, callback) {
+  if(callback !== undefined) 
+    callback();
+};
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 AnimatedMap.PHASE_SELECT = 1;
 AnimatedMap.PHASE_MOVE = 2;
 AnimatedMap.PHASE_ATTACK = 3;
@@ -598,17 +858,15 @@ function MapUnit(unit, x, y, map) {
 }
 
 MapUnit.prototype.rect = function(ctx) {
-  return {x: this.x, y: this.y, w: this.map.tileW, h: this.map.tileH };
+  return {x: this.x, y: this.y, w: this.map.tileW, h: this.map.tileH - this.map.unitOffsetY };
 };
 
 MapUnit.prototype.draw = function(ctx) {
-  var xPos = this.x;
-  var yPos = this.y;
   ctx.save();
   
   if(this.unit.deployed) {
     ctx.strokeStyle = "white";
-    ctx.strokeRect(xPos, yPos - this.map.unitOffsetY, this.map.tileW-1, this.map.tileH-1);
+    ctx.strokeRect(this.x, this.y - this.map.unitOffsetY, this.map.tileW-1, this.map.tileH-1);
   }
   
   if(this.unit.moved) ctx.globalAlpha = 0.5;
@@ -617,15 +875,15 @@ MapUnit.prototype.draw = function(ctx) {
   if(coord) {
     ctx.drawImage(this.map.sprites,
                   coord.x*this.map.tileW, coord.y*this.map.tileH, this.map.tileW, this.map.tileH,
-                  xPos, yPos, this.map.tileW, this.map.tileH);
+                  this.x, this.y, this.map.tileW, this.map.tileH);
   } 
 
   ctx.globalAlpha = 1.0;
   var en = Math.ceil(parseInt(this.unit.health)/10);
-  if(en<10) {
+  if(en<10 && en >= 0) {
     var numCoord = this.map.theme.getHealthNumberCoordinates(en);
-    var enX = xPos + this.map.tileW - 24;
-    var enY = yPos + this.map.tileH - 24;
+    var enX = this.x + this.map.tileW - 24;
+    var enY = this.y + this.map.tileH - 24;
     ctx.drawImage(this.map.sprites,
                   numCoord.x*this.map.tileW, numCoord.y*this.map.tileH, this.map.tileW/2, this.map.tileH/2,
                   enX, enY, this.map.tileW/2, this.map.tileH/2);
@@ -638,11 +896,11 @@ MapUnit.prototype.draw = function(ctx) {
       ctx.fillStyle = "#fff";
       for(var i = 0; i < unitType.carryNum; ++i) {
         if(i < this.unit.carriedUnits.length) {
-          ctx.fillRect(xPos + 2, yPos + this.map.tileH - (i+1)*7, 5, 5);
-          ctx.strokeRect(xPos + 2, yPos + this.map.tileH - (i+1)*7, 5, 5);
+          ctx.fillRect(this.x + 2, this.y + this.map.tileH - (i+1)*7, 5, 5);
+          ctx.strokeRect(this.x + 2, this.y + this.map.tileH - (i+1)*7, 5, 5);
         } else {
           ctx.strokeStyle = "#fff";
-          ctx.strokeRect(xPos + 2, yPos + this.map.tileH - (i+1)*7, 5, 5);
+          ctx.strokeRect(this.x + 2, this.y + this.map.tileH - (i+1)*7, 5, 5);
         }
       }
     }

@@ -667,6 +667,7 @@ Skeleton.prototype.moveAndWait = function(gameId, unitId, destination) {
     this_.server.gameActions.moveAndWait(gameId, userId, unitId, destination, function(result) {
       if(result.success) {
         this_.server.messenger.sendGameUpdate(gameId, result.changedTiles);
+        this_.server.messenger.sendGameEvents(gameId, result.events);
         this_.client.sendResponse(requestId, {success: true});
         timer.end();
       } else {

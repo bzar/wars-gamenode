@@ -45,19 +45,19 @@ function checkMove(database, gameId, userId, unitId, destination, callback) {
       
       var gameLogic = new GameLogic(game, settings.gameElements);
       var destinationTile = null;
-      
+      var path = null;
       if(destination !== null) {
-        var canMove = gameLogic.unitCanMoveTo(sourceTile.x, sourceTile.y, destination.x, destination.y);
-        if(canMove === null) {
+        path = gameLogic.unitCanMoveTo(sourceTile.x, sourceTile.y, destination.x, destination.y);
+        if(path === null) {
           callback({success: false, reason: "Error determining path!"}); return;
-        } else if(canMove === false) {
+        } else if(path === false) {
           callback({success: false, reason: "Unit cannot move there!"}); return;
         }
         
         destinationTile = game.getTile(destination.x, destination.y);
       }
       
-      callback({success: true}, game, playerInTurn, unit, sourceTile, destinationTile, gameLogic);
+      callback({success: true}, game, playerInTurn, unit, sourceTile, destinationTile, path, gameLogic);
     });
   });
 }
@@ -65,7 +65,7 @@ function checkMove(database, gameId, userId, unitId, destination, callback) {
 GameActions.prototype.moveAndAttack = function(gameId, userId, unitId, destination, targetId, callback) {
   var database = this.database;
   checkMove(database, gameId, userId, unitId, destination, 
-            function(result, game, player, unit, sourceTile, destinationTile, gameLogic) {
+            function(result, game, player, unit, sourceTile, destinationTile, path, gameLogic) {
     if(!result.success) {
       callback({success: false, reason: result.reason}); return;
     }
@@ -97,6 +97,7 @@ GameActions.prototype.moveAndAttack = function(gameId, userId, unitId, destinati
           }
 
           var events = new GameEventManager(gameId);
+          events.move(unit, destinationTile, path);
           sourceTile.setUnit(null);
           destinationTile.setUnit(unit);
           
@@ -152,7 +153,7 @@ GameActions.prototype.moveAndAttack = function(gameId, userId, unitId, destinati
 GameActions.prototype.moveAndWait = function(gameId, userId, unitId, destination, callback) {
   var database = this.database;
   checkMove(database, gameId, userId, unitId, destination, 
-            function(result, game, player, unit, sourceTile, destinationTile, gameLogic) {
+            function(result, game, player, unit, sourceTile, destinationTile, path, gameLogic) {
     if(!result.success) {
       callback({success: false, reason: result.reason}); return;
     }
@@ -161,13 +162,16 @@ GameActions.prototype.moveAndWait = function(gameId, userId, unitId, destination
       callback({success: false, reason: "Destination tile occupied!"}); return;
     }
     
+    var events = new GameEventManager(gameId);
+    events.move(unit, destinationTile, path);
     sourceTile.setUnit(null);
     destinationTile.setUnit(unit);
     unit.wait();
+    events.wait(unit);
     
     database.updateUnit(unit, function(result) {
       database.updateTiles([sourceTile, destinationTile], function(result) {
-        callback({success: true, changedTiles: [sourceTile, destinationTile]});
+        callback({success: true, changedTiles: [sourceTile, destinationTile], events: events.objects});
       });
     });
   });
@@ -176,7 +180,7 @@ GameActions.prototype.moveAndWait = function(gameId, userId, unitId, destination
 GameActions.prototype.moveAndCapture = function(gameId, userId, unitId, destination, callback) {
   var database = this.database;
   checkMove(database, gameId, userId, unitId, destination, 
-            function(result, game, player, unit, sourceTile, destinationTile, gameLogic) {
+            function(result, game, player, unit, sourceTile, destinationTile, path, gameLogic) {
     if(!result.success) {
       callback({success: false, reason: result.reason}); return;
     }
@@ -193,11 +197,12 @@ GameActions.prototype.moveAndCapture = function(gameId, userId, unitId, destinat
       callback({success: false, reason: "Unit cannot capture tile at destination!"}); return;
     }
     
+    var events = new GameEventManager(gameId);
+    events.move(unit, destinationTile, path);
     sourceTile.setUnit(null);
     destinationTile.setUnit(unit);
     unit.capture(destinationTile);
     
-    var events = new GameEventManager(gameId);
     if(destinationTile.owner != unit.owner) {
       events.capture(unit, destinationTile, destinationTile.capturePoints);
     } else {
@@ -217,7 +222,7 @@ GameActions.prototype.moveAndCapture = function(gameId, userId, unitId, destinat
 GameActions.prototype.moveAndDeploy = function(gameId, userId, unitId, destination, callback) {
   var database = this.database;
   checkMove(database, gameId, userId, unitId, destination, 
-            function(result, game, player, unit, sourceTile, destinationTile, gameLogic) {
+            function(result, game, player, unit, sourceTile, destinationTile, path, gameLogic) {
     if(!result.success) {
       callback({success: false, reason: result.reason}); return;
     }
@@ -234,11 +239,13 @@ GameActions.prototype.moveAndDeploy = function(gameId, userId, unitId, destinati
       callback({success: false, reason: "Unit cannot deploy!"}); return;
     }
     
+    var events = new GameEventManager(gameId);
+    events.move(unit, destinationTile, path);
+    
     sourceTile.setUnit(null);
     destinationTile.setUnit(unit);
     unit.deploy();
     
-    var events = new GameEventManager(gameId);
     events.deploy(unit);
     
     database.updateUnit(unit, function(result) {
@@ -254,7 +261,7 @@ GameActions.prototype.moveAndDeploy = function(gameId, userId, unitId, destinati
 GameActions.prototype.undeploy = function(gameId, userId, unitId, callback) {
   var database = this.database;
   checkMove(database, gameId, userId, unitId, null, 
-            function(result, game, player, unit, sourceTile, destinationTile, gameLogic) {
+            function(result, game, player, unit, sourceTile, destinationTile, path, gameLogic) {
     if(!result.success) {
       callback({success: false, reason: result.reason}); return;
     }
@@ -293,7 +300,7 @@ GameActions.prototype.moveAndLoadInto = function(gameId, userId, unitId, carrier
     var carrier = result.unit;
     var carrierTile = result.tile;
     checkMove(database, gameId, userId, unitId, {x:carrierTile.x, y:carrierTile.y}, 
-              function(result, game, player, unit, sourceTile, destinationTile, gameLogic) {
+              function(result, game, player, unit, sourceTile, destinationTile, path, gameLogic) {
       if(!result.success) {
         callback({success: false, reason: result.reason}); return;
       }
@@ -306,10 +313,12 @@ GameActions.prototype.moveAndLoadInto = function(gameId, userId, unitId, carrier
         callback({success: false, reason: "Unit cannot load here!"}); return;
       }
       
+      var events = new GameEventManager(gameId);
+      events.move(unit, destinationTile, path);
+      
       sourceTile.setUnit(null);
       unit.loadInto(carrier);
       
-      var events = new GameEventManager(gameId);
       events.load(unit, carrier);
       
       database.updateUnits([unit, carrier], function(result) {
@@ -326,7 +335,7 @@ GameActions.prototype.moveAndLoadInto = function(gameId, userId, unitId, carrier
 GameActions.prototype.moveAndUnload = function(gameId, userId, carrierId, destination, unitId, unloadDestination, callback) {
   var database = this.database;
   checkMove(database, gameId, userId, carrierId, destination, 
-            function(result, game, player, unit, sourceTile, destinationTile, gameLogic) {
+            function(result, game, player, unit, sourceTile, destinationTile, path, gameLogic) {
     database.unit(unitId, function(result) {
       if(!result.success) {
         callback({success: false, reason: result.reason}); return;
@@ -352,6 +361,9 @@ GameActions.prototype.moveAndUnload = function(gameId, userId, carrierId, destin
         callback({success: false, reason: "Unit cannot be unloaded here!"}); return;
       }
       
+      var events = new GameEventManager(gameId);
+      events.move(unit, destinationTile, path);
+      
       sourceTile.setUnit(null);
       destinationTile.setUnit(unit);
       var unloadTile = game.getTile(unloadDestination.x, unloadDestination.y);
@@ -359,8 +371,7 @@ GameActions.prototype.moveAndUnload = function(gameId, userId, carrierId, destin
       unloadTile.setUnit(carriedUnit);
       unit.moved = true;
       
-      var events = new GameEventManager(gameId);
-      events.unload(carriedUnit, unit);
+      events.unload(carriedUnit, unit, unloadTile);
       
       database.updateUnits([unit, carriedUnit], function(result) {
         database.updateTiles([sourceTile, destinationTile, unloadTile], function(result) {

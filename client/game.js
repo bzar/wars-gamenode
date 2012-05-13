@@ -261,49 +261,6 @@ var wrap = function() {
       finished = true;
     }
     
-    client.skeleton.gameUpdate = function(gameId, tileChanges) {
-      oldUnits = {};
-      powerMap = null;
-      for(var i = 0; i < tileChanges.length; ++i) {
-        var newTile = tileChanges[i];
-        var tile = map.getTile(newTile.x, newTile.y);
-        if(newTile.type !== undefined)
-          tile.type = newTile.type;
-        
-        if(newTile.subtype !== undefined)
-          tile.subtype = newTile.subtype;
-        
-        if(newTile.owner !== undefined)
-          tile.owner = newTile.owner;
-        
-        if(newTile.capturePoints !== undefined)
-          tile.capturePoints = newTile.capturePoints;
-        
-        if(newTile.beingCaptured !== undefined)
-          tile.beingCaptured = newTile.beingCaptured;
-        
-        if(tile.unit !== null) {
-          tile.unit.tile = tile;
-          oldUnits[tile.unit.unitId] = tile.unit;
-        }
-        
-        if(newTile.unit !== undefined) {
-          if(newTile.unit !== null) {
-            newTile.unit.tile = tile;
-            map.updateUnitEntity(newTile.unit, newTile.x, newTile.y);
-          }
-          tile.unit = newTile.unit;
-        }
-      }
-      
-      if(map.showPowerMap || map.showBorders) {
-        map.powerMap = getPowerMap();
-      }
-      
-      map.refresh();
-      $("#spinner").hide();
-    }
-    
     $("#mapCanvas").click(handleMapClick);
   }
   
@@ -361,20 +318,78 @@ var wrap = function() {
     var messageTicker = $("#messageTicker");
     var messageTickerContainer = $("#messageTickerContainer");
     client.skeleton.gameEvents = function(gameId, events) {
+      $("#spinner").hide();
       ticker.showMessages(events);
       if(messageTickerContainer.css("display") == "none") {
         $("#showMessageTicker").addClass("highlight");
       }
       
-      for(var i = 0; i < events.length; ++i) {
-        if(events[i].content.action == "attack") {
-          var attackerTile = map.getTile(events[i].content.from.tileId);
-          var targetTile = map.tileWithUnit(events[i].content.target.unitId);
-          if(targetTile === null)
-            targetTile = oldUnits[events[i].content.target.unitId].tile;
-          map.drawAttackArrow(attackerTile.x, attackerTile.y, targetTile.x, targetTile.y);
+      map.refresh();
+      
+      function processEvents(events, callback, i) {
+        if(i === undefined)
+          i = 0;
+        
+        function nextEvent() {
+          i = i + 1;
+          if(i < events.length) {
+            processEvents(events, callback, i);
+          } else {
+            callback();
+          }
         }
+        
+        var e = events[i].content;
+        console.log(e.action);
+        
+        if(e.action == "move") {
+          map.moveUnit(e.unit.unitId, e.tile.tileId, e.path, nextEvent);
+        } else if(e.action == "wait") {
+          map.waitUnit(e.unit.unitId);
+        } else if(e.action == "attack") {
+          map.attackUnit(e.attacker.unitId, e.target.unitId, e.damage, nextEvent);
+        } else if(e.action == "counterattack") {
+          map.counterattackUnit(e.attacker.unitId, e.target.unitId, e.damage, nextEvent);
+        } else if(e.action == "capture") {
+          map.captureTile(e.unit.unitId, e.tile.tileId, e.left, nextEvent);
+        } else if(e.action == "captured") {
+          map.capturedTile(e.unit.unitId, e.tile.tileId, nextEvent);
+        } else if(e.action == "deploy") {
+          map.deployUnit(e.unit.unitId, nextEvent);
+        } else if(e.action == "undeploy") {
+          map.undeployUnit(e.unit.unitId, nextEvent);
+        } else if(e.action == "load") {
+          map.loadUnit(e.unit.unitId, e.carrier.unitId, nextEvent);
+        } else if(e.action == "unload") {
+          map.unloadUnit(e.unit.unitId, e.carrier.unitId, e.tile.tileId, nextEvent);
+        } else if(e.action == "destroyed") {
+          map.destroyUnit(e.unit.unitId, nextEvent);
+        } else if(e.action == "repair") {
+          map.repairUnit(e.unit.unitId, e.newHealth, nextEvent);
+        } else if(e.action == "build") {
+          map.buildUnit(e.tile.tileId, e.unit, nextEvent);
+        } else if(e.action == "regenerateCapturePoints") {
+          map.regenerateCapturePointsTile(e.tile.tileId, e.newCapturePoints, nextEvent);
+        } else if(e.action == "produceFunds") {
+          map.produceFundsTile(e.tile.tileId, nextEvent);
+        } else if(e.action == "beginTurn") {
+          map.beginTurn(e.player, nextEvent);
+        } else if(e.action == "endTurn") {
+          map.endTurn(e.player, nextEvent);
+        } else if(e.action == "turnTimeout") {
+          map.turnTimeout(e.player, nextEvent);
+        } else if(e.action == "finished") {
+          map.finished(e.winner, nextEvent);
+        } else if(e.action == "surrender") {
+          map.surrender(e.player, nextEvent);
+        } 
       }
+      
+      processEvents(events, function() {
+        /*if(map.showPowerMap || map.showBorders) {
+          map.powerMap = getPowerMap();
+        }*/
+      });
     };
     
     client.stub.gameEvents(gameId, 0, 10, function(response) {
