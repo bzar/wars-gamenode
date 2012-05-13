@@ -644,29 +644,31 @@ AnimatedMap.prototype.loadUnit = function(unitId, carrierId, callback) {
   var carrier = this.getUnitEntity(carrierId);
   carrier.unit.carriedUnits.push(u.unit);
   u.unit.moved = true;
-  u.visible = false;
-  this.canvas.redrawEntity(u);
+  this.canvas.removeEntity(u);
+  this.canvas.redrawEntity(carrier);
   if(callback !== undefined) 
     callback();
 };
 
 AnimatedMap.prototype.unloadUnit = function(unitId, carrierId, tileId, callback) {
-  var u = this.getUnitEntity(unitId);
   var t = this.getTile(tileId);
   var carrier = this.getUnitEntity(carrierId);
+
+  var unit = carrier.unit.carriedUnits.filter(function(unit) { 
+    return unit.unitId === unitId;
+  })[0];
   
   carrier.unit.carriedUnits = carrier.unit.carriedUnits.filter(function(unit) { 
     return unit.unitId !== unitId;
   });
   
-  u.visible = true;
-  u.tx = t.x;
-  u.ty = t.y;
+  var u = new MapUnit(unit, t.x, t.y, this);
   u.x = carrier.x;
   u.y = carrier.y;
+  this.canvas.addEntity(u);
   
   t.unit = u.unit;
-  u.unit.moved = true;
+  unit.moved = true;
   carrier.unit.moved = true;
   
   var dx = t.x * this.tileW - u.x;
