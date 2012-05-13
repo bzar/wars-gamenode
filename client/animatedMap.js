@@ -713,6 +713,7 @@ AnimatedMap.prototype.loadUnit = function(unitId, carrierId, callback) {
   var u = this.getUnitEntity(unitId);
   var carrier = this.getUnitEntity(carrierId);
   carrier.unit.carriedUnits.push(u.unit);
+  u.unit.moved = true;
   u.visible = false;
   this.canvas.redrawEntity(u);
   if(callback !== undefined) 
@@ -733,15 +734,14 @@ AnimatedMap.prototype.unloadUnit = function(unitId, carrierId, tileId, callback)
   u.ty = t.y;
   u.x = carrier.x;
   u.y = carrier.y;
-  console.log(carrier.x + " " + carrier.y);
-  console.log(u);
-  console.log(carrier);
+  
   t.unit = u.unit;
+  u.unit.moved = true;
+  carrier.unit.moved = true;
   
   var dx = t.x * this.tileW - u.x;
   var dy = t.y * this.tileH - u.y;
   
-  console.log(dx + " " + dy);
   this.canvas.addAnimation(new aja.PositionDeltaAnimation(u, dx, dy, 200, callback));
 };
 
