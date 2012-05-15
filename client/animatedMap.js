@@ -550,9 +550,7 @@ AnimatedMap.prototype.waitUnit = function(unitId, callback) {
     callback();
 };
 
-AnimatedMap.prototype.attackUnit = function(unitId, targetId, damage, callback) {
-  console.log("unitId: " + unitId);
-  console.log("targetId: " + targetId);
+AnimatedMap.prototype.showAttack = function(unitId, targetId, damage, callback) {
   if(damage === null)
     return;
   
@@ -595,7 +593,6 @@ AnimatedMap.prototype.attackUnit = function(unitId, targetId, damage, callback) 
       }
       
       target.unit.health -= damage;
-      attacker.unit.moved = true;
       canvas.redrawEntities([target, attacker]);
       
       if(callback !== undefined) 
@@ -605,9 +602,20 @@ AnimatedMap.prototype.attackUnit = function(unitId, targetId, damage, callback) 
     console.log("ERROR: unknown unit id");
   }
 };
+AnimatedMap.prototype.attackUnit = function(unitId, targetId, damage, callback) {
+  var attacker = this.getUnitEntity(unitId);
+  var canvas = this.canvas;
+  this.showAttack(unitId, targetId, damage, function() {
+    attacker.unit.moved = true;
+    canvas.redrawEntity(attacker);
+    
+    if(callback !== undefined) 
+      callback();
+  });
+};
 
 AnimatedMap.prototype.counterattackUnit = function(unitId, targetId, damage, callback) {
-  this.attackUnit(unitId, targetId, damage, callback);
+  this.showAttack(unitId, targetId, damage, callback);
 };
 
 AnimatedMap.prototype.captureTile = function(unitId, tileId, left, callback) {
@@ -685,8 +693,7 @@ AnimatedMap.prototype.unloadUnit = function(unitId, carrierId, tileId, callback)
   
   var dx = t.x * this.tileW - u.x;
   var dy = t.y * this.tileH - u.y;
-  
-  this.canvas.addAnimation(new aja.PositionDeltaAnimation(u, dx, dy, 200, callback));
+  this.canvas.addAnimation(new aja.PositionDeltaAnimation(u, dx, dy, 200, aja.easing.Linear, callback));
 };
 
 AnimatedMap.prototype.destroyUnit = function(unitId, callback) {
@@ -837,7 +844,6 @@ MapUnit.prototype.draw = function(ctx) {
 }
 
 function MapDigit(n, x, y, map) {
-  console.log(n);
   this.coord = map.theme.getHealthNumberCoordinates(n);
   this.x = x;
   this.y = y;
