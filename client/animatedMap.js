@@ -5,6 +5,23 @@ function AnimatedMap(canvasId, scale, theme, rules) {
     this.autoscale = !scale;
     this.scale = scale;
     this.canvas = new aja.Canvas(canvasId);
+    
+    this.canvas.renderOrder = function(a, b) {
+      if(a.z === undefined) {
+        if(b.z === undefined) {
+          return a.y - b.y;
+        } else {
+          return -b.z;
+        }
+      } else {
+        if(b.z === undefined) {
+          return a.z;
+        } else {
+          return a.z - b.z;
+        }
+      }
+    }
+    
     this.tileW = 48;
     this.tileH = 48;
     this.tilemap = null;
@@ -534,6 +551,11 @@ AnimatedMap.prototype.waitUnit = function(unitId, callback) {
 };
 
 AnimatedMap.prototype.attackUnit = function(unitId, targetId, damage, callback) {
+  console.log("unitId: " + unitId);
+  console.log("targetId: " + targetId);
+  if(damage === null)
+    return;
+  
   var attacker = this.getUnitEntity(unitId);
   var target = this.getUnitEntity(targetId);
   
@@ -545,12 +567,33 @@ AnimatedMap.prototype.attackUnit = function(unitId, targetId, damage, callback) 
     vx.x *= this.tileW/2;
     vx.y *= this.tileH/2;
 
+    var damageParts = [];
+    var damageString = "" + damage;
+    var numbers = []
+    for(var i = 0; i < damageString.length; ++i) {
+      var n = parseInt(damageString[i]);
+      var number = new MapDigit(n, vt.x + i*this.tileW/4, vt.y + this.tileH/2, this);
+      numbers.push(number);
+      this.canvas.addEntity(number);
+      var parts = [];
+      parts.push(new aja.PauseAnimation(i*50));
+      parts.push(new aja.PositionDeltaAnimation(number, 0, -2*this.tileH/3, 100, aja.easing.QuadOut));
+      parts.push(new aja.PositionDeltaAnimation(number, 0, 2*this.tileH/3, 100, aja.easing.QuadIn));
+      damageParts.push(new aja.SequentialAnimation(parts));
+    }
+    damageParts.push(new aja.PauseAnimation(500));
+    
     var parts = [];
     parts.push(new aja.PositionDeltaAnimation(attacker, vx.x, vx.y, 100));
+    parts.push(new aja.ParallelAnimation(damageParts));
     parts.push(new aja.PositionDeltaAnimation(attacker, -vx.x, -vx.y, 200));
     
     var canvas = this.canvas;
     this.canvas.addAnimation(new aja.SequentialAnimation(parts, function() {
+      for(var i = 0; i < numbers.length; ++i) {
+        canvas.removeEntity(numbers[i]);
+      }
+      
       target.unit.health -= damage;
       attacker.unit.moved = true;
       canvas.redrawEntities([target, attacker]);
@@ -564,38 +607,7 @@ AnimatedMap.prototype.attackUnit = function(unitId, targetId, damage, callback) 
 };
 
 AnimatedMap.prototype.counterattackUnit = function(unitId, targetId, damage, callback) {
-  if(damage === null) {
-    if(callback !== undefined) 
-      callback();
-    return;
-  }
-  
-  var attacker = this.getUnitEntity(unitId);
-  var target = this.getUnitEntity(targetId);
-  
-  if(attacker !== null && target !== null) {
-    var va = new Vec2D(attacker.x, attacker.y);
-    var vt = new Vec2D(target.x, target.y);
-    
-    var vx = vt.subtract(va).uniti();
-    vx.x *= this.tileW/2;
-    vx.y *= this.tileH/2;
-
-    var parts = [];
-    parts.push(new aja.PositionDeltaAnimation(attacker, vx.x, vx.y, 100));
-    parts.push(new aja.PositionDeltaAnimation(attacker, -vx.x, -vx.y, 200));
-    
-    var canvas = this.canvas;
-    this.canvas.addAnimation(new aja.SequentialAnimation(parts, function() {
-      target.unit.health -= damage;
-      canvas.redrawEntities([target, attacker]);
-      
-      if(callback !== undefined) 
-        callback();
-    }));
-  } else {
-    console.log("ERROR: unknown unit id");
-  }
+  this.attackUnit(unitId, targetId, damage, callback);
 };
 
 AnimatedMap.prototype.captureTile = function(unitId, tileId, left, callback) {
@@ -823,3 +835,22 @@ MapUnit.prototype.draw = function(ctx) {
   }
   ctx.restore();
 }
+
+function MapDigit(n, x, y, map) {
+  console.log(n);
+  this.coord = map.theme.getHealthNumberCoordinates(n);
+  this.x = x;
+  this.y = y;
+  this.z = 1;
+  this.map = map;
+};
+
+MapDigit.prototype.draw = function(ctx) {
+  ctx.drawImage(this.map.sprites,
+                this.coord.x * this.map.tileW, this.coord.y * this.map.tileH, this.map.tileW/2, this.map.tileH/2,
+                this.x, this.y, this.map.tileW/2, this.map.tileH/2);
+};
+
+MapDigit.prototype.rect = function(ctx) {
+  return {x: this.x, y: this.y, w: this.map.tileW/2, h: this.map.tileH/2 };
+};
