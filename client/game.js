@@ -1,7 +1,5 @@
-var gameClient = null;
-var gameMap = null;
-
-var wrap = function() {
+require(["jquery-1.6.2.min.js", "/socket.io/socket.io.js", "/gamenode/gameNodeClient.js", "/gamenode/session.js", 
+        "skeleton", "settings", "base", "image_map", "theme", "map", "d3/d3", "gamelogic.js", "ticker.js"], function() {
   var client = new GameNodeClient(Skeleton);
   gameClient = client;
   var session = null;
@@ -15,6 +13,8 @@ var wrap = function() {
   var oldUnits = {};
   var powerMap = null;
   var finished = false;
+  var gameClient = null;
+  var gameMap = null;
   
   var gameUIState = {
     stateName: "select"
@@ -959,4 +959,4 @@ var wrap = function() {
     }
     return powerMap;
   }
-}();
+});
