@@ -1,4 +1,5 @@
-var wrap = function() {
+require(["jquery-1.6.2.min.js", "/socket.io/socket.io.js", "/gamenode/gameNodeClient.js", "/gamenode/session.js", 
+        "skeleton", "settings"], function() {
   var client = new GameNodeClient();
   var session = new Session(client);
   
@@ -32,5 +33,5 @@ var wrap = function() {
     client.connect(WARS_CLIENT_SETTINGS.gameServer);
     
   });
-}();
+});
 

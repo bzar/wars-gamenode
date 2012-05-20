@@ -599,7 +599,7 @@ GameActions.prototype.startTurn = function(game, callback) {
                 tile.unit = unit;
                 if(unit.unitId == tile.unitId) {
                   // Heal units
-                  if(unit.owner == nextPlayer.playerNumber && tileType.canRepair(unit.unitType().unitClass) && unit.health < 100) {
+                  if(unit.owner == nextPlayer.playerNumber && tileType.canRepair(unit.type) && unit.health < 100) {
                     nextPlayer.score += unit.heal(settings.defaultRepairRate);
                     events.repair(tile, unit, unit.health);
                   }
