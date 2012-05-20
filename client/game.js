@@ -1,6 +1,4 @@
-require(["jquery-1.6.2.min.js", "/socket.io/socket.io.js", "/gamenode/gameNodeClient.js", "/gamenode/session.js", 
-        "skeleton", "settings", "base", "image_map", "theme", "map", "vec2d", "animatedMap", "aja/lib/aja",
-        "d3/d3", "gamelogic.js", "ticker.js"], function() {
+require(["jquery-1.6.2.min.js","gamenode", "base", "image_map", "theme", "map", "aja/lib/aja", "animatedMap", "vec2d", "d3/d3", "gamelogic.js", "ticker.js"], function() {
   var client = new GameNodeClient(Skeleton);
   gameClient = client;
   var session = null;
