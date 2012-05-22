@@ -706,7 +706,6 @@ define(["Theme", "aja/lib/aja", "vec2d"], function(Theme) {
     });
     
     var u = new MapUnit(unit, t.x, t.y, this);
-    this.canvas.addEntity(u);
     
     t.unit = u.unit;
     unit.moved = true;
@@ -715,7 +714,11 @@ define(["Theme", "aja/lib/aja", "vec2d"], function(Theme) {
     
     if(this.animate) {
       this.canvas.addAnimation(new aja.PositionAnimation(u, carrier.x, carrier.y, u.x, u.y, 200 / this.animationSpeed, aja.easing.Linear, callback));
+      u.x = carrier.x;
+      u.y = carrier.y;
     }
+    
+    this.canvas.addEntity(u);
   };
 
   AnimatedMap.prototype.destroyUnit = function(unitId, callback) {
@@ -796,7 +799,25 @@ define(["Theme", "aja/lib/aja", "vec2d"], function(Theme) {
     if(callback !== undefined) 
       callback();
   };
+  
+  AnimatedMap.prototype.showMovementIndicator = function(unitId, x, y) {
+    var u = this.getUnitEntity(unitId);
+    if(u) {
+      this.hideMovementIndicator();
+      this.movementIndicator = new MapUnit(u.unit, x, y, this);
+      this.movementIndicator.effects = [new aja.OpacityEffect];
+      this.movementIndicator.opacity = 0.75;
+      this.canvas.addEntity(this.movementIndicator);
+    }
+  };
 
+  AnimatedMap.prototype.hideMovementIndicator = function() {
+    if(this.movementIndicator) {
+      this.canvas.removeEntity(this.movementIndicator);
+      this.movementIndicator = null;
+    }
+  };
+  
   AnimatedMap.PHASE_SELECT = 1;
   AnimatedMap.PHASE_MOVE = 2;
   AnimatedMap.PHASE_ATTACK = 3;

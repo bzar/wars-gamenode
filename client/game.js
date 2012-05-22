@@ -559,11 +559,13 @@ require(["Theme", "AnimatedMap", "GameLogic", "jquery-1.6.2.min.js","gamenode", 
           gameUIState = {stateName: "select"};
           map.refresh();
         } else {
+          map.showMovementIndicator(map.getTile(gameUIState.x, gameUIState.y).unit.unitId, dx, dy);
           switchToActionState(x, y, dx, dy, gameUIState.movementOptions, canvasPosition)
         }
       } else if(gameUIState.stateName == "action") {
         gameUIState = {stateName: "select"};
         $("#actionMenu").hide();
+        map.hideMovementIndicator();
         map.refresh();
       } else if(gameUIState.stateName == "attack") {
         var tx = tilePosition.x;
@@ -580,6 +582,7 @@ require(["Theme", "AnimatedMap", "GameLogic", "jquery-1.6.2.min.js","gamenode", 
         
         if(!canAttack) {
           gameUIState = {stateName: "select"};
+          map.hideMovementIndicator();
           map.refresh();
         } else {
           var unitId = map.getTile(gameUIState.x, gameUIState.y).unit.unitId;
@@ -587,6 +590,7 @@ require(["Theme", "AnimatedMap", "GameLogic", "jquery-1.6.2.min.js","gamenode", 
           var targetId = map.getTile(tx, ty).unit.unitId;
           $("#spinner").show();
           client.stub.moveAndAttack(gameId, unitId, destination, targetId, function(response) {
+            map.hideMovementIndicator();
             if(!response.success) {
               alert(response.reason);
             }
@@ -595,6 +599,7 @@ require(["Theme", "AnimatedMap", "GameLogic", "jquery-1.6.2.min.js","gamenode", 
         }
       } else if(gameUIState.stateName == "unloadUnit") {
         gameUIState = {stateName: "select"};
+        map.hideMovementIndicator();
         $("#actionMenu").hide();
       } else if(gameUIState.stateName == "unloadTarget") {
         var tx = tilePosition.x;
@@ -611,6 +616,7 @@ require(["Theme", "AnimatedMap", "GameLogic", "jquery-1.6.2.min.js","gamenode", 
         
         if(!canUndeploy) {
           gameUIState = {stateName: "select"};
+          map.hideMovementIndicator();
           map.refresh();
         } else {
           var unitId = map.getTile(gameUIState.x, gameUIState.y).unit.unitId;
@@ -619,6 +625,7 @@ require(["Theme", "AnimatedMap", "GameLogic", "jquery-1.6.2.min.js","gamenode", 
           var unloadDestination = {x: tx, y: ty};
           $("#spinner").show();
           client.stub.moveAndUnload(gameId, unitId, destination, carriedUnitId, unloadDestination, function(response) {
+            map.hideMovementIndicator();
             if(!response.success) {
               alert(response.reason);
             }
@@ -765,6 +772,7 @@ require(["Theme", "AnimatedMap", "GameLogic", "jquery-1.6.2.min.js","gamenode", 
         var destination = {x: gameUIState.dx, y: gameUIState.dy};
         $("#spinner").show();
         client.stub.moveAndWait(gameId, unitId, destination, function(response) {
+          map.hideMovementIndicator();
           if(!response.success) {
             alert(response.reason);
           }
@@ -804,6 +812,7 @@ require(["Theme", "AnimatedMap", "GameLogic", "jquery-1.6.2.min.js","gamenode", 
         var carrierId = map.getTile(gameUIState.dx, gameUIState.dy).unit.unitId;
         $("#spinner").show();
         client.stub.moveAndLoadInto(gameId, unitId, carrierId, function(response) {
+          map.hideMovementIndicator();
           if(!response.success) {
             alert(response.reason);
           }
