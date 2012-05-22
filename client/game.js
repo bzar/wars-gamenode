@@ -1,4 +1,5 @@
-require(["jquery-1.6.2.min.js","gamenode", "base", "image_map", "theme", "map", "aja/lib/aja", "animatedMap", "vec2d", "d3/d3", "gamelogic.js", "ticker.js"], function() {
+require(["Theme", "AnimatedMap", "GameLogic", "jquery-1.6.2.min.js","gamenode", "base", "d3/d3", "ticker.js"], 
+        function(Theme, AnimatedMap, GameLogic) {
   var client = new GameNodeClient(Skeleton);
   gameClient = client;
   var session = null;
@@ -122,7 +123,7 @@ require(["jquery-1.6.2.min.js","gamenode", "base", "image_map", "theme", "map", 
       e.preventDefault();
       if(window.confirm("Are you sure you want to leave the game?")){
         $("#spinner").show();
-        client.stub.leaveGame(gameId, function(response) {
+        client.stub.leaveGame(gameId, inTurnNumber, function(response) {
           if(!response.success) {
             alert("Could not leave game! " + response.reason);
             $("#spinner").hide();
@@ -893,7 +894,7 @@ require(["jquery-1.6.2.min.js","gamenode", "base", "image_map", "theme", "map", 
       var unitImage = $('<div></div>');
       unitImage.css("background-image", "url('" + theme.getSpriteSheetUrl() + "')");
       unitImage.addClass("sprite");
-      var pos = SPRITE_SHEET_MAP[SPRITE_UNIT][unitType.id][inTurnNumber];
+      var pos = theme.getUnitCoordinates(unitType.id, inTurnNumber);
       var unitImageX = pos.x * map.tileW;
       var unitImageY = pos.y * map.tileH;
       unitImage.css("background-position", -unitImageX + "px " + -unitImageY + "px");

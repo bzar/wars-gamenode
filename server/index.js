@@ -28,13 +28,13 @@ if(configuration.enableFileServer) {
     ["jquery-1.6.2.min.js", "require.js", "gamenode.js", "skeleton.js", "base.js", "wars.css",
     "login.html", "login.js", "register.html", "register.js", 
     "home.html", "home.js", "myMaps.html", "myMaps.js",
-    "mapEditor.html", "mapEditor.js", "map.js", "image_map.js",
+    "mapEditor.html", "mapEditor.js", "Map.js", "image_map.js",
     "createGame.html", "createGame.js", "pregame.html", "pregame.js",
-    "join.html", "join.js", "game.html", "game.js", "gamelogic.js",
+    "join.html", "join.js", "game.html", "game.js", "GameLogic.js",
     "profile.html", "profile.js", "spectate.html", "spectate.js",
-    "ticker.js", "theme.js", "gameStatistics.html", "gameStatistics.js",
+    "ticker.js", "Theme.js", "gameStatistics.html", "gameStatistics.js",
     "manual.html", "manual.js", "info.html", "info.js", "settings.js",
-    "animatedMap.js", "vec2d.js"
+    "AnimatedMap.js", "vec2d.js"
     ], 
     { 
       gamenode: "../lib/gamenode/web", 

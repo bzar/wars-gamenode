@@ -7,6 +7,12 @@ if(typeof(exports) !== "undefined") {
   exports.GameLogic = GameLogic;
 }
 
+if(typeof(define) !== "undefined") {
+  define(function() {
+    return GameLogic;
+  });
+}
+
 GameLogic.prototype.getNeighborTiles = function(mapArray, x, y) {
     var neighbors = [];
     if(x > 0) {
