@@ -306,6 +306,14 @@ require(["Theme", "AnimatedMap", "GameLogic", "jquery-1.6.2.min.js","gamenode", 
             map.canvas.resize(width, height);
             map.refresh();
             map.initUnitEntities();
+            if(response.profile.settings.animationSpeed === undefined) {
+              map.animationSpeed = 1.0;
+              map.animate = true;
+            } else if(response.profile.settings.animationSpeed > 0) {
+              map.animationSpeed = parseFloat(response.profile.settings.animationSpeed);
+            } else {
+              map.animate = false;
+            }
             $("#spinner").hide();
           });
         });
@@ -834,7 +842,7 @@ require(["Theme", "AnimatedMap", "GameLogic", "jquery-1.6.2.min.js","gamenode", 
       var item = $('<span></span>');
       item.css("background-image", "url('" + theme.getSpriteSheetUrl() + "')");
       item.addClass("sprite");
-      var pos = SPRITE_SHEET_MAP[SPRITE_UNIT][unit.type][inTurnNumber];
+      var pos = theme.getUnitCoordinates(unit.type, inTurnNumber);
       var unitImageX = pos.x * map.tileW;
       var unitImageY = pos.y * map.tileH;
       item.css("background-position", -unitImageX + "px " + -unitImageY + "px")

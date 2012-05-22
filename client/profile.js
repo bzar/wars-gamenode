@@ -16,9 +16,11 @@ require(["jquery-1.6.2.min.js","gamenode", "base"], function() {
         alert("Unable to get profile! " + response.reason);
       }
       var profile = response.profile;
+      console.log(profile.settings)
       $("#username").val(profile.username);
       $("#email").val(profile.email);
       $("#theme").val(profile.settings.gameTheme);
+      $("#animationSpeed").val(profile.settings.animationSpeed);
       $("#emailNotifications").prop("checked", profile.settings.emailNotifications);
     });
     
@@ -27,12 +29,13 @@ require(["jquery-1.6.2.min.js","gamenode", "base"], function() {
       var username = $("#username").val();
       var email = $("#email").val();
       var gameTheme = $("#theme").val();
+      var animationSpeed = $("#animationSpeed").val();
       var emailNotifications = $("#emailNotifications").prop("checked");
       
       var password1 = $("#password").val();
       var password2 = $("#password2").val(); 
       var password = password1 != password2 || password1 == "" ? null : password1;
-      client.stub.saveProfile(username, password, email, gameTheme, emailNotifications, function(response){
+      client.stub.saveProfile(username, password, email, gameTheme, animationSpeed, emailNotifications, function(response){
         if(!response.success) {
           alert("Unable to get profile! " + response.reason);
         } else {

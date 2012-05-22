@@ -319,8 +319,8 @@ Skeleton.prototype.myMaps = function() {
 
 // PROFILE MANAGEMENT
 
-Skeleton.prototype.saveProfile = function(username, password, email, theme, defaultEmailSetting) {
-  if(!requireArgs([username, password, email, theme, defaultEmailSetting])) return {success: false, reason: "Missing method arguments!"};
+Skeleton.prototype.saveProfile = function(username, password, email, theme, animationSpeed, defaultEmailSetting) {
+  if(!requireArgs([username, password, email, theme, animationSpeed, defaultEmailSetting])) return {success: false, reason: "Missing method arguments!"};
   var timer = new utils.Timer("Skeleton.saveProfile");
   if(this.sessionId === null)
     return {success: false, reason: "Not logged in"}
@@ -340,6 +340,7 @@ Skeleton.prototype.saveProfile = function(username, password, email, theme, defa
       result.user.email = email;
       result.user.settings.emailNotifications = defaultEmailSetting;
       result.user.settings.gameTheme = theme;
+      result.user.settings.animationSpeed = animationSpeed;
       this_.server.database.updateUser(result.user, function(success) {
         if(result.success) {
           this_.client.sendResponse(requestId, {success: true, profile: result.user});

@@ -519,8 +519,26 @@ define(["Theme", "aja/lib/aja", "vec2d"], function(Theme) {
     var u = this.getUnitEntity(unitId);
     var prevTile = this.getTile(u.tx, u.ty);
     var t = this.getTile(tileId);
+    
+    var that = this;
+    function doMove() {
+      prevTile.unit = null;
+      if(t.unit === null)
+        t.unit = u.unit;
+      
+      that.canvas.eraseEntity(u);
+      u.tx = t.x;
+      u.ty = t.y;
+      u.x = t.x * that.tileW;
+      u.y = t.y * that.tileH;
+      that.canvas.drawEntity(u);
+      
+      if(callback !== undefined) 
+        callback();
+    }
+    
     if(u !== null) {
-      if(path.length > 1) {
+      if(path.length > 1 && this.animate) {
         var pathSegments = [];
         for(var i = 1; i < path.length; ++i) {
           var prev = path[i - 1];
@@ -528,15 +546,10 @@ define(["Theme", "aja/lib/aja", "vec2d"], function(Theme) {
           pathSegments.push(new aja.PositionAnimation(u, prev.x * this.tileW, prev.y * this.tileH, next.x * this.tileW, next.y * this.tileH, 200 / this.animationSpeed));
         }
         this.canvas.addAnimation(new aja.SequentialAnimation(pathSegments, function() {
-          prevTile.unit = null;
-          if(t.unit === null)
-            t.unit = u.unit;
-          if(callback !== undefined) 
-            callback();
+          doMove();
         }));
       } else {
-        if(callback !== undefined) 
-          callback();
+        doMove();
       }
     } else {
       console.log("ERROR: unknown tile id: " + tileId);
@@ -558,47 +571,56 @@ define(["Theme", "aja/lib/aja", "vec2d"], function(Theme) {
     var attacker = this.getUnitEntity(unitId);
     var target = this.getUnitEntity(targetId);
     
+    var canvas = this.canvas;
+    
+    function doAttack() {
+      target.unit.health -= damage;
+      canvas.redrawEntities([target, attacker]);
+      
+      if(callback !== undefined) 
+        callback();
+    }
+    
     if(attacker !== null && target !== null) {
-      var va = new Vec2D(attacker.x, attacker.y);
-      var vt = new Vec2D(target.x, target.y);
-      
-      var vx = vt.subtract(va).uniti();
-      vx.x *= this.tileW/2;
-      vx.y *= this.tileH/2;
+      if(this.animate) {
+        var va = new Vec2D(attacker.x, attacker.y);
+        var vt = new Vec2D(target.x, target.y);
+        
+        var vx = vt.subtract(va).uniti();
+        vx.x *= this.tileW/2;
+        vx.y *= this.tileH/2;
 
-      var damageParts = [];
-      var damageString = "" + damage;
-      var numbers = []
-      for(var i = 0; i < damageString.length; ++i) {
-        var n = parseInt(damageString[i]);
-        var number = new MapDigit(n, vt.x + i*this.tileW/4, vt.y + this.tileH/2, this);
-        numbers.push(number);
-        this.canvas.addEntity(number);
-        var parts = [];
-        parts.push(new aja.PauseAnimation(i*50 / this.animationSpeed));
-        parts.push(new aja.PositionDeltaAnimation(number, 0, -2*this.tileH/3, 100 / this.animationSpeed, aja.easing.QuadOut));
-        parts.push(new aja.PositionDeltaAnimation(number, 0, 2*this.tileH/3, 100 / this.animationSpeed, aja.easing.QuadIn));
-        damageParts.push(new aja.SequentialAnimation(parts));
-      }
-      damageParts.push(new aja.PauseAnimation(500 / this.animationSpeed));
-      
-      var parts = [];
-      parts.push(new aja.PositionDeltaAnimation(attacker, vx.x, vx.y, 100 / this.animationSpeed));
-      parts.push(new aja.ParallelAnimation(damageParts));
-      parts.push(new aja.PositionDeltaAnimation(attacker, -vx.x, -vx.y, 200 / this.animationSpeed));
-      
-      var canvas = this.canvas;
-      this.canvas.addAnimation(new aja.SequentialAnimation(parts, function() {
-        for(var i = 0; i < numbers.length; ++i) {
-          canvas.removeEntity(numbers[i]);
+        var damageParts = [];
+        var damageString = "" + damage;
+        var numbers = []
+        for(var i = 0; i < damageString.length; ++i) {
+          var n = parseInt(damageString[i]);
+          var number = new MapDigit(n, vt.x + i*this.tileW/4, vt.y + this.tileH/2, this);
+          numbers.push(number);
+          this.canvas.addEntity(number);
+          var parts = [];
+          parts.push(new aja.PauseAnimation(i*50 / this.animationSpeed));
+          parts.push(new aja.PositionDeltaAnimation(number, 0, -2*this.tileH/3, 100 / this.animationSpeed, aja.easing.QuadOut));
+          parts.push(new aja.PositionDeltaAnimation(number, 0, 2*this.tileH/3, 100 / this.animationSpeed, aja.easing.QuadIn));
+          damageParts.push(new aja.SequentialAnimation(parts));
         }
+        damageParts.push(new aja.PauseAnimation(500 / this.animationSpeed));
         
-        target.unit.health -= damage;
-        canvas.redrawEntities([target, attacker]);
+        var parts = [];
+        parts.push(new aja.PositionDeltaAnimation(attacker, vx.x, vx.y, 100 / this.animationSpeed));
+        parts.push(new aja.ParallelAnimation(damageParts));
+        parts.push(new aja.PositionDeltaAnimation(attacker, -vx.x, -vx.y, 200 / this.animationSpeed));
         
-        if(callback !== undefined) 
-          callback();
-      }));
+        this.canvas.addAnimation(new aja.SequentialAnimation(parts, function() {
+          for(var i = 0; i < numbers.length; ++i) {
+            canvas.removeEntity(numbers[i]);
+          }
+          
+          doAttack();
+        }));
+      } else {
+        doAttack();
+      }
     } else {
       console.log("ERROR: unknown unit id");
     }
@@ -684,17 +706,16 @@ define(["Theme", "aja/lib/aja", "vec2d"], function(Theme) {
     });
     
     var u = new MapUnit(unit, t.x, t.y, this);
-    u.x = carrier.x;
-    u.y = carrier.y;
     this.canvas.addEntity(u);
     
     t.unit = u.unit;
     unit.moved = true;
     carrier.unit.moved = true;
     
-    var dx = t.x * this.tileW - u.x;
-    var dy = t.y * this.tileH - u.y;
-    this.canvas.addAnimation(new aja.PositionDeltaAnimation(u, dx, dy, 200 / this.animationSpeed, aja.easing.Linear, callback));
+    
+    if(this.animate) {
+      this.canvas.addAnimation(new aja.PositionAnimation(u, carrier.x, carrier.y, u.x, u.y, 200 / this.animationSpeed, aja.easing.Linear, callback));
+    }
   };
 
   AnimatedMap.prototype.destroyUnit = function(unitId, callback) {
