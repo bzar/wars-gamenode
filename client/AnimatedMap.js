@@ -707,11 +707,32 @@ define(["Theme", "aja/lib/aja", "vec2d", "pixastic.hsl"], function(Theme) {
 
   AnimatedMap.prototype.deployUnit = function(unitId, callback) {
     var u = this.getUnitEntity(unitId);
-    u.unit.deployed = true;
-    u.unit.moved = true;
-    this.canvas.redrawEntity(u);
-    if(callback !== undefined) 
-      callback();
+    var canvas = this.canvas;
+    
+    function doDeploy() {
+      u.unit.deployed = true;
+      u.unit.moved = true;
+      canvas.redrawEntity(u);
+      if(callback !== undefined) 
+        callback();
+    }
+    
+    if(this.animate) {
+      var rumble = new aja.SequentialAnimation([
+        new aja.PositionDeltaAnimation(u, 0, -5, 20 / this.animationSpeed, aja.easing.SineOut),
+        new aja.PositionDeltaAnimation(u, 0, 5, 20 / this.animationSpeed, aja.easing.SineIn)
+      ]);
+      rumble.loops = 3;
+      
+      this.canvas.addAnimation(new aja.SequentialAnimation([
+        new aja.PositionDeltaAnimation(u, 0, -this.tileH/2, 100 / this.animationSpeed, aja.easing.QuadOut),
+        new aja.PauseAnimation(100),
+        new aja.PositionDeltaAnimation(u, 0, this.tileH/2, 100 / this.animationSpeed, aja.easing.QuadIn),
+        rumble
+      ], doDeploy));
+    } else {
+      doDeploy();
+    }
   };
 
   AnimatedMap.prototype.undeployUnit = function(unitId, callback) {
