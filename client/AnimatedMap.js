@@ -737,15 +737,21 @@ define(["Theme", "aja/lib/aja", "vec2d", "pixastic.hsl"], function(Theme) {
     var u = this.getUnitEntity(unitId);
     var t = this.getTile(u.tx, u.ty);
     
-    u.effects = [new aja.OpacityEffect];
-    u.opacity = 1.0;
     var canvas = this.canvas;
-    this.canvas.addAnimation(new aja.NumberAnimation(u, {opacity: {from: 1.0, to: 0.0}}, 500 / this.animationSpeed, aja.easing.SineIn, function() {
+    function doDestroy() {
       canvas.removeEntity(u);
       t.unit = null;
       if(callback !== undefined) 
-        callback();
-    }));
+        callback();      
+    }
+    
+    if(this.animate) {
+      u.effects = [new aja.OpacityEffect];
+      u.opacity = 1.0;
+      this.canvas.addAnimation(new aja.NumberAnimation(u, {opacity: {from: 1.0, to: 0.0}}, 500 / this.animationSpeed, aja.easing.SineIn, doDestroy));
+    } else {
+      doDestroy();
+    }
   };
 
   AnimatedMap.prototype.repairUnit = function(unitId, newHealth, callback) {
@@ -766,11 +772,17 @@ define(["Theme", "aja/lib/aja", "vec2d", "pixastic.hsl"], function(Theme) {
     unit.carriedUnits = [];
     
     var u = new MapUnit(unit, t.x, t.y, this);
-    u.effects = [new aja.OpacityEffect];
-    u.opacity = 0.0;
-    
-    this.canvas.addAnimation(new aja.NumberAnimation(u, {opacity: {from: 0.0, to: 1.0}}, 500 / this.animationSpeed, aja.easing.SineIn, callback));
-    this.canvas.addEntity(u);
+    if(this.animate) {
+      u.effects = [new aja.OpacityEffect];
+      u.opacity = 0.0;
+      
+      this.canvas.addAnimation(new aja.NumberAnimation(u, {opacity: {from: 0.0, to: 1.0}}, 500 / this.animationSpeed, aja.easing.SineIn, callback));
+      this.canvas.addEntity(u);
+    } else {
+      this.canvas.addEntity(u);
+      callback();
+    }
+
   };
   
   AnimatedMap.prototype.regenerateCapturePointsTile = function(tileId, newCapturePoints, callback) {
