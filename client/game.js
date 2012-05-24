@@ -783,6 +783,7 @@ require(["Theme", "AnimatedMap", "GameLogic", "jquery-1.6.2.min.js","gamenode", 
         var destination = {x: gameUIState.dx, y: gameUIState.dy};
         $("#spinner").show();
         client.stub.moveAndCapture(gameId, unitId, destination, function(response) {
+          map.hideMovementIndicator();
           if(!response.success) {
             alert(response.reason);
           }
@@ -793,6 +794,7 @@ require(["Theme", "AnimatedMap", "GameLogic", "jquery-1.6.2.min.js","gamenode", 
         var destination = {x: gameUIState.dx, y: gameUIState.dy};
         $("#spinner").show();
         client.stub.moveAndDeploy(gameId, unitId, destination, function(response) {
+          map.hideMovementIndicator();
           if(!response.success) {
             alert(response.reason);
           }

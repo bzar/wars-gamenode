@@ -656,24 +656,53 @@ define(["Theme", "aja/lib/aja", "vec2d", "pixastic.hsl"], function(Theme) {
   AnimatedMap.prototype.captureTile = function(unitId, tileId, left, callback) {
     var u = this.getUnitEntity(unitId);
     var t = this.getTile(tileId);
-    t.capturePoints = left;
-    t.beingCaptured = true;
-    u.unit.moved = true;
-    this.refresh();
-    if(callback !== undefined) 
-      callback();
+    var that = this;
+    
+    function doCapture() {
+      t.capturePoints = left;
+      t.beingCaptured = true;
+      u.unit.moved = true;
+      that.refresh();
+      if(callback !== undefined) 
+        callback();
+    }
+    
+    if(this.animate) {
+      this.canvas.addAnimation(new aja.SequentialAnimation([
+        new aja.PositionDeltaAnimation(u, 0, -this.tileH/2, 100 / this.animationSpeed, aja.easing.QuadOut),
+        new aja.PositionDeltaAnimation(u, 0, this.tileH/2, 100 / this.animationSpeed, aja.easing.QuadIn)
+      ], doCapture));
+    } else {
+      doCapture();
+    }
   };
 
   AnimatedMap.prototype.capturedTile = function(unitId, tileId, callback) {
     var u = this.getUnitEntity(unitId);
     var t = this.getTile(tileId);
-    t.capturePoints = 1;
-    t.beingCaptured = false;
-    t.owner = u.unit.owner;
-    u.unit.moved = true;
-    this.refresh();
-    if(callback !== undefined) 
-      callback();
+    
+    var that = this;
+    
+    function doCaptured() {    
+      t.capturePoints = 1;
+      t.beingCaptured = false;
+      t.owner = u.unit.owner;
+      u.unit.moved = true;
+      that.refresh();
+      if(callback !== undefined) 
+        callback();
+    }
+    
+    if(this.animate) {
+      var anim = new aja.SequentialAnimation([
+        new aja.PositionDeltaAnimation(u, 0, -this.tileH/2, 100 / this.animationSpeed, aja.easing.QuadOut),
+        new aja.PositionDeltaAnimation(u, 0, this.tileH/2, 100 / this.animationSpeed, aja.easing.QuadIn)
+      ], doCaptured);
+      anim.loops = 3;
+      this.canvas.addAnimation(anim);
+    } else {
+      doCaptured();
+    }
   };
 
   AnimatedMap.prototype.deployUnit = function(unitId, callback) {
