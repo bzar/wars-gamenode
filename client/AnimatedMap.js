@@ -1,4 +1,4 @@
-define(["Theme", "aja/lib/aja", "vec2d"], function(Theme) {
+define(["Theme", "aja/lib/aja", "vec2d", "pixastic.hsl"], function(Theme) {
   function AnimatedMap(canvasId, scale, theme, rules) {
       this.theme = theme ? theme : new Theme("pixel");
       this.autoscale = !scale;
@@ -82,8 +82,20 @@ define(["Theme", "aja/lib/aja", "vec2d"], function(Theme) {
   };
   AnimatedMap.prototype.doPreload = function(callback) {
       this.sprites = new Image();
+      this.spritesMoved = new Image();
+      var sprites = this.sprites;
+      var spritesMoved = this.spritesMoved;
       this.sprites.src = this.theme.getSpriteSheetUrl();
-      this.sprites.onload = callback;
+      var that = this ;
+      sprites.onload = function() {
+        spritesMoved.src = sprites.src;
+        spritesMoved.onload = function() {
+          Pixastic.process(spritesMoved, "hsl", {hue:0,saturation:-30,lightness:-30}, function(img) {
+            that.spritesMoved = img;
+            callback();
+          });
+        }
+      }
   };
 
   AnimatedMap.prototype.getMapSize = function() {
@@ -724,10 +736,16 @@ define(["Theme", "aja/lib/aja", "vec2d"], function(Theme) {
   AnimatedMap.prototype.destroyUnit = function(unitId, callback) {
     var u = this.getUnitEntity(unitId);
     var t = this.getTile(u.tx, u.ty);
-    this.canvas.removeEntity(u);
-    t.unit = null;
-    if(callback !== undefined) 
-      callback();
+    
+    u.effects = [new aja.OpacityEffect];
+    u.opacity = 1.0;
+    var canvas = this.canvas;
+    this.canvas.addAnimation(new aja.NumberAnimation(u, {opacity: {from: 1.0, to: 0.0}}, 500 / this.animationSpeed, aja.easing.SineIn, function() {
+      canvas.removeEntity(u);
+      t.unit = null;
+      if(callback !== undefined) 
+        callback();
+    }));
   };
 
   AnimatedMap.prototype.repairUnit = function(unitId, newHealth, callback) {
@@ -748,12 +766,13 @@ define(["Theme", "aja/lib/aja", "vec2d"], function(Theme) {
     unit.carriedUnits = [];
     
     var u = new MapUnit(unit, t.x, t.y, this);
+    u.effects = [new aja.OpacityEffect];
+    u.opacity = 0.0;
+    
+    this.canvas.addAnimation(new aja.NumberAnimation(u, {opacity: {from: 0.0, to: 1.0}}, 500 / this.animationSpeed, aja.easing.SineIn, callback));
     this.canvas.addEntity(u);
-
-    if(callback !== undefined) 
-      callback();
   };
-
+  
   AnimatedMap.prototype.regenerateCapturePointsTile = function(tileId, newCapturePoints, callback) {
     var t = this.getTile(tileId);
     t.capturePoints = newCapturePoints;
@@ -847,16 +866,14 @@ define(["Theme", "aja/lib/aja", "vec2d"], function(Theme) {
       ctx.strokeRect(this.x, this.y - this.map.unitOffsetY, this.map.tileW-1, this.map.tileH-1);
     }
     
-    if(this.unit.moved) ctx.globalAlpha = 0.5;
-
+    var sprites = this.unit.moved ? this.map.spritesMoved : this.map.sprites;
     var coord = this.unit ? this.map.theme.getUnitCoordinates(this.unit.type, this.unit.owner) : null;
     if(coord) {
-      ctx.drawImage(this.map.sprites,
+      ctx.drawImage(sprites,
                     coord.x*this.map.tileW, coord.y*this.map.tileH, this.map.tileW, this.map.tileH,
                     this.x, this.y, this.map.tileW, this.map.tileH);
     } 
 
-    ctx.globalAlpha = 1.0;
     var en = Math.ceil(parseInt(this.unit.health)/10);
     if(en<10 && en >= 0) {
       var numCoord = this.map.theme.getHealthNumberCoordinates(en);
