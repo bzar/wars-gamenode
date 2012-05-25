@@ -20,9 +20,6 @@ Skeleton.prototype.gameStarted = function(gameId) {
 Skeleton.prototype.gameFinished = function(gameId) {
 }
 
-Skeleton.prototype.gameUpdate = function(gameId, tileChanges) {
-}
-
 Skeleton.prototype.gameTurnChange = function(gameId, newTurn, newRound, turnRemaining) {
 }
 

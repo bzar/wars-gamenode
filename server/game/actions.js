@@ -138,7 +138,7 @@ GameActions.prototype.moveAndAttack = function(gameId, userId, unitId, destinati
               database.updateTiles([sourceTile, destinationTile, targetTile], function(result) {
                 database.updatePlayers([player, targetPlayer], function(result) {
                   database.createGameEvents(events.objects, function(result) {
-                    callback({success: true, changedTiles: [sourceTile, destinationTile, targetTile], events: events.objects});
+                    callback({success: true, events: events.objects});
                   });
                 });
               });
@@ -171,7 +171,7 @@ GameActions.prototype.moveAndWait = function(gameId, userId, unitId, destination
     
     database.updateUnit(unit, function(result) {
       database.updateTiles([sourceTile, destinationTile], function(result) {
-        callback({success: true, changedTiles: [sourceTile, destinationTile], events: events.objects});
+        callback({success: true, events: events.objects});
       });
     });
   });
@@ -212,7 +212,7 @@ GameActions.prototype.moveAndCapture = function(gameId, userId, unitId, destinat
     database.updateUnit(unit, function(result) {
       database.updateTiles([sourceTile, destinationTile], function(result) {
         database.createGameEvents(events.objects, function(result) {
-          callback({success: true, changedTiles: [sourceTile, destinationTile], events: events.objects});
+          callback({success: true, events: events.objects});
         });
       });
     });
@@ -251,7 +251,7 @@ GameActions.prototype.moveAndDeploy = function(gameId, userId, unitId, destinati
     database.updateUnit(unit, function(result) {
       database.updateTiles([sourceTile, destinationTile], function(result) {
         database.createGameEvents(events.objects, function(result) {
-          callback({success: true, changedTiles: [sourceTile, destinationTile], events: events.objects});
+          callback({success: true, events: events.objects});
         });
       });
     });
@@ -282,7 +282,7 @@ GameActions.prototype.undeploy = function(gameId, userId, unitId, callback) {
     database.updateUnit(unit, function(result) {
       database.updateTiles([sourceTile], function(result) {
         database.createGameEvents(events.objects, function(result) {
-          callback({success: true, changedTiles: [sourceTile], events: events.objects});
+          callback({success: true, events: events.objects});
         });
       });
     });
@@ -324,7 +324,7 @@ GameActions.prototype.moveAndLoadInto = function(gameId, userId, unitId, carrier
       database.updateUnits([unit, carrier], function(result) {
         database.updateTiles([sourceTile], function(result) {
           database.createGameEvents(events.objects, function(result) {
-            callback({success: true, changedTiles: [sourceTile, carrierTile], events: events.objects});
+            callback({success: true, events: events.objects});
           });
         });
       });
@@ -376,7 +376,7 @@ GameActions.prototype.moveAndUnload = function(gameId, userId, carrierId, destin
       database.updateUnits([unit, carriedUnit], function(result) {
         database.updateTiles([sourceTile, destinationTile, unloadTile], function(result) {
           database.createGameEvents(events.objects, function(result) {
-            callback({success: true, changedTiles: [sourceTile, destinationTile, unloadTile], events: events.objects});
+            callback({success: true, events: events.objects});
           });
         });
       });
@@ -437,7 +437,7 @@ GameActions.prototype.build = function(gameId, userId, unitTypeId, destination, 
         
             database.updateTile(tile, function(result) {
               database.createGameEvents(events.objects, function(result) {
-                callback({success: true, changedTiles: [tile], events: events.objects});
+                callback({success: true, events: events.objects});
               });
             });
           });
@@ -464,14 +464,12 @@ GameActions.prototype.endTurn = function(game, userId, callback) {
         var tiles = result.tiles;
         database.playerUnits(game.gameId, previousPlayer.playerNumber, function(result) {
           var previousPlayerUnits = result.units;
-          var changedTiles = [];
           for(var i = 0; i < previousPlayerUnits.length; ++i) {
             var unit = previousPlayerUnits[i];
             for(var j = 0; j < tiles.length; ++j) {
               var tile = tiles[j];
               if(tile.tileId == unit.tileId) {
                 tile.unit = unit;
-                changedTiles.push(tile);
               }
             }
             if(!unit.moved)
@@ -483,7 +481,7 @@ GameActions.prototype.endTurn = function(game, userId, callback) {
               callback({success: false, reason: result.reason});
             } else {
               database.createGameEvents(events.objects, function(result) {
-                callback({success: true, changedTiles: changedTiles, events: events.objects});
+                callback({success: true, events: events.objects});
               });
             }
           });
@@ -569,7 +567,7 @@ GameActions.prototype.startTurn = function(game, callback) {
           events.gameFinished(nextPlayer);
           database.updateGame(game, function(result) {
             database.createGameEvents(events.objects, function(result) {
-              callback({success: true, finished: true, changedTiles: [], events: events.objects});
+              callback({success: true, finished: true, events: events.objects});
             });
           });
         } else {
@@ -636,7 +634,7 @@ GameActions.prototype.startTurn = function(game, callback) {
                       database.user(nextPlayer.userId, function(result) {
                         email.sendTurnNotification(game, nextPlayer, result.user);
                         callback({success: true, finished: false, inTurnNumber: game.inTurnNumber, roundNumber: game.roundNumber,
-                                  changedTiles: nextPlayerTiles, events: events.objects, untilNextTurn: untilNextTurn});
+                                  events: events.objects, untilNextTurn: untilNextTurn});
                       });
                     });
                   });
@@ -664,8 +662,8 @@ GameActions.prototype.nextTurn = function(gameId, userId, callback) {
           callback({success: false, reason: result.reason}); return;
         }
         callback({success: true, finished: result.finished, 
-                  inTurnNumber: result.inTurnNumber, changedTiles: result.changedTiles, 
-                  events: result.events, untilNextTurn: result.untilNextTurn});
+                  inTurnNumber: result.inTurnNumber, events: result.events, 
+                  untilNextTurn: result.untilNextTurn});
       });      
     } else {
       var game = result.game;
@@ -673,17 +671,15 @@ GameActions.prototype.nextTurn = function(gameId, userId, callback) {
         if(!result.success) {
           callback({success: false, reason: result.reason}); return;
         } 
-        var firstChangedTiles = result.changedTiles;
         var firstEvents = result.events;
         this_.startTurn(game, function(result) {
           if(!result.success) {
             callback({success: false, reason: result.reason}); return;
           } 
           
-          var changedTiles = firstChangedTiles.concat(result.changedTiles);
           var events = firstEvents.concat(result.events);
           callback({success: true, finished: result.finished, inTurnNumber: result.inTurnNumber, roundNumber: game.roundNumber, 
-                    changedTiles: changedTiles, events: events, untilNextTurn: result.untilNextTurn});
+                    events: events, untilNextTurn: result.untilNextTurn});
         });
       });
     }
@@ -720,10 +716,9 @@ GameActions.prototype.surrender = function(gameId, userId, callback) {
           var inTurnNumber = result.inTurnNumber;
           var untilNextTurn = result.untilNextTurn;
           this_.gameInformation.tilesWithUnits(gameId, function(result) {
-            var changedTiles = result.tiles;
             database.createGameEvents(events.objects, function(result) {
               callback({success: true, finished: finished, inTurnNumber: inTurnNumber, 
-                       changedTiles: changedTiles, events: events.objects, untilNextTurn: untilNextTurn});
+                       events: events.objects, untilNextTurn: untilNextTurn});
             });
           });
         });

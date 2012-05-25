@@ -21,13 +21,6 @@ Messenger.prototype.sendGameEvents = function(gameId, events) {
   }, "game-" + gameId);
 }
 
-Messenger.prototype.sendGameUpdate = function(gameId, changedTiles) {
-  this.subscriptions.forSubscribers(function(sub) {
-    if(sub.client.stub.gameUpdate)
-      sub.client.stub.gameUpdate(gameId, changedTiles);
-  }, "game-" + gameId);
-}
-
 Messenger.prototype.sendPlayerJoined = function(gameId, playerNumber, username, userId) {
   this.subscriptions.forSubscribers(function(sub) {
     var isMe = userId == sub.session.userId;

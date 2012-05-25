@@ -641,7 +641,6 @@ Skeleton.prototype.moveAndAttack = function(gameId, unitId, destination, targetI
     var timer = new utils.Timer("Skeleton.moveAndAttack");
     this_.server.gameActions.moveAndAttack(gameId, userId, unitId, destination, targetId, function(result) {
       if(result.success) {
-        this_.server.messenger.sendGameUpdate(gameId, result.changedTiles);
         this_.server.messenger.sendGameEvents(gameId, result.events);
         this_.client.sendResponse(requestId, {success: true});
         timer.end();
@@ -667,7 +666,6 @@ Skeleton.prototype.moveAndWait = function(gameId, unitId, destination) {
     var timer = new utils.Timer("Skeleton.moveAndWait");
     this_.server.gameActions.moveAndWait(gameId, userId, unitId, destination, function(result) {
       if(result.success) {
-        this_.server.messenger.sendGameUpdate(gameId, result.changedTiles);
         this_.server.messenger.sendGameEvents(gameId, result.events);
         this_.client.sendResponse(requestId, {success: true});
         timer.end();
@@ -693,7 +691,6 @@ Skeleton.prototype.moveAndCapture = function(gameId, unitId, destination) {
     var timer = new utils.Timer("Skeleton.moveAndCapture");
     this_.server.gameActions.moveAndCapture(gameId, userId, unitId, destination, function(result) {
       if(result.success) {
-        this_.server.messenger.sendGameUpdate(gameId, result.changedTiles);
         this_.server.messenger.sendGameEvents(gameId, result.events);
         this_.client.sendResponse(requestId, {success: true});
         timer.end();
@@ -719,7 +716,6 @@ Skeleton.prototype.moveAndDeploy = function(gameId, unitId, destination) {
     var timer = new utils.Timer("Skeleton.moveAndDeploy");
     this_.server.gameActions.moveAndDeploy(gameId, userId, unitId, destination, function(result) {
       if(result.success) {
-        this_.server.messenger.sendGameUpdate(gameId, result.changedTiles);
         this_.server.messenger.sendGameEvents(gameId, result.events);
         this_.client.sendResponse(requestId, {success: true});
         timer.end();
@@ -745,7 +741,6 @@ Skeleton.prototype.undeploy = function(gameId, unitId) {
     var timer = new utils.Timer("Skeleton.undeploy");
     this_.server.gameActions.undeploy(gameId, userId, unitId, function(result) {
       if(result.success) {
-        this_.server.messenger.sendGameUpdate(gameId, result.changedTiles);
         this_.server.messenger.sendGameEvents(gameId, result.events);
         this_.client.sendResponse(requestId, {success: true});
         timer.end();
@@ -771,7 +766,6 @@ Skeleton.prototype.moveAndLoadInto = function(gameId, unitId, carrierId) {
     var timer = new utils.Timer("Skeleton.moveAndLoadInto");
     this_.server.gameActions.moveAndLoadInto(gameId, userId, unitId, carrierId, function(result) {
       if(result.success) {
-        this_.server.messenger.sendGameUpdate(gameId, result.changedTiles);
         this_.server.messenger.sendGameEvents(gameId, result.events);
         this_.client.sendResponse(requestId, {success: true});
         timer.end();
@@ -798,7 +792,6 @@ Skeleton.prototype.moveAndUnload = function(gameId, unitId, destination, carried
     this_.server.gameActions.moveAndUnload(gameId, userId, unitId, destination, 
                                           carriedUnitId, unloadDestination, function(result) {
       if(result.success) {
-        this_.server.messenger.sendGameUpdate(gameId, result.changedTiles);
         this_.server.messenger.sendGameEvents(gameId, result.events);
         this_.client.sendResponse(requestId, {success: true});
         timer.end();
@@ -824,7 +817,6 @@ Skeleton.prototype.build = function(gameId, unitTypeId, destination) {
     var timer = new utils.Timer("Skeleton.build");
     this_.server.gameActions.build(gameId, userId, unitTypeId, destination, function(result) {
       if(result.success) {
-        this_.server.messenger.sendGameUpdate(gameId, result.changedTiles);
         this_.server.messenger.sendGameEvents(gameId, result.events);
         this_.client.sendResponse(requestId, {success: true});
         timer.end();
@@ -857,7 +849,6 @@ Skeleton.prototype.endTurn = function(gameId) {
             this_.server.gameProcedures.automaticEndTurn(gameId, server);
           }, result.untilNextTurn*1000, gameId);
         }
-        this_.server.messenger.sendGameUpdate(gameId, result.changedTiles);
         this_.server.messenger.sendGameEvents(gameId, result.events);
         if(result.finished) {
           this_.server.messenger.sendGameFinished(gameId);
@@ -895,7 +886,6 @@ Skeleton.prototype.surrender = function(gameId) {
             this_.server.gameProcedures.automaticEndTurn(gameId, server);
           }, result.untilNextTurn*1000, gameId);
         }
-        this_.server.messenger.sendGameUpdate(gameId, result.changedTiles);
         this_.server.messenger.sendGameEvents(gameId, result.events);
         if(result.finished) {
           this_.server.messenger.sendGameFinished(gameId);

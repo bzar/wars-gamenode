@@ -348,7 +348,6 @@ require(["Theme", "AnimatedMap", "GameLogic", "jquery-1.6.2.min.js","gamenode", 
         }
         
         var e = events[i].content;
-        console.log(e.action);
         
         if(e.action == "move") {
           map.moveUnit(e.unit.unitId, e.tile.tileId, e.path, nextEvent);
