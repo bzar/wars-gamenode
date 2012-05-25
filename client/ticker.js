@@ -23,6 +23,10 @@ MessageTicker.prototype.setMessages = function(msgArray) {
   if(msgArray && msgArray.length > 0) {
     for(var i = 0; i < msgArray.length; ++i) {
       var msg = this.parseMessage(msgArray[i]);
+      
+      if(msg === null)
+        continue;
+
       this.box.append(msg);
     }
     $(".tickerMessage:gt(" + (this.numMessages-1) + ")", this.box).hide();
@@ -33,6 +37,10 @@ MessageTicker.prototype.showOldMessages = function(msgArray) {
   if(msgArray && msgArray.length > 0) {
     for(var i = 0; i < msgArray.length; ++i) {
       var msg = this.parseMessage(msgArray[i]);
+
+      if(msg === null)
+        continue;
+      
       this.box.append(msg);
     }
   }
@@ -42,6 +50,10 @@ MessageTicker.prototype.showMessages = function(msgArray) {
   if(msgArray && msgArray.length > 0) {
     for(var i = 0; i < msgArray.length; ++i) {
       var msg = this.parseMessage(msgArray[i]);
+
+      if(msg === null)
+        continue;
+      
       this.box.prepend(msg);
       msg.hide();
       var wrap = function(i, msg, ticker) {
@@ -156,7 +168,7 @@ MessageTicker.prototype.parseMessage = function(message) {
     msg = [{type:"text", text:"Game finished! Player " + data.winner + " wins!"}];
     player = data.winner;
   } else {
-    msg = [{type:"text", text:"unknown action: " + data.action}];
+    return null;
   }
   
   msg.unshift({type: "time", time: time});
