@@ -16,7 +16,7 @@ User.prototype.clone = function() {
   var u = new User(this.userId, this.username, this.password, this.email, 
                    {emailNotifications: this.settings.emailNotifications,
                     gameTheme: this.settings.gameTheme,
-                    animationSpeed: other.settings.animationSpeed});
+                    animationSpeed: this.settings.animationSpeed});
   return u;
 }
 

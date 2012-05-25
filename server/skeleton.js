@@ -433,7 +433,7 @@ Skeleton.prototype.register = function(username, password, email) {
   hash.update(this.server.configuration.salt);
   var digest = hash.digest("hex");
   var user = new entities.User(null, username, digest, email, 
-                               {emailNotifications: true, gameTheme: "pixel"});
+                               {emailNotifications: true, gameTheme: "pixel", animationSpeed: 1});
   var requestId = this.client.requestId;
   var this_ = this;
   this.server.database.register(user, function(userId) {
