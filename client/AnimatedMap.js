@@ -4,6 +4,12 @@ define(["Theme", "aja/lib/aja", "vec2d", "pixastic.hsl"], function(Theme) {
       this.autoscale = !scale;
       this.scale = scale;
       this.canvas = new aja.Canvas(canvasId);
+      
+      this.overlay = new Overlay(this);
+      this.overlay.z = 100;
+      this.canvas.addEntity(this.overlay);
+      this.overlay.visible = false;
+      
       this.animationSpeed = 1.0;
       this.animate = true;
       
@@ -131,6 +137,7 @@ define(["Theme", "aja/lib/aja", "vec2d", "pixastic.hsl"], function(Theme) {
   AnimatedMap.prototype.clear = function() {
       var mapSize = this.getMapSize();
       var ctx = this.canvas.background.getContext("2d");
+      this.overlay.visible = false;
       ctx.clearRect(0, 0, this.getScale()*mapSize.w*this.tileW, this.getScale()*mapSize.h*this.tileH);
   };
 
@@ -182,6 +189,11 @@ define(["Theme", "aja/lib/aja", "vec2d", "pixastic.hsl"], function(Theme) {
       ctx.restore();
   };
 
+  AnimatedMap.prototype.resize = function(width, height) {
+    this.canvas.resize(width, height);
+    this.overlay.resize(width, height);
+  };
+  
   AnimatedMap.prototype.refresh = function() {
       this.clear();
 
@@ -192,7 +204,7 @@ define(["Theme", "aja/lib/aja", "vec2d", "pixastic.hsl"], function(Theme) {
           var h = this.getScale() * mapSize.h * this.tileH - this.unitOffsetY;
 
           if(w !== this.canvas.width || h !== this.canvas.height) {
-            this.canvas.resize(w, h);
+            this.resize(w, h);
           }
           
           $("#mapcontainer").width(w);
@@ -243,7 +255,7 @@ define(["Theme", "aja/lib/aja", "vec2d", "pixastic.hsl"], function(Theme) {
 
   AnimatedMap.prototype.paintDamageIndicators = function(attacks) {
       var mapSize = this.getMapSize();
-      var ctx = this.canvas.background.getContext("2d");
+      var ctx = this.overlay.canvas.getContext("2d");
       ctx.save();
       ctx.scale(this.getScale(), this.getScale());
 
@@ -269,21 +281,23 @@ define(["Theme", "aja/lib/aja", "vec2d", "pixastic.hsl"], function(Theme) {
   };
 
   AnimatedMap.prototype.paintMaskArray = function(maskArray, inverse, useColor) {
-      var mapSize = this.getMapSize();
-      var ctx = this.canvas.background.getContext("2d");
-      ctx.save();
-      ctx.scale(this.getScale(), this.getScale());
-      ctx.fillStyle = useColor ? "rgba(255,32,32,0.7)" : "rgba(0,0,0,0.5)";
-      if(useColor=="blue") ctx.fillStyle = "rgba(32,32,255,0.5)";
-      for(var ii = 0; ii < mapSize.w*mapSize.h; ++ii) {
-          var y = parseInt(parseInt(ii) / mapSize.w);
-          var x = parseInt(ii) % mapSize.w;
-          if(inverse ? !maskArray[ii] : maskArray[ii]) {
-              this.paintMask(ctx, x, y);
-          }
+    var mapSize = this.getMapSize();
+    var ctx = this.overlay.canvas.getContext("2d");
+    ctx.clearRect(0, 0, this.overlay.canvas.width, this.overlay.canvas.height);
+    ctx.save();
+    ctx.scale(this.getScale(), this.getScale());
+    ctx.fillStyle = useColor ? "rgba(255,32,32,0.7)" : "rgba(0,0,0,0.5)";
+    if(useColor=="blue") ctx.fillStyle = "rgba(32,32,255,0.5)";
+    for(var ii = 0; ii < mapSize.w*mapSize.h; ++ii) {
+      var y = parseInt(parseInt(ii) / mapSize.w);
+      var x = parseInt(ii) % mapSize.w;
+      if(inverse ? !maskArray[ii] : maskArray[ii]) {
+        this.paintMask(ctx, x, y);
       }
-      ctx.restore();
-      this.canvas.forceRedraw();
+    }
+    ctx.restore();
+    this.overlay.visible = true;
+    this.canvas.forceRedraw();
   };
 
   AnimatedMap.prototype.parseAttacks = function(attacklist, mapSize) {
@@ -557,9 +571,7 @@ define(["Theme", "aja/lib/aja", "vec2d", "pixastic.hsl"], function(Theme) {
           var next = path[i];
           pathSegments.push(new aja.PositionAnimation(u, prev.x * this.tileW, prev.y * this.tileH, next.x * this.tileW, next.y * this.tileH, 200 / this.animationSpeed));
         }
-        this.canvas.addAnimation(new aja.SequentialAnimation(pathSegments, function() {
-          doMove();
-        }));
+        this.canvas.addAnimation(new aja.SequentialAnimation(pathSegments, doMove));
       } else {
         doMove();
       }
@@ -924,6 +936,7 @@ define(["Theme", "aja/lib/aja", "vec2d", "pixastic.hsl"], function(Theme) {
       this.movementIndicator = new MapUnit(u.unit, x, y, this);
       this.movementIndicator.effects = [new aja.OpacityEffect];
       this.movementIndicator.opacity = 0.75;
+      this.movementIndicator.unitId = null;
       this.canvas.addEntity(this.movementIndicator);
     }
   };
@@ -1017,6 +1030,24 @@ define(["Theme", "aja/lib/aja", "vec2d", "pixastic.hsl"], function(Theme) {
 
   MapDigit.prototype.rect = function(ctx) {
     return {x: this.x, y: this.y, w: this.map.tileW/2, h: this.map.tileH/2 };
+  };
+  
+  function Overlay(map) {
+    this.canvas = document.createElement("canvas");
+    this.resize(map.canvas.width, map.canvas.height);
+  };
+  
+  Overlay.prototype.resize = function(w, h) {
+    this.canvas.width = w;
+    this.canvas.height = h;
+  };
+  
+  Overlay.prototype.draw = function(ctx) {
+    ctx.drawImage(this.canvas, 0, 0);
+  };
+  
+  Overlay.prototype.rect = function(ctx) {
+    return {x: 0, y: 0, w: this.canvas.width, h: this.canvas.height };
   };
   
   return AnimatedMap;

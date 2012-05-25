@@ -303,7 +303,7 @@ require(["Theme", "AnimatedMap", "GameLogic", "jquery-1.6.2.min.js","gamenode", 
             var mapSize = map.getMapSize();
             var width = mapSize.w * map.tileW;
             var height = mapSize.h * map.tileH - map.unitOffsetY;
-            map.canvas.resize(width, height);
+            map.resize(width, height);
             map.refresh();
             map.initUnitEntities();
             if(response.profile.settings.animationSpeed === undefined) {
@@ -637,8 +637,6 @@ require(["Theme", "AnimatedMap", "GameLogic", "jquery-1.6.2.min.js","gamenode", 
   }
   
   function switchToActionState(x, y, dx, dy, movementOptions, canvasPosition) {
-    map.paintMovementMask(movementOptions, true);
-  
     gameUIState = {
       stateName: "action",
       x: x,
