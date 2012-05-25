@@ -737,11 +737,25 @@ define(["Theme", "aja/lib/aja", "vec2d", "pixastic.hsl"], function(Theme) {
 
   AnimatedMap.prototype.undeployUnit = function(unitId, callback) {
     var u = this.getUnitEntity(unitId);
-    u.unit.deployed = false;
-    u.unit.moved = true;
-    this.canvas.redrawEntity(u);
-    if(callback !== undefined) 
-      callback();
+    var canvas = this.canvas;
+    
+    function doUndeploy() {
+      u.unit.deployed = false;
+      u.unit.moved = true;
+      canvas.redrawEntity(u);
+      if(callback !== undefined) 
+        callback();
+    }
+
+    if(this.animate) {
+      this.canvas.addAnimation(new aja.SequentialAnimation([
+        new aja.PositionDeltaAnimation(u, 0, -this.tileH/4, 50 / this.animationSpeed, aja.easing.QuadOut),
+        new aja.PositionDeltaAnimation(u, 0, this.tileH/4, 50 / this.animationSpeed, aja.easing.QuadIn)
+      ], doUndeploy));
+    } else {
+      doUndeploy();
+    }
+
   };
 
   AnimatedMap.prototype.loadUnit = function(unitId, carrierId, callback) {
@@ -806,6 +820,28 @@ define(["Theme", "aja/lib/aja", "vec2d", "pixastic.hsl"], function(Theme) {
 
   AnimatedMap.prototype.repairUnit = function(unitId, newHealth, callback) {
     var u = this.getUnitEntity(unitId);
+    var change = newHealth - u.unit.health;
+    
+    if(change > 0 && this.animate) {
+      var changeString = "" + change;
+      var canvas = this.canvas;
+      var that = this;
+      
+      for(var i = 0; i < changeString.length; ++i) {
+        var n = parseInt(changeString[i]);
+        var number = new MapDigit(n, u.x + i*this.tileW/4, u.y + this.tileH/4, this);
+        number.effects = [new aja.OpacityEffect];
+        number.opacity = 1.0;
+        canvas.addEntity(number);
+        var f = function(number) {
+          var anim = new aja.NumberAnimation(number, {y:{delta:-32}, opacity: 0.0}, 1000 / that.animationSpeed, aja.easing.QuadIn, function() {
+            canvas.removeEntity(number);
+          });
+          canvas.addAnimation(anim);
+        }(number);
+      }
+    }
+    
     u.unit.health = newHealth;
     this.canvas.redrawEntity(u);
     if(callback !== undefined) 
