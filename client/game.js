@@ -545,6 +545,7 @@ require(["Theme", "AnimatedMap", "GameLogic", "jquery-1.6.2.min.js","gamenode", 
           
         }
       } else if(gameUIState.stateName == "move") {
+        map.hideOverlay();
         var x = gameUIState.x;
         var y = gameUIState.y;
         var dx = tilePosition.x;
@@ -572,6 +573,7 @@ require(["Theme", "AnimatedMap", "GameLogic", "jquery-1.6.2.min.js","gamenode", 
         map.hideMovementIndicator();
         map.refresh();
       } else if(gameUIState.stateName == "attack") {
+        map.hideOverlay();
         var tx = tilePosition.x;
         var ty = tilePosition.y;
         var canAttack = false;
@@ -606,6 +608,7 @@ require(["Theme", "AnimatedMap", "GameLogic", "jquery-1.6.2.min.js","gamenode", 
         map.hideMovementIndicator();
         $("#actionMenu").hide();
       } else if(gameUIState.stateName == "unloadTarget") {
+        map.hideOverlay();
         var tx = tilePosition.x;
         var ty = tilePosition.y;
         var canUndeploy = false;

@@ -137,7 +137,6 @@ define(["Theme", "aja/lib/aja", "vec2d", "pixastic.hsl"], function(Theme) {
   AnimatedMap.prototype.clear = function() {
       var mapSize = this.getMapSize();
       var ctx = this.canvas.background.getContext("2d");
-      this.overlay.visible = false;
       ctx.clearRect(0, 0, this.getScale()*mapSize.w*this.tileW, this.getScale()*mapSize.h*this.tileH);
   };
 
@@ -300,6 +299,10 @@ define(["Theme", "aja/lib/aja", "vec2d", "pixastic.hsl"], function(Theme) {
     this.canvas.forceRedraw();
   };
 
+  AnimatedMap.prototype.hideOverlay = function() {
+    this.overlay.visible = false;
+    this.canvas.forceRedraw();
+  }
   AnimatedMap.prototype.parseAttacks = function(attacklist, mapSize) {
       var arr = [];
       for (i in attacklist) {
