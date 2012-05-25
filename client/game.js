@@ -607,6 +607,7 @@ require(["Theme", "AnimatedMap", "GameLogic", "jquery-1.6.2.min.js","gamenode", 
         gameUIState = {stateName: "select"};
         map.hideMovementIndicator();
         $("#actionMenu").hide();
+        $("#unloadMenu").hide();
       } else if(gameUIState.stateName == "unloadTarget") {
         map.hideOverlay();
         var tx = tilePosition.x;
