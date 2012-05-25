@@ -97,6 +97,11 @@ require(["Theme", "AnimatedMap", "GameLogic", "jquery-1.6.2.min.js","gamenode", 
   function initializeGameTools() {
     $("#endTurn").click(function(e) {
       e.preventDefault();
+      $("#buildMenu").hide();
+      $("#actionMenu").hide();
+      map.hideMovementIndicator();
+      gameUIState = {stateName: "select"};
+      
       $("#spinner").show();
       client.stub.endTurn(gameId, function(response) {
         if(!response.success) {
