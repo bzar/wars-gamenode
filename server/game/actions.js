@@ -14,7 +14,7 @@ function GameActions(database) {
 
 exports.GameActions = GameActions;
 
-function checkMove(database, gameId, userId, unitId, destination, callback) {
+function checkMove(database, gameId, userId, unitId, destination, path, callback) {
   var gameInformation = new GameInformation(database);
   gameInformation.unitWithTile(unitId, function(result) {
     if(!result.success) {
@@ -45,13 +45,9 @@ function checkMove(database, gameId, userId, unitId, destination, callback) {
       
       var gameLogic = new GameLogic(game, settings.gameElements);
       var destinationTile = null;
-      var path = null;
       if(destination !== null) {
-        path = gameLogic.unitCanMoveTo(sourceTile.x, sourceTile.y, destination.x, destination.y);
-        if(path === null) {
+        if(!gameLogic.unitCanMovePath(sourceTile.x, sourceTile.y, destination.x, destination.y, path)) {
           callback({success: false, reason: "Error determining path!"}); return;
-        } else if(path === false) {
-          callback({success: false, reason: "Unit cannot move there!"}); return;
         }
         
         destinationTile = game.getTile(destination.x, destination.y);
@@ -62,9 +58,9 @@ function checkMove(database, gameId, userId, unitId, destination, callback) {
   });
 }
 
-GameActions.prototype.moveAndAttack = function(gameId, userId, unitId, destination, targetId, callback) {
+GameActions.prototype.moveAndAttack = function(gameId, userId, unitId, destination, path, targetId, callback) {
   var database = this.database;
-  checkMove(database, gameId, userId, unitId, destination, 
+  checkMove(database, gameId, userId, unitId, destination, path, 
             function(result, game, player, unit, sourceTile, destinationTile, path, gameLogic) {
     if(!result.success) {
       callback({success: false, reason: result.reason}); return;
@@ -150,9 +146,9 @@ GameActions.prototype.moveAndAttack = function(gameId, userId, unitId, destinati
   });
 }
 
-GameActions.prototype.moveAndWait = function(gameId, userId, unitId, destination, callback) {
+GameActions.prototype.moveAndWait = function(gameId, userId, unitId, destination, path, callback) {
   var database = this.database;
-  checkMove(database, gameId, userId, unitId, destination, 
+  checkMove(database, gameId, userId, unitId, destination, path,
             function(result, game, player, unit, sourceTile, destinationTile, path, gameLogic) {
     if(!result.success) {
       callback({success: false, reason: result.reason}); return;
@@ -177,9 +173,9 @@ GameActions.prototype.moveAndWait = function(gameId, userId, unitId, destination
   });
 }
 
-GameActions.prototype.moveAndCapture = function(gameId, userId, unitId, destination, callback) {
+GameActions.prototype.moveAndCapture = function(gameId, userId, unitId, destination, path, callback) {
   var database = this.database;
-  checkMove(database, gameId, userId, unitId, destination, 
+  checkMove(database, gameId, userId, unitId, destination, path, 
             function(result, game, player, unit, sourceTile, destinationTile, path, gameLogic) {
     if(!result.success) {
       callback({success: false, reason: result.reason}); return;
@@ -219,9 +215,9 @@ GameActions.prototype.moveAndCapture = function(gameId, userId, unitId, destinat
   });
 }
 
-GameActions.prototype.moveAndDeploy = function(gameId, userId, unitId, destination, callback) {
+GameActions.prototype.moveAndDeploy = function(gameId, userId, unitId, destination, path, callback) {
   var database = this.database;
-  checkMove(database, gameId, userId, unitId, destination, 
+  checkMove(database, gameId, userId, unitId, destination, path, 
             function(result, game, player, unit, sourceTile, destinationTile, path, gameLogic) {
     if(!result.success) {
       callback({success: false, reason: result.reason}); return;
@@ -260,7 +256,7 @@ GameActions.prototype.moveAndDeploy = function(gameId, userId, unitId, destinati
 
 GameActions.prototype.undeploy = function(gameId, userId, unitId, callback) {
   var database = this.database;
-  checkMove(database, gameId, userId, unitId, null, 
+  checkMove(database, gameId, userId, unitId, null, null,
             function(result, game, player, unit, sourceTile, destinationTile, path, gameLogic) {
     if(!result.success) {
       callback({success: false, reason: result.reason}); return;
@@ -289,7 +285,7 @@ GameActions.prototype.undeploy = function(gameId, userId, unitId, callback) {
   });  
 }
 
-GameActions.prototype.moveAndLoadInto = function(gameId, userId, unitId, carrierId, callback) {
+GameActions.prototype.moveAndLoadInto = function(gameId, userId, unitId, carrierId, path, callback) {
   var database = this.database;
   var gameInformation = new GameInformation(database);
   gameInformation.unitWithTile(carrierId, function(result) {
@@ -299,7 +295,7 @@ GameActions.prototype.moveAndLoadInto = function(gameId, userId, unitId, carrier
     
     var carrier = result.unit;
     var carrierTile = result.tile;
-    checkMove(database, gameId, userId, unitId, {x:carrierTile.x, y:carrierTile.y}, 
+    checkMove(database, gameId, userId, unitId, {x:carrierTile.x, y:carrierTile.y}, path, 
               function(result, game, player, unit, sourceTile, destinationTile, path, gameLogic) {
       if(!result.success) {
         callback({success: false, reason: result.reason}); return;
@@ -332,9 +328,9 @@ GameActions.prototype.moveAndLoadInto = function(gameId, userId, unitId, carrier
   });
 }
 
-GameActions.prototype.moveAndUnload = function(gameId, userId, carrierId, destination, unitId, unloadDestination, callback) {
+GameActions.prototype.moveAndUnload = function(gameId, userId, carrierId, destination, path, unitId, unloadDestination, callback) {
   var database = this.database;
-  checkMove(database, gameId, userId, carrierId, destination, 
+  checkMove(database, gameId, userId, carrierId, destination, path, 
             function(result, game, player, unit, sourceTile, destinationTile, path, gameLogic) {
     database.unit(unitId, function(result) {
       if(!result.success) {

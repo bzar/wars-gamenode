@@ -97,10 +97,7 @@ require(["Theme", "AnimatedMap", "GameLogic", "jquery-1.6.2.min.js","gamenode", 
   function initializeGameTools() {
     $("#endTurn").click(function(e) {
       e.preventDefault();
-      $("#buildMenu").hide();
-      $("#actionMenu").hide();
-      map.hideMovementIndicator();
-      gameUIState = {stateName: "select"};
+      undoMove();
       
       $("#spinner").show();
       client.stub.endTurn(gameId, function(response) {
@@ -396,9 +393,9 @@ require(["Theme", "AnimatedMap", "GameLogic", "jquery-1.6.2.min.js","gamenode", 
       }
       
       processEvents(events, function() {
-        /*if(map.showPowerMap || map.showBorders) {
+        if(map.showPowerMap || map.showBorders) {
           map.powerMap = getPowerMap();
-        }*/
+        }
       });
     };
     
@@ -550,7 +547,8 @@ require(["Theme", "AnimatedMap", "GameLogic", "jquery-1.6.2.min.js","gamenode", 
         };
       } else {
         map.hideOverlay();
-        switchToActionState(tilePosition.x, tilePosition.y, tilePosition.x, tilePosition.y, movementOptions, canvasPosition);
+        switchToActionState(tilePosition.x, tilePosition.y, tilePosition.x, tilePosition.y, 
+                            [{x: tilePosition.x, y: tilePosition.y}], movementOptions, canvasPosition);
       }
     } else if(gameLogic.tileCanBuild(inTurnNumber, tilePosition.x, tilePosition.y)) {
       var buildOptions = gameLogic.tileBuildOptions(tilePosition.x, tilePosition.y);
@@ -565,29 +563,36 @@ require(["Theme", "AnimatedMap", "GameLogic", "jquery-1.6.2.min.js","gamenode", 
     var dx = tilePosition.x;
     var dy = tilePosition.y;
     var canMove = false;
-
+    var path = null;
+    
     for(var i = 0; i < gameUIState.movementOptions.length; ++i) {
       var option = gameUIState.movementOptions[i];
       if(option.pos.x == dx && option.pos.y == dy) {
         canMove = true;
+        var node = option;
+        path = [node.pos];
+        while(node.prev) {
+          path.push(node.prev.pos);
+          node = node.prev;
+        }
+        path.reverse();
         break;
       }
     }
     
     if(!canMove) {
       gameUIState = {stateName: "select"};
-      map.hideMovementIndicator();
       map.hideOverlay();
     } else {
-      map.showMovementIndicator(map.getTile(gameUIState.x, gameUIState.y).unit.unitId, dx, dy);
-      switchToActionState(x, y, dx, dy, gameUIState.movementOptions, canvasPosition)
+      var unitId = map.getTile(gameUIState.x, gameUIState.y).unit.unitId;
+      map.showMoveUnit(unitId, path, function() {
+        switchToActionState(x, y, dx, dy, path, gameUIState.movementOptions, canvasPosition);
+      });
     }
   }
 
   function handleActionMapClick() {
-    gameUIState = {stateName: "select"};
-    $("#actionMenu").hide();
-    map.hideMovementIndicator();
+    undoMove();
   }
 
   function handleAttackMapClick(tilePosition) {
@@ -605,16 +610,13 @@ require(["Theme", "AnimatedMap", "GameLogic", "jquery-1.6.2.min.js","gamenode", 
     }
     
     if(!canAttack) {
-      gameUIState = {stateName: "select"};
-      map.hideMovementIndicator();
-      map.hideOverlay();
+      undoMove();
     } else {
       var unitId = map.getTile(gameUIState.x, gameUIState.y).unit.unitId;
       var destination = {x: gameUIState.dx, y: gameUIState.dy};
       var targetId = map.getTile(tx, ty).unit.unitId;
       $("#spinner").show();
-      client.stub.moveAndAttack(gameId, unitId, destination, targetId, function(response) {
-        map.hideMovementIndicator();
+      client.stub.moveAndAttack(gameId, unitId, destination, gameUIState.path, targetId, function(response) {
         if(!response.success) {
           alert(response.reason);
         }
@@ -624,10 +626,7 @@ require(["Theme", "AnimatedMap", "GameLogic", "jquery-1.6.2.min.js","gamenode", 
   }
 
   function handlUnloadUnitMapClick() {
-    gameUIState = {stateName: "select"};
-    map.hideMovementIndicator();
-    $("#actionMenu").hide();
-    $("#unloadMenu").hide();
+    undoMove();
   }
 
   function handleUnloadTargetMapClick(tilePosition) {
@@ -645,17 +644,14 @@ require(["Theme", "AnimatedMap", "GameLogic", "jquery-1.6.2.min.js","gamenode", 
     }
     
     if(!canUndeploy) {
-      gameUIState = {stateName: "select"};
-      map.hideMovementIndicator();
-      map.hideOverlay();
+      undoMove();
     } else {
       var unitId = map.getTile(gameUIState.x, gameUIState.y).unit.unitId;
       var destination = {x: gameUIState.dx, y: gameUIState.dy};
       var carriedUnitId = gameUIState.carriedUnitId;
       var unloadDestination = {x: tx, y: ty};
       $("#spinner").show();
-      client.stub.moveAndUnload(gameId, unitId, destination, carriedUnitId, unloadDestination, function(response) {
-        map.hideMovementIndicator();
+      client.stub.moveAndUnload(gameId, unitId, destination, gameUIState.path, carriedUnitId, unloadDestination, function(response) {
         if(!response.success) {
           alert(response.reason);
         }
@@ -664,13 +660,31 @@ require(["Theme", "AnimatedMap", "GameLogic", "jquery-1.6.2.min.js","gamenode", 
     }
   }
   
-  function switchToActionState(x, y, dx, dy, movementOptions, canvasPosition) {
+  function undoMove() {
+    if(gameUIState.stateName !== "select") {
+      var tile = map.getTile(gameUIState.x, gameUIState.y);
+      if(tile && tile.unit && gameUIState.path) {
+        var unitId = tile.unit.unitId;
+        gameUIState.path.reverse();
+        map.showMoveUnit(unitId, gameUIState.path);
+      }
+    }
+    gameUIState = {stateName: "select"};
+    map.hideOverlay();
+    
+    $("#actionMenu").hide();
+    $("#unloadMenu").hide();
+    $("#buildMenu").hide();
+  }
+  
+  function switchToActionState(x, y, dx, dy, path, movementOptions, canvasPosition) {
     gameUIState = {
       stateName: "action",
       x: x,
       y: y,
       dx: dx,
-      dy: dy
+      dy: dy,
+      path: path
     }
 
     var actions = [];
@@ -788,7 +802,7 @@ require(["Theme", "AnimatedMap", "GameLogic", "jquery-1.6.2.min.js","gamenode", 
       }
       
       if(action == "cancel") {
-        gameUIState = {stateName: "select"};
+        undoMove();
       } else if(action == "attack") {
         gameUIState = {
           stateName: "attack",
@@ -796,7 +810,8 @@ require(["Theme", "AnimatedMap", "GameLogic", "jquery-1.6.2.min.js","gamenode", 
           x: gameUIState.x,
           y: gameUIState.y,
           dx: gameUIState.dx,
-          dy: gameUIState.dy
+          dy: gameUIState.dy,
+          path: gameUIState.path
         };
         map.paintAttackMask(gameUIState.attackOptions);
         
@@ -804,31 +819,27 @@ require(["Theme", "AnimatedMap", "GameLogic", "jquery-1.6.2.min.js","gamenode", 
         var unitId = map.getTile(gameUIState.x, gameUIState.y).unit.unitId;
         var destination = {x: gameUIState.dx, y: gameUIState.dy};
         $("#spinner").show();
-        map.hideMovementIndicator();
-        client.stub.moveAndWait(gameId, unitId, destination, resetUI);
+        client.stub.moveAndWait(gameId, unitId, destination, gameUIState.path, resetUI);
       } else if(action == "capture") {
         var unitId = map.getTile(gameUIState.x, gameUIState.y).unit.unitId;
         var destination = {x: gameUIState.dx, y: gameUIState.dy};
         $("#spinner").show();
-        map.hideMovementIndicator();
-        client.stub.moveAndCapture(gameId, unitId, destination, resetUI);
+        console.log(gameUIState.path);
+        client.stub.moveAndCapture(gameId, unitId, destination, gameUIState.path, resetUI);
       } else if(action == "deploy") {
         var unitId = map.getTile(gameUIState.x, gameUIState.y).unit.unitId;
         var destination = {x: gameUIState.dx, y: gameUIState.dy};
         $("#spinner").show();
-        map.hideMovementIndicator();
-        client.stub.moveAndDeploy(gameId, unitId, destination, resetUI);
+        client.stub.moveAndDeploy(gameId, unitId, destination, gameUIState.path, resetUI);
       } else if(action == "undeploy") {
         var unitId = map.getTile(gameUIState.x, gameUIState.y).unit.unitId;
         $("#spinner").show();
-        map.hideMovementIndicator();
         client.stub.undeploy(gameId, unitId, resetUI);
       } else if(action == "load") {
         var unitId = map.getTile(gameUIState.x, gameUIState.y).unit.unitId;
         var carrierId = map.getTile(gameUIState.dx, gameUIState.dy).unit.unitId;
         $("#spinner").show();
-        map.hideMovementIndicator();
-        client.stub.moveAndLoadInto(gameId, unitId, carrierId, resetUI);
+        client.stub.moveAndLoadInto(gameId, unitId, carrierId, gameUIState.path, resetUI);
       } else if(action == "unload") {
         gameUIState = {
           stateName: "unloadUnit",
@@ -836,7 +847,8 @@ require(["Theme", "AnimatedMap", "GameLogic", "jquery-1.6.2.min.js","gamenode", 
           x: gameUIState.x,
           y: gameUIState.y,
           dx: gameUIState.dx,
-          dy: gameUIState.dy
+          dy: gameUIState.dy,
+          path: gameUIState.path
         };
         showUnloadMenu(gameUIState.unloadOptions, canvasPosition);
       } 
@@ -882,7 +894,8 @@ require(["Theme", "AnimatedMap", "GameLogic", "jquery-1.6.2.min.js","gamenode", 
         x: gameUIState.x,
         y: gameUIState.y,
         dx: gameUIState.dx,
-        dy: gameUIState.dy
+        dy: gameUIState.dy,
+        path: gameUIState.path
       };
       map.paintUnloadMask(unloadTargetOptions);
       unloadMenu.hide();

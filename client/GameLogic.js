@@ -95,6 +95,54 @@ GameLogic.prototype.tileBuildOptions = function(x, y) {
     return buildOptions;
 };
 
+GameLogic.prototype.unitCanMovePath = function(x, y, dx, dy, path) {
+  var mapArray = this.map.getMapArray();
+  var unit = mapArray[y][x].unit;
+
+  if(unit === null) {
+    console.log("no unit at (" + x + ", " + y + ")");
+    return false;
+  }
+  
+  var unitType = this.rules.units[unit.type];
+  
+  if(unit.deployed && (x != dx || y != dy)) {
+    return false;
+  }
+  
+  var unitMovementType = this.rules.movementTypes[unitType.movementType];
+  
+  var left = unitType.movement;
+  
+  for(var i = 1; i < path.length; ++i) {
+    var node = path[i];
+    var tile = mapArray[node.y][node.x];
+    
+    // Reject if does not exist
+    if(tile === undefined)
+      return false;
+    
+    // Reject if tile has an enemy unit
+    if(tile.unit !== null && tile.unit.owner != unit.owner) {
+      return false;
+    }
+    
+    // Determine cost
+    var cost = 1;
+    if(tile.type in unitMovementType.effectMap) {
+      cost = unitMovementType.effectMap[tile.type];
+    }
+
+    // Reject if cannot move on terrain or cost is too high
+    if(cost == null || cost > left) {
+      return false;
+    }
+    
+    left -= cost;
+  }
+  
+  return true;
+}
 GameLogic.prototype.unitCanMoveTo = function(x, y, dx, dy) {
   var mapArray = this.map.getMapArray();
   var unit = mapArray[y][x].unit;

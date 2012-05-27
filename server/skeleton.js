@@ -627,7 +627,7 @@ Skeleton.prototype.unsubscribeGame = function(gameId) {
 }
 
 
-Skeleton.prototype.moveAndAttack = function(gameId, unitId, destination, targetId) {
+Skeleton.prototype.moveAndAttack = function(gameId, unitId, destination, path, targetId) {
   if(!requireArgs([gameId, unitId, destination, targetId])) return {success: false, reason: "Missing method arguments!"};
   if(this.sessionId === null)
     return {success: false, reason: "Not logged in"}
@@ -639,7 +639,7 @@ Skeleton.prototype.moveAndAttack = function(gameId, unitId, destination, targetI
   var mutex = this.server.gameMutex(gameId);
   mutex.lock(function() {
     var timer = new utils.Timer("Skeleton.moveAndAttack");
-    this_.server.gameActions.moveAndAttack(gameId, userId, unitId, destination, targetId, function(result) {
+    this_.server.gameActions.moveAndAttack(gameId, userId, unitId, destination, path, targetId, function(result) {
       if(result.success) {
         this_.server.messenger.sendGameEvents(gameId, result.events);
         this_.client.sendResponse(requestId, {success: true});
@@ -652,7 +652,7 @@ Skeleton.prototype.moveAndAttack = function(gameId, unitId, destination, targetI
   });
 }
 
-Skeleton.prototype.moveAndWait = function(gameId, unitId, destination) {
+Skeleton.prototype.moveAndWait = function(gameId, unitId, destination, path) {
   if(!requireArgs([gameId, unitId, destination])) return {success: false, reason: "Missing method arguments!"};
   if(this.sessionId === null)
     return {success: false, reason: "Not logged in"}
@@ -664,7 +664,7 @@ Skeleton.prototype.moveAndWait = function(gameId, unitId, destination) {
   var mutex = this.server.gameMutex(gameId);
   mutex.lock(function() {
     var timer = new utils.Timer("Skeleton.moveAndWait");
-    this_.server.gameActions.moveAndWait(gameId, userId, unitId, destination, function(result) {
+    this_.server.gameActions.moveAndWait(gameId, userId, unitId, destination, path, function(result) {
       if(result.success) {
         this_.server.messenger.sendGameEvents(gameId, result.events);
         this_.client.sendResponse(requestId, {success: true});
@@ -677,7 +677,7 @@ Skeleton.prototype.moveAndWait = function(gameId, unitId, destination) {
   });
 }
 
-Skeleton.prototype.moveAndCapture = function(gameId, unitId, destination) {
+Skeleton.prototype.moveAndCapture = function(gameId, unitId, destination, path) {
   if(!requireArgs([gameId, unitId, destination])) return {success: false, reason: "Missing method arguments!"};
   if(this.sessionId === null)
     return {success: false, reason: "Not logged in"}
@@ -689,7 +689,7 @@ Skeleton.prototype.moveAndCapture = function(gameId, unitId, destination) {
   var mutex = this.server.gameMutex(gameId);
   mutex.lock(function() {
     var timer = new utils.Timer("Skeleton.moveAndCapture");
-    this_.server.gameActions.moveAndCapture(gameId, userId, unitId, destination, function(result) {
+    this_.server.gameActions.moveAndCapture(gameId, userId, unitId, destination, path, function(result) {
       if(result.success) {
         this_.server.messenger.sendGameEvents(gameId, result.events);
         this_.client.sendResponse(requestId, {success: true});
@@ -702,7 +702,7 @@ Skeleton.prototype.moveAndCapture = function(gameId, unitId, destination) {
   });
 }
 
-Skeleton.prototype.moveAndDeploy = function(gameId, unitId, destination) {
+Skeleton.prototype.moveAndDeploy = function(gameId, unitId, destination, path) {
   if(!requireArgs([gameId, unitId, destination])) return {success: false, reason: "Missing method arguments!"};
   if(this.sessionId === null)
     return {success: false, reason: "Not logged in"}
@@ -714,7 +714,7 @@ Skeleton.prototype.moveAndDeploy = function(gameId, unitId, destination) {
   var mutex = this.server.gameMutex(gameId);
   mutex.lock(function() {
     var timer = new utils.Timer("Skeleton.moveAndDeploy");
-    this_.server.gameActions.moveAndDeploy(gameId, userId, unitId, destination, function(result) {
+    this_.server.gameActions.moveAndDeploy(gameId, userId, unitId, destination, path, function(result) {
       if(result.success) {
         this_.server.messenger.sendGameEvents(gameId, result.events);
         this_.client.sendResponse(requestId, {success: true});
@@ -752,7 +752,7 @@ Skeleton.prototype.undeploy = function(gameId, unitId) {
   });
 }
 
-Skeleton.prototype.moveAndLoadInto = function(gameId, unitId, carrierId) {
+Skeleton.prototype.moveAndLoadInto = function(gameId, unitId, carrierId, path) {
   if(!requireArgs([gameId, unitId, carrierId])) return {success: false, reason: "Missing method arguments!"};
   if(this.sessionId === null)
     return {success: false, reason: "Not logged in"}
@@ -764,7 +764,7 @@ Skeleton.prototype.moveAndLoadInto = function(gameId, unitId, carrierId) {
   var mutex = this.server.gameMutex(gameId);
   mutex.lock(function() {
     var timer = new utils.Timer("Skeleton.moveAndLoadInto");
-    this_.server.gameActions.moveAndLoadInto(gameId, userId, unitId, carrierId, function(result) {
+    this_.server.gameActions.moveAndLoadInto(gameId, userId, unitId, carrierId, path, function(result) {
       if(result.success) {
         this_.server.messenger.sendGameEvents(gameId, result.events);
         this_.client.sendResponse(requestId, {success: true});
@@ -777,7 +777,7 @@ Skeleton.prototype.moveAndLoadInto = function(gameId, unitId, carrierId) {
   });
 }
 
-Skeleton.prototype.moveAndUnload = function(gameId, unitId, destination, carriedUnitId, unloadDestination) {
+Skeleton.prototype.moveAndUnload = function(gameId, unitId, destination, path, carriedUnitId, unloadDestination) {
   if(!requireArgs([gameId, unitId, destination, carriedUnitId, unloadDestination])) return {success: false, reason: "Missing method arguments!"};
   if(this.sessionId === null)
     return {success: false, reason: "Not logged in"}
@@ -789,7 +789,7 @@ Skeleton.prototype.moveAndUnload = function(gameId, unitId, destination, carried
   var mutex = this.server.gameMutex(gameId);
   mutex.lock(function() {
     var timer = new utils.Timer("Skeleton.moveAndUnload");
-    this_.server.gameActions.moveAndUnload(gameId, userId, unitId, destination, 
+    this_.server.gameActions.moveAndUnload(gameId, userId, unitId, destination, path, 
                                           carriedUnitId, unloadDestination, function(result) {
       if(result.success) {
         this_.server.messenger.sendGameEvents(gameId, result.events);

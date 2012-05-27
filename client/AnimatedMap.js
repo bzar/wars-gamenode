@@ -489,13 +489,34 @@ define(["Theme", "aja/lib/aja", "vec2d", "pixastic.hsl"], function(Theme) {
     return null;
   }
 
-  AnimatedMap.prototype.moveUnit = function(unitId, tileId, path, callback) {
+  AnimatedMap.prototype.showMoveUnit = function(unitId, path, callback) {
     var u = this.getUnitEntity(unitId);
-    var prevTile = this.getTile(u.tx, u.ty);
-    var t = this.getTile(tileId);
-    
+    if(path.length > 1 && this.animate && (u.x != path[path.length - 1].x * this.tileW|| u.y != path[path.length - 1].y * this.tileH)) {
+      var pathSegments = [];
+      var segmentTime = 1000  / (this.animationSpeed * path.length);
+      for(var i = 1; i < path.length; ++i) {
+        var prev = path[i - 1];
+        var next = path[i];
+        pathSegments.push(new aja.PositionAnimation(u, prev.x * this.tileW, prev.y * this.tileH, next.x * this.tileW, next.y * this.tileH, segmentTime));
+      }
+      this.canvas.addAnimation(new aja.SequentialAnimation(pathSegments, callback));
+    } else {
+      u.x = path[path.length - 1].x * this.tileW;
+      u.y = path[path.length - 1].y * this.tileH;
+      this.canvas.redrawEntity(u);
+      
+      if(callback !== undefined)
+        callback();
+    }
+  }
+  
+  AnimatedMap.prototype.moveUnit = function(unitId, tileId, path, callback) {    
     var that = this;
-    function doMove() {
+    this.showMoveUnit(unitId, path, function() {
+      var u = that.getUnitEntity(unitId);
+      var prevTile = that.getTile(u.tx, u.ty);
+      var t = that.getTile(tileId);
+      
       prevTile.unit = null;
       if(t.unit === null)
         t.unit = u.unit;
@@ -509,23 +530,7 @@ define(["Theme", "aja/lib/aja", "vec2d", "pixastic.hsl"], function(Theme) {
       
       if(callback !== undefined) 
         callback();
-    }
-    
-    if(u !== null) {
-      if(path.length > 1 && this.animate) {
-        var pathSegments = [];
-        for(var i = 1; i < path.length; ++i) {
-          var prev = path[i - 1];
-          var next = path[i];
-          pathSegments.push(new aja.PositionAnimation(u, prev.x * this.tileW, prev.y * this.tileH, next.x * this.tileW, next.y * this.tileH, 200 / this.animationSpeed));
-        }
-        this.canvas.addAnimation(new aja.SequentialAnimation(pathSegments, doMove));
-      } else {
-        doMove();
-      }
-    } else {
-      console.log("ERROR: unknown tile id: " + tileId);
-    }
+    });
   };
 
   AnimatedMap.prototype.waitUnit = function(unitId, callback) {
@@ -574,6 +579,7 @@ define(["Theme", "aja/lib/aja", "vec2d", "pixastic.hsl"], function(Theme) {
           parts.push(new aja.PauseAnimation(i*50 / this.animationSpeed));
           parts.push(new aja.PositionDeltaAnimation(number, 0, -2*this.tileH/3, 100 / this.animationSpeed, aja.easing.QuadOut));
           parts.push(new aja.PositionDeltaAnimation(number, 0, 2*this.tileH/3, 100 / this.animationSpeed, aja.easing.QuadIn));
+          parts.push(new aja.PauseAnimation(200 / this.animationSpeed));
           damageParts.push(new aja.SequentialAnimation(parts));
         }
         damageParts.push(new aja.PauseAnimation(500 / this.animationSpeed));
@@ -754,6 +760,7 @@ define(["Theme", "aja/lib/aja", "vec2d", "pixastic.hsl"], function(Theme) {
       u.y = carrier.y;
     }
     
+    this.canvas.redrawEntity(carrier);
     this.canvas.addEntity(u);
   };
 
@@ -876,26 +883,7 @@ define(["Theme", "aja/lib/aja", "vec2d", "pixastic.hsl"], function(Theme) {
     if(callback !== undefined) 
       callback();
   };
-  
-  AnimatedMap.prototype.showMovementIndicator = function(unitId, x, y) {
-    var u = this.getUnitEntity(unitId);
-    if(u) {
-      this.hideMovementIndicator();
-      this.movementIndicator = new MapUnit(u.unit, x, y, this);
-      this.movementIndicator.effects = [new aja.OpacityEffect];
-      this.movementIndicator.opacity = 0.75;
-      this.movementIndicator.unitId = null;
-      this.canvas.addEntity(this.movementIndicator);
-    }
-  };
 
-  AnimatedMap.prototype.hideMovementIndicator = function() {
-    if(this.movementIndicator) {
-      this.canvas.removeEntity(this.movementIndicator);
-      this.movementIndicator = null;
-    }
-  };
-  
   AnimatedMap.PHASE_SELECT = 1;
   AnimatedMap.PHASE_MOVE = 2;
   AnimatedMap.PHASE_ATTACK = 3;
