@@ -345,61 +345,6 @@ define(["Theme", "aja/lib/aja", "vec2d", "pixastic.hsl"], function(Theme) {
     
     return tiles.length != 0 ? tiles[0] : null;
   }
-  AnimatedMap.prototype.drawAttackArrow = function(x1, y1, x2, y2) {
-      var ctx = this.canvas.background.getContext("2d");
-      ctx.save();
-      ctx.scale(this.getScale(), this.getScale());
-      ctx.strokeStyle = 'red';
-      ctx.fillStyle = 'red';
-      ctx.lineWidth = 2.0;
-      this.drawArrow(ctx, x1, y1, x2, y2);
-      ctx.restore();
-  };
-
-  AnimatedMap.prototype.drawArrow = function(ctx, x1, y1, x2, y2, arrowTipWidth, arrowTipLength) {
-      if(arrowTipWidth == undefined) arrowTipWidth = 5.0;
-      if(arrowTipLength == undefined) arrowTipLength = 7.0;
-
-      // Calculate absolute coordinates from the center of tile 1 to the center of tile 2
-      var x1a = x1*this.tileW + this.tileW/2;
-      var y1a = y1*this.tileH + this.tileH/2;
-      var x2a = x2*this.tileW + this.tileW/2;
-      var y2a = y2*this.tileH + this.tileH/2;
-
-      // Draw the arrow line
-      ctx.beginPath();
-      ctx.moveTo(x1a, y1a);
-      ctx.lineTo(x2a, y2a);
-      ctx.stroke();
-      ctx.closePath();
-
-      // Calculate helper vectors for determining tip vertices
-      // a = (ax, ay) is the arrow line vector
-      // b = (bx, by) is a unit vector perpendicular to (ax, ay)
-      var ax = parseFloat(x2a-x1a);
-      var ay = parseFloat(y2a-y1a);
-      var arrowLength = Math.sqrt(ax*ax+ay*ay);
-      var bx = ay/arrowLength;
-      var by = -ax/arrowLength;
-
-      // Calculate remaining tip vertices (use as the first)
-      // t1 = (t1x, t1y) = (|a| - arrowTipLength) * (a/|a|) + arrowTipWidth * b
-      // t2 = (t2x, t2y) = (|a| - arrowTipLength) * (a/|a|) + arrowTipWidth * -b
-      var t1x = (arrowLength - arrowTipLength) * ax/arrowLength + arrowTipWidth * bx;
-      var t1y = (arrowLength - arrowTipLength) * ay/arrowLength + arrowTipWidth * by;
-      var t2x = (arrowLength - arrowTipLength) * ax/arrowLength - arrowTipWidth * bx;
-      var t2y = (arrowLength - arrowTipLength) * ay/arrowLength - arrowTipWidth * by;
-
-      // Draw the arrow tip (translate t1 and t2 to world coordinates by adding arrow base position)
-      ctx.beginPath();
-      ctx.moveTo(x2a, y2a);
-      ctx.lineTo(x1a + t1x, y1a + t1y);
-      ctx.lineTo(x1a + t2x, y1a + t2y);
-      ctx.moveTo(x2a, y2a);
-      ctx.fill();
-      ctx.closePath();
-      this.canvas.forceRedraw();
-  };
 
   AnimatedMap.prototype.getMapArray = function() {
       var mapArray = [];
