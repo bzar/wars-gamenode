@@ -527,15 +527,13 @@ require(["Theme", "AnimatedMap", "GameLogic", "jquery-1.6.2.min.js","gamenode", 
   function initializeTurn() {
     inTurn = true;
     refreshFunds();
-    $("#endTurn").show();
-    $("#surrender").show();
+    $("#turnActions").show();
   }
   
   function finalizeTurn() {
     inTurn = false;
     refreshFunds();
-    $("#endTurn").hide();
-    $("#surrender").hide();
+    $("#turnActions").hide();
   }
   
   function handleMapClick(e) {
