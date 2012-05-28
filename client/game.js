@@ -212,6 +212,34 @@ require(["Theme", "AnimatedMap", "GameLogic", "jquery-1.6.2.min.js","gamenode", 
       }
       map.refresh();
     });
+    
+    var speeds = [{x:"1",t:"1x"},{x:"1.5",t:"1.5x"},{x:"2",t:"2x"},{x:"3",t:"3x"},{x:"4",t:"4x"},{x:"5",t:"5x"},{x:"0",t:"off"}];
+    
+    $("#animationSpeedPlus").click(function(e) {
+      var current = $("#animationSpeedLabel").text();
+      for(var i = 0; i < speeds.length; ++i) {
+        if(speeds[i].t === current) {
+          if(i < speeds.length - 1) {
+            map.animationSpeed = speeds[i + 1].x;
+            map.animate = map.animationSpeed != 0;
+            $("#animationSpeedLabel").text(speeds[i + 1].t);
+          }
+        }
+      }      
+    });
+    
+    $("#animationSpeedMinus").click(function(e) {
+      var current = $("#animationSpeedLabel").text();
+      for(var i = 0; i < speeds.length; ++i) {
+        if(speeds[i].t === current) {
+          if(i > 0) {
+            map.animationSpeed = speeds[i - 1].x;
+            map.animate = map.animationSpeed != 0;
+            $("#animationSpeedLabel").text(speeds[i - 1].t);
+          }
+        }
+      }      
+    });
   }
   
   function initializeAuthorTools() {
@@ -309,13 +337,19 @@ require(["Theme", "AnimatedMap", "GameLogic", "jquery-1.6.2.min.js","gamenode", 
             map.refresh();
             map.initUnitEntities();
             if(response.profile.settings.animationSpeed === undefined) {
-              map.animationSpeed = 1.0;
+              map.animationSpeed = 1;
               map.animate = true;
+              $("#animationSpeedLabel").text("1x");
             } else if(response.profile.settings.animationSpeed > 0) {
               map.animationSpeed = parseFloat(response.profile.settings.animationSpeed);
+              $("#animationSpeedLabel").text(response.profile.settings.animationSpeed + "x");
             } else {
               map.animate = false;
+              $("#animationSpeedLabel").text("off");
             }
+            
+            
+            
             $("#spinner").hide();
           });
         });

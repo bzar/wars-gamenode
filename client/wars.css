@@ -966,3 +966,38 @@ h3 {
   border-bottom: 2px solid #888;
 }
 
+#animationSpeed {
+  text-align: center;  
+}
+
+#animationSpeedText {
+  display: block;
+  color: #eee;
+}
+.animationSpeed {
+  display: inline-block;
+  width: 40px;
+  background-color: #444;
+  text-align: center middle;  
+  font: 16px sans-serif;
+  padding: 8px 0 8px 0;
+  border: 1px solid #888;
+  color: #eee;
+}
+
+#animationSpeedMinus {
+  border-radius: 8px 0 0 8px;
+  border-right: 0;
+  cursor: pointer;
+}
+
+#animationSpeedLabel {
+  width: 80px;
+  background-color: #555;
+}
+
+#animationSpeedPlus {
+  border-radius: 0 8px 8px 0;
+  border-left: 0;
+  cursor: pointer;
+}
