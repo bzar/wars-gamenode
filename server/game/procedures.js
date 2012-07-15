@@ -90,7 +90,6 @@ GameProcedures.prototype.automaticEndTurn = function(gameId, server) {
             this_.automaticEndTurn(gameId, server);
           }, result.untilNextTurn*1000, gameId);
         }
-        server.messenger.sendGameUpdate(gameId, result.changedTiles);
         server.messenger.sendGameEvents(gameId, result.events);
         if(result.finished) {
           server.messenger.sendGameFinished(gameId);
