@@ -329,11 +329,9 @@ require(["Theme", "AnimatedMap", "GameLogic", "jquery-1.6.2.min.js","gamenode", 
             initializePlayers(game.players);
             initializeMessageTicker();
             refreshFunds();
-            map.currentTiles = game.tiles;
-            var mapSize = map.getMapSize();
-            var width = mapSize.w * map.tileW;
-            var height = mapSize.h * map.tileH - map.unitOffsetY;
-            map.resize(width, height);
+            map.tiles = game.tiles;
+            var mapSize = map.getMapDimensions();
+            map.resize(mapSize.e(1), mapSize.e(2));
             map.refresh();
             map.initUnitEntities();
             if(response.profile.settings.animationSpeed === undefined) {
@@ -545,8 +543,9 @@ require(["Theme", "AnimatedMap", "GameLogic", "jquery-1.6.2.min.js","gamenode", 
     var canvasPosition = {x: e.offsetX !== undefined ? e.offsetX : e.layerX, 
                           y: e.offsetY !== undefined ? e.offsetY : e.layerY};
     var windowPosition = {x: e.pageX, y: e.pageY};
-    var tilePosition = {x: parseInt(canvasPosition.x / (map.getScale() * map.tileW)),
-                        y: parseInt((canvasPosition.y + map.unitOffsetY) / (map.getScale() * map.tileH))};
+    var hexCoords = map.coordToTile(canvasPosition.x, canvasPosition.y);
+    var tilePosition = {x: hexCoords.e(1), y: hexCoords.e(2)};
+    
     if(inTurn) {
       buildMenu.hide();
       if(gameUIState.stateName == "select") {
@@ -589,7 +588,7 @@ require(["Theme", "AnimatedMap", "GameLogic", "jquery-1.6.2.min.js","gamenode", 
   }
 
   function handleMoveMapClick(tilePosition, canvasPosition) {
-    map.hideOverlay();
+    map.refresh();
     var x = gameUIState.x;
     var y = gameUIState.y;
     var dx = tilePosition.x;
@@ -614,7 +613,7 @@ require(["Theme", "AnimatedMap", "GameLogic", "jquery-1.6.2.min.js","gamenode", 
     
     if(!canMove) {
       gameUIState = {stateName: "select"};
-      map.hideOverlay();
+      map.refresh();
     } else {
       var unitId = map.getTile(gameUIState.x, gameUIState.y).unit.unitId;
       map.showMoveUnit(unitId, path, function() {
@@ -938,7 +937,7 @@ require(["Theme", "AnimatedMap", "GameLogic", "jquery-1.6.2.min.js","gamenode", 
     var buildMenu = $("#buildMenu");
     var content = $("#content");
     
-    var size = fitElement(buildOptions.length, 128, 128, content);
+    var size = fitElement(buildOptions.length, 140, 140, content);
     var optimalLeft = canvasPosition.x - size.width/2;
     var optimalTop = canvasPosition.y - size.height/2;
     var position = clampElement(optimalLeft, optimalTop, size.width, size.height, content);
@@ -968,9 +967,9 @@ require(["Theme", "AnimatedMap", "GameLogic", "jquery-1.6.2.min.js","gamenode", 
       unitImage.css("background-image", "url('" + theme.getSpriteSheetUrl() + "')");
       unitImage.addClass("sprite");
       var pos = theme.getUnitCoordinates(unitType.id, inTurnNumber);
-      var unitImageX = pos.x * map.tileW;
-      var unitImageY = pos.y * map.tileH;
-      unitImage.css("background-position", -unitImageX + "px " + -unitImageY + "px");
+      unitImage.css("background-position", -pos.x + "px " + -pos.y + "px");
+      unitImage.css("width", theme.settings.image.width);
+      unitImage.css("height", theme.settings.image.height);
       buildItem.append(unitPrice);
       buildItem.append(unitImage);
       buildItem.append(unitName);

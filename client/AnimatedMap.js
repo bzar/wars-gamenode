@@ -1,91 +1,92 @@
-define(["Theme", "aja/lib/aja", "vec2d", "pixastic.hsl"], function(Theme) {
+define(["Theme", "aja/lib/aja", "pixastic.hsl", "sylvester"], function(Theme) {
   function AnimatedMap(canvasId, scale, theme, rules) {
-      this.theme = theme ? theme : new Theme("pixel");
-      this.autoscale = !scale;
-      this.scale = scale;
-      this.canvas = new aja.Canvas(canvasId);
-      
-      this.overlay = new Overlay(this);
-      this.overlay.z = 100;
-      this.canvas.addEntity(this.overlay);
-      this.overlay.visible = false;
-      
-      this.animationSpeed = 1.0;
-      this.animate = true;
-      
-      this.canvas.renderOrder = function(a, b) {
-        if(a.z === undefined) {
-          if(b.z === undefined) {
-            return a.y - b.y;
-          } else {
-            return -b.z;
-          }
+    this.theme = theme ? theme : new Theme("pixel");
+    this.autoscale = !scale;
+    this.scale = scale;
+    this.canvas = new aja.Canvas(canvasId);
+    
+    this.overlay = new Overlay(this);
+    this.overlay.z = 100;
+    this.canvas.addEntity(this.overlay);
+    this.overlay.visible = false;
+    
+    this.animationSpeed = 1.0;
+    this.animate = true;
+    
+    this.canvas.renderOrder = function(a, b) {
+      if(a.z === undefined) {
+        if(b.z === undefined) {
+          return a.y - b.y;
         } else {
-          if(b.z === undefined) {
-            return a.z;
-          } else {
-            return a.z - b.z;
-          }
+          return -b.z;
+        }
+      } else {
+        if(b.z === undefined) {
+          return a.z;
+        } else {
+          return a.z - b.z;
         }
       }
-      
-      this.tileW = 48;
-      this.tileH = 48;
-      this.tilemap = null;
-      this.unitmap = null;
-      this.guimap = null;
-      this.currentTiles = null;
-      this.rules = rules;
-      
-      this.powerMap = null;
-      this.showPowerMap = false;
-      this.showBorders = false;
-      this.showGrid = false;
+    }
+    
+    this.xAxis = $V([this.theme.settings.hex.width - this.theme.settings.hex.triWidth, this.theme.settings.hex.height / 2]);
+    this.yAxis = $V([0, this.theme.settings.hex.height]);
 
-      this.unitOffsetY = -12;
-      this.unitEntities = {};
+    this.canvas.ctx.translate(0, this.theme.settings.image.height - this.theme.settings.hex.height - this.theme.settings.hex.thickness);
+    
+    this.tiles = null;
+    this.sprites = null;
+    this.rules = rules;
+    
+    this.powerMap = null;
+    this.showPowerMap = false;
+    this.showBorders = false;
+    this.showGrid = false;
+
+    this.unitEntities = {};
   }
 
+  AnimatedMap.prototype.hex2rectCoords = function(hx, hy) {
+    return this.xAxis.multiply(hx).add(this.yAxis.multiply(hy));
+  }
+
+  AnimatedMap.prototype.rect2hexCoords = function(rx, ry) {
+    var origin = $M([
+      [1, 0, -this.theme.settings.hex.width/2],
+      [0, 1, -this.theme.settings.hex.height/2],
+      [0, 0, 1]
+    ]);
+    var mat = $M([
+      [this.xAxis.e(1), this.yAxis.e(1), 0],
+      [this.xAxis.e(2), this.yAxis.e(2), 0],
+      [0,                  0,                  1]
+    ]).inv();
+    
+    return mat.multiply(origin.multiply($V([rx, ry, 1]))).round();
+  }
+  
   AnimatedMap.prototype.getScale = function() {
-      if(this.autoscale) {
-          var mapSize = this.getMapSize();
-          var horScale = this.canvas.width / (mapSize.w*this.tileW);
-          var verScale = this.canvas.height / (mapSize.h*this.tileH);
-          this.scale = horScale < verScale ? horScale : verScale;
-      }
-      return this.scale;
+    if(this.autoscale) {
+      var mapSize = this.getMapDimensions();
+      var horScale = this.canvas.width / mapSize.e(1);
+      var verScale = this.canvas.height / mapSize.e(2);
+      this.scale = horScale < verScale ? horScale : verScale;
+    }
+    return this.scale;
   };
+  
   AnimatedMap.prototype.getOffset = function() {
-      if(this.autoscale) {
-          var mapSize = this.getMapSize();
-          var xOffset = mapSize.w < mapSize.h ? (mapSize.h - mapSize.w)*this.tileW / 2: 0;
-          var yOffset = mapSize.w > mapSize.h ? (mapSize.w - mapSize.h)*this.tileH / 2: 0;
-          return {x: xOffset, y: yOffset};
-      } else {
-          return {x: 0, y: 0};
-      }
+    if(this.autoscale) {
+      var mapSize = this.getMapDimensions();
+      var xOffset = mapSize.w < mapSize.h ? (mapSize.h - mapSize.w) / 2: 0;
+      var yOffset = mapSize.w > mapSize.h ? (mapSize.w - mapSize.h) / 2: 0;
+      return $V([xOffset, yOffset]);
+    } else {
+      return $V([0, 0]);
+    }
   };
-  AnimatedMap.prototype.preloadTiles = function(tiles, callback, images, prefix) {
-      var imgPrefix = prefix ? prefix : tiles["prefix"];
-      if(!(images instanceof Array)) {
-          images = [];
-          }
-      if(tiles instanceof Array) {
-          var this_ = this;
-          tiles.forEach(function(el){
-              var moreImages = [];
-              moreImages = this_.preloadTiles(el, null, moreImages, imgPrefix);
-              images.push(moreImages);
-          });
-      } else {
-          if(tiles=="") return null;
-          var img = new Image();
-          img.src = imgPrefix + tiles;
-          return img;
-      }
-      if(callback) window.setTimeout(callback, 0);
-      return images;
-  };
+
+  
   AnimatedMap.prototype.doPreload = function(callback) {
       this.sprites = new Image();
       this.spritesMoved = new Image();
@@ -104,30 +105,196 @@ define(["Theme", "aja/lib/aja", "vec2d", "pixastic.hsl"], function(Theme) {
       }
   };
 
+  AnimatedMap.prototype.getMapLimits = function() {
+    var min = null;
+    var max = null;
+    
+    this.tiles.forEach(function(tile){
+      if(min === null) {
+        min = $V([tile.x, tile.y]);
+        max = $V([tile.x, tile.y]);
+      } else {
+        min = $V([tile.x < min.e(1) ? tile.x : min.e(1), 
+                 tile.y < min.e(2) ? tile.y : min.e(2)]);
+        max = $V([tile.x > max.e(1) ? tile.x : max.e(1), 
+                 tile.y > max.e(2) ? tile.y : max.e(2)]);
+      }
+    });
+    
+    return {min: min, max: max};
+  };
+  
   AnimatedMap.prototype.getMapSize = function() {
-      // TODO: we could compensate for offsetted tiles
-      var maxX = 0;
-      var maxY = 0;
-      this.currentTiles.forEach(function(tile){
-          maxX = tile.x > maxX ? tile.x : maxX;
-          maxY = tile.y > maxY ? tile.y : maxY;
-      });
-      return {w: maxX+1, h: maxY+1};
+    var size = this.getMapLimits();
+    return size.max.subtract(size.min);    
+  }
+  
+  AnimatedMap.prototype.getMapDimensions = function() {
+    var size = this.getMapLimits().max;
+    var w = this.hex2rectCoords(size.e(1) + 1, 0).e(1);
+    var h = this.hex2rectCoords(0, size.e(2) + 2).e(2);
+    var rectSize = $V([w, h]).add($V([this.theme.settings.hex.triWidth, this.theme.settings.image.height - this.theme.settings.hex.height - this.theme.settings.hex.thickness]));
+    return rectSize;
   };
 
   AnimatedMap.prototype.getTile = function(x, y) {
-      if(x !== undefined && y !== undefined) {
-        return this.currentTiles.filter(function(d) {
-            if(d.x == x && d.y == y) return true;
-        })[0];
-      } else if(x !== undefined) {
-        var tiles = this.currentTiles.filter(function(tile){
-          return tile.tileId == x;
-        });
-        return tiles.length != 0 ? tiles[0] : null;
-      } else {
-        return null;
+    if(x !== undefined && y !== undefined) {
+      return this.tiles.filter(function(d) {
+          if(d.x == x && d.y == y) return true;
+      })[0];
+    } else if(x !== undefined) {
+      var tiles = this.tiles.filter(function(tile){
+        return tile.tileId == x;
+      });
+      return tiles.length != 0 ? tiles[0] : null;
+    } else {
+      return null;
+    }
+  };
+
+  AnimatedMap.prototype.clear = function() {
+      var ctx = this.canvas.getContext("2d");
+      var rect = this.getMapDimensions().multiply(this.getScale());
+      ctx.clearRect(0, 0, rect.e(1), rect.e(2));
+  };
+
+  AnimatedMap.prototype._drawHex = function(ctx, tileType, tileSubtype, tileOwner, x, y, sheet) {
+    var imageCoords = this.theme.getTileCoordinates(tileType, tileSubtype, tileOwner);
+    ctx.drawImage(sheet ? sheet : this.sprites, imageCoords.x, imageCoords.y, 
+                  this.theme.settings.image.width, this.theme.settings.image.height,
+                  x, y, this.theme.settings.image.width, this.theme.settings.image.height);
+  }
+
+
+  AnimatedMap.prototype._drawProp = function(ctx, tileType, tileSubtype, tileOwner, x, y, sheet) {
+    var imageCoords = this.theme.getTilePropCoordinates(tileType, tileSubtype, tileOwner);
+    
+    if(imageCoords === null)
+      return;
+
+    ctx.drawImage(sheet ? sheet : this.sprites, imageCoords.x, imageCoords.y, 
+                  this.theme.settings.image.width, this.theme.settings.image.height,
+                  x, y, this.theme.settings.image.width, this.theme.settings.image.height);
+  }
+
+  AnimatedMap.prototype._drawPropOnHex = function(ctx, tileType, tileSubtype, tileOwner, x, y, sheet) {
+    this._drawProp(ctx, tileType, tileSubtype, tileOwner, 
+              x, y - (this.theme.settings.image.height - this.theme.settings.hex.height), sheet);
+  }
+
+
+  AnimatedMap.prototype._redrawTerrain = function(ctx, redrawFunc) {
+    for(var i = 0; i < this.tiles.length; ++i) {
+      var tile = this.tiles[i];
+      if(tile) {
+        var r = this.hex2rectCoords(tile.x, tile.y);
+        var offset = this.theme.getTileOffset(tile.type, tile.subtype, tile.owner);
+        
+        if(redrawFunc) {
+          redrawFunc(ctx, tile, r, offset);
+        } else {
+          this._drawHex(ctx, tile.type, tile.subtype, tile.owner, r.e(1), r.e(2) + offset);
+          this._drawPropOnHex(ctx, tile.type, tile.subtype, tile.owner, r.e(1), r.e(2) + offset);
+        }
+        
+        if(tile.capturePoints<200) {
+          // draw capture bar
+          if(tile.beingCaptured) {
+            ctx.fillStyle = "red";
+          } else {
+            ctx.fillStyle = "lightblue";
+          }
+          ctx.strokeStyle = "black";
+          var height = this.theme.settings.hex.height * this.capturedPercentage(el);
+          ctx.fillRect(r.e(1), r.e(2) + (this.theme.settings.hex.height - height), this.theme.settings.hex.width/10, height);
+          ctx.strokeRect(r.e(1), r.e(2), this.tileW/10, this.theme.settings.hex.height);
+        }
       }
+    }
+  }
+
+  AnimatedMap.prototype.paintMovementMask = function(movementOptions) {
+    var ctx = this.canvas.background.getContext("2d");
+    var that = this;
+    this._redrawTerrain(ctx, function(ctx, tile, r, offset) {
+      var sheet = that.spritesMoved;
+      for(var i = 0; i < movementOptions.length; ++i) {
+        if(movementOptions[i].pos.x == tile.x && movementOptions[i].pos.y == tile.y) {
+          sheet = null;
+          break;
+        }
+      }
+      that._drawHex(ctx, tile.type, tile.subtype, tile.owner, r.e(1), r.e(2) + offset, sheet);
+      that._drawPropOnHex(ctx, tile.type, tile.subtype, tile.owner, r.e(1), r.e(2) + offset, sheet);
+    });
+    
+    this.canvas.forceRedraw();
+  }
+  
+  AnimatedMap.prototype.sortTilesToRenderOrder = function() {
+    this.tiles.sort(function(a, b){ 
+      if(a.y !== b.y) {
+        return a.y - b.y;
+      } else {
+        return a.x - b.x;
+      }
+    });
+  };
+  
+  AnimatedMap.prototype.refresh = function() {
+    this.sortTilesToRenderOrder();
+  
+    this.clear();
+
+    if(!this.autoscale) {
+        var mapSize = this.getMapDimensions();
+        this.canvas.width = mapSize.e(1);
+        this.canvas.height = mapSize.e(2);
+    }
+
+    var ctx = this.canvas.background.getContext("2d");
+    
+    this._redrawTerrain(ctx);
+    
+    if(this.powerMap != null) {
+      if(this.showPowerMap) {
+        this.paintPowerMap(this.powerMap);
+      }
+      if(this.showBorders) {
+        this.paintBorders(this.powerMap);
+      }
+    }
+
+    if(this.showGrid) {
+        this.paintGrid();
+    }
+
+    this.canvas.forceRedraw();
+  };
+
+  AnimatedMap.prototype.coordToTile = function(cx, cy) {
+    var offset = this.getOffset();
+    var scale = this.getScale();
+    return this.rect2hexCoords((cx - offset.e(1)) / scale, (cy - offset.e(2)) / scale);    
+  }
+  
+  AnimatedMap.prototype.hideOverlay = function() {
+    this.overlay.visible = false;
+    this.canvas.forceRedraw();
+  }
+  
+  AnimatedMap.prototype.eventToTile = function(event) {
+      var cx = event.pageX - $(this.canvas).offset().left;
+      var cy = event.pageY - $(this.canvas).offset().top;
+      return coordToTile(cx, cy);
+  };
+  
+  AnimatedMap.prototype.eventToTileX = function(event) {
+      return this.eventToTile(event).e(1);
+  };
+  
+  AnimatedMap.prototype.eventToTileY = function(event) {
+      return this.eventToTile(event).e(2);
   };
 
   AnimatedMap.prototype.capturedPercentage = function(el) {
@@ -140,117 +307,11 @@ define(["Theme", "aja/lib/aja", "vec2d", "pixastic.hsl"], function(Theme) {
       ctx.clearRect(0, 0, this.getScale()*mapSize.w*this.tileW, this.getScale()*mapSize.h*this.tileH);
   };
 
-  AnimatedMap.prototype.paintTerrainTile = function(ctx, el, xPos, yPos) {
-      var coord = this.theme.getTileCoordinates(el.type, el.subtype, el.owner);
-      if(coord) {
-          // draw tile
-          ctx.drawImage(this.sprites,
-                        coord.x*this.tileW, coord.y*this.tileH, this.tileW, this.tileH,
-                        xPos, yPos, this.tileW, this.tileH);
-          if(el.capturePoints<200) {
-              // draw capture bar
-              if(el.beingCaptured) {
-                  ctx.fillStyle = "red";
-              } else {
-                  ctx.fillStyle = "lightblue";
-              }
-              ctx.strokeStyle = "black";
-              var height = this.tileH*this.capturedPercentage(el);
-              ctx.fillRect(xPos, yPos+(this.tileH-height), this.tileW/8, height);
-              ctx.strokeRect(xPos, yPos, this.tileW/8, this.tileH);
-          }
-      } else {
-          ctx.fillRect(xPos + 12, yPos + 12, this.tileW/2, this.tileH/2);
-      }
-  };
-
-  AnimatedMap.prototype.paintTiles = function(tiles) {
-      var ctx = this.canvas.background.getContext("2d");
-      ctx.globalCompositeOperation = "source-over";
-      ctx.save();
-      var offset = this.getOffset();
-      ctx.scale(this.getScale(), this.getScale());
-
-      var this_ = this;
-      
-      var offset = this.getOffset();
-      ctx.translate(offset.x, offset.y - this.unitOffsetY);
-      
-      ctx.fillStyle = "#eee";
-      ctx.fillRect(0, this.unitOffsetY, this.canvas.width, -this.unitOffsetY);
-      
-      tiles.forEach(function(el){
-          var xPos = this_.tileW*el.x;
-          var yPos = this_.tileH*el.y;
-          this_.paintTerrainTile(ctx, el, xPos, yPos);
-      });
-
-      ctx.restore();
-  };
-
   AnimatedMap.prototype.resize = function(width, height) {
     this.canvas.resize(width, height);
     this.overlay.resize(width, height);
   };
   
-  AnimatedMap.prototype.refresh = function() {
-      this.clear();
-
-      if(!this.autoscale) {
-          var mapSize = this.getMapSize();
-
-          var w = this.getScale() * mapSize.w * this.tileW;
-          var h = this.getScale() * mapSize.h * this.tileH - this.unitOffsetY;
-
-          if(w !== this.canvas.width || h !== this.canvas.height) {
-            this.resize(w, h);
-          }
-          
-          $("#mapcontainer").width(w);
-          $("#mapcontainer").height(h);
-          $("#mapmask").width(w);
-          $("#mapmask").height(h);
-      }
-
-      this.paintTiles(this.currentTiles);
-
-
-      if(this.powerMap != null) {
-          if(this.showPowerMap) {
-              this.paintPowerMap(this.powerMap);
-          }
-          if(this.showBorders) {
-              this.paintBorders(this.powerMap);
-          }
-      }
-
-      if(this.showGrid) {
-          this.paintGrid();
-      }
-
-      this.canvas.forceRedraw();
-  };
-
-  AnimatedMap.prototype.paintMask = function(ctx, x, y,color) {
-      ctx.fillRect(x * this.tileW, y * this.tileH - this.unitOffsetY, this.tileW, this.tileH);
-  };
-
-  AnimatedMap.prototype.paintAttackMask = function(attacks) {
-      var maskArray = this.parseAttacks(attacks, this.getMapSize());
-      this.paintMaskArray(maskArray, false, true);
-      this.paintDamageIndicators(attacks);
-  };
-
-  AnimatedMap.prototype.paintUnloadMask = function(unloadOptions) {
-      var maskArray = [];
-      var mapWidth = this.getMapSize().w;
-      for(i in unloadOptions) {
-          var coord = unloadOptions[i];
-          maskArray[coord.y * mapWidth + coord.x] = {};
-      }
-      this.paintMaskArray(maskArray, false, "blue");
-      this.canvas.forceRedraw();
-  };
 
   AnimatedMap.prototype.paintDamageIndicators = function(attacks) {
       var mapSize = this.getMapSize();
@@ -272,74 +333,9 @@ define(["Theme", "aja/lib/aja", "vec2d", "pixastic.hsl"], function(Theme) {
       this.canvas.forceRedraw();
   };
 
-  AnimatedMap.prototype.paintMovementMask = function(maskArray, inverse) {
-      if(!maskArray) this.paintMaskArray([]);
-
-      var maskArray2 = this.createMovementMask(maskArray);
-      this.paintMaskArray(maskArray2, !inverse);
-  };
-
-  AnimatedMap.prototype.paintMaskArray = function(maskArray, inverse, useColor) {
-    var mapSize = this.getMapSize();
-    var ctx = this.overlay.canvas.getContext("2d");
-    ctx.clearRect(0, 0, this.overlay.canvas.width, this.overlay.canvas.height);
-    ctx.save();
-    ctx.scale(this.getScale(), this.getScale());
-    ctx.fillStyle = useColor ? "rgba(255,32,32,0.7)" : "rgba(0,0,0,0.5)";
-    if(useColor=="blue") ctx.fillStyle = "rgba(32,32,255,0.5)";
-    for(var ii = 0; ii < mapSize.w*mapSize.h; ++ii) {
-      var y = parseInt(parseInt(ii) / mapSize.w);
-      var x = parseInt(ii) % mapSize.w;
-      if(inverse ? !maskArray[ii] : maskArray[ii]) {
-        this.paintMask(ctx, x, y);
-      }
-    }
-    ctx.restore();
-    this.overlay.visible = true;
-    this.canvas.forceRedraw();
-  };
-
-  AnimatedMap.prototype.hideOverlay = function() {
-    this.overlay.visible = false;
-    this.canvas.forceRedraw();
-  }
-  AnimatedMap.prototype.parseAttacks = function(attacklist, mapSize) {
-      var arr = [];
-      for (i in attacklist) {
-          var option = attacklist[i];
-          arr[option.pos.y*mapSize.w + option.pos.x] = {};
-      }
-      return arr;
-  };
-  AnimatedMap.prototype.createMovementMask = function(movementOptions) {
-      var maskArray2 = [];
-      var mapSize = this.getMapSize();
-      for (i in movementOptions) {
-          var option = movementOptions[i];
-          maskArray2[option.pos.y*mapSize.w + option.pos.x] = {};
-      }
-
-      return maskArray2;
-  };
-
-  AnimatedMap.prototype.eventToTileX = function(event) {
-      return Math.floor((event.pageX - $(this.canvas).offset().left)/ (this.getScale() * this.tileW));
-  };
-  AnimatedMap.prototype.eventToTileY = function(event) {
-      return Math.floor((event.pageY - $(this.canvas).offset().top + this.unitOffsetY)/ (this.getScale() * this.tileW));
-  };
-
-  AnimatedMap.prototype.showGameEvents = function(gameEvents) {
-      for(i in gameEvents) {
-          var e = gameEvents[i];
-          if(e.action == "attack") {
-              this.drawAttackArrow(e.attacker.x, e.attacker.y, e.target.x, e.target.y);
-          }
-      }
-  };
 
   AnimatedMap.prototype.tileWithUnit = function(unitId) {
-    var tiles = this.currentTiles.filter(function(tile){
+    var tiles = this.tiles.filter(function(tile){
       return tile.unit !== null && tile.unit.unitId == unitId;
     });
     
@@ -347,22 +343,16 @@ define(["Theme", "aja/lib/aja", "vec2d", "pixastic.hsl"], function(Theme) {
   }
 
   AnimatedMap.prototype.getMapArray = function() {
-      var mapArray = [];
-      this.currentTiles.forEach(function(tile){
-          if(tile.y >= mapArray.length) {
-              var difference = tile.y - mapArray.length + 1;
-              for(var i = 0; i < difference; ++i) {
-                  mapArray.push([]);
-              }
-          }
-          if(tile.x >= mapArray[tile.y].length) {
-              mapArray[tile.y].length = tile.x + 1;
-          }
+    var mapArray = {};
+    this.tiles.forEach(function(tile){
+      if(mapArray[tile.y] === undefined) {
+        mapArray[tile.y] = {};
+      }
+      
+      mapArray[tile.y][tile.x] = tile;
+    });
 
-          mapArray[tile.y][tile.x] = tile;
-      });
-
-      return mapArray;
+    return mapArray;
   };
 
   AnimatedMap.prototype.interpolateColor = function(baseColor, targetColor, scalar) {
@@ -469,7 +459,7 @@ define(["Theme", "aja/lib/aja", "vec2d", "pixastic.hsl"], function(Theme) {
 
   AnimatedMap.prototype.initUnitEntities = function() {
     var self = this;
-    this.currentTiles.forEach(function(el){
+    this.tiles.forEach(function(el){
       if(el.unit) {
         var unit = new MapUnit(el.unit, el.x, el.y, self);
         self.canvas.addEntity(unit);
@@ -491,18 +481,21 @@ define(["Theme", "aja/lib/aja", "vec2d", "pixastic.hsl"], function(Theme) {
 
   AnimatedMap.prototype.showMoveUnit = function(unitId, path, callback) {
     var u = this.getUnitEntity(unitId);
-    if(path.length > 1 && this.animate && (u.x != path[path.length - 1].x * this.tileW|| u.y != path[path.length - 1].y * this.tileH)) {
+    var endPos = u.hexPos(path[path.length - 1].x, path[path.length - 1].y);
+    if(path.length > 1 && this.animate && (u.x != endPos.e(1) || u.y != endPos.e(2))) {
       var pathSegments = [];
       var segmentTime = 1000  / (this.animationSpeed * path.length);
       for(var i = 1; i < path.length; ++i) {
         var prev = path[i - 1];
         var next = path[i];
-        pathSegments.push(new aja.PositionAnimation(u, prev.x * this.tileW, prev.y * this.tileH, next.x * this.tileW, next.y * this.tileH, segmentTime));
+        var prevPos = u.hexPos(prev.x, prev.y);
+        var nextPos = u.hexPos(next.x, next.y);
+        pathSegments.push(new aja.PositionAnimation(u, prevPos.e(1), prevPos.e(2), nextPos.e(1), nextPos.e(2), segmentTime));
       }
       this.canvas.addAnimation(new aja.SequentialAnimation(pathSegments, callback));
     } else {
-      u.x = path[path.length - 1].x * this.tileW;
-      u.y = path[path.length - 1].y * this.tileH;
+      u.x = endPos.e(1);
+      u.y = endPos.e(2);
       this.canvas.redrawEntity(u);
       
       if(callback !== undefined)
@@ -524,8 +517,9 @@ define(["Theme", "aja/lib/aja", "vec2d", "pixastic.hsl"], function(Theme) {
       that.canvas.eraseEntity(u);
       u.tx = t.x;
       u.ty = t.y;
-      u.x = t.x * that.tileW;
-      u.y = t.y * that.tileH;
+      var pos = u.hexPos(t.x, t.y);
+      u.x = pos.e(1);
+      u.y = pos.e(2);
       that.canvas.drawEntity(u);
       
       if(callback !== undefined) 
@@ -858,7 +852,7 @@ define(["Theme", "aja/lib/aja", "vec2d", "pixastic.hsl"], function(Theme) {
   };
 
   AnimatedMap.prototype.endTurn = function(player, callback) {
-    this.currentTiles.forEach(function(el){
+    this.tiles.forEach(function(el){
       if(el.unit) {
         el.unit.moved = false;
       }
@@ -892,17 +886,28 @@ define(["Theme", "aja/lib/aja", "vec2d", "pixastic.hsl"], function(Theme) {
   AnimatedMap.PHASE_UNLOAD = 5;
 
   function MapUnit(unit, x, y, map) {
+    this.map = map;
     this.tx = x;
     this.ty = y;
-    this.x = x * map.tileW;
-    this.y = y * map.tileH;
+    this.setToHex(x, y);
     this.unit = unit;
     this.unitId = unit.unitId;
-    this.map = map;
   }
 
+  MapUnit.prototype.hexPos = function(x, y) {
+    var pos = this.map.hex2rectCoords(x, y);
+    var unitPos = $V([pos.e(1), pos.e(2) - (this.map.theme.settings.image.height - this.map.theme.settings.hex.height)]);
+    return unitPos;
+  }
+  
+  MapUnit.prototype.setToHex = function(x, y) {
+    var pos = this.hexPos(x, y);
+    this.x = pos.e(1);
+    this.y = pos.e(2);
+  }
+  
   MapUnit.prototype.rect = function(ctx) {
-    return {x: this.x, y: this.y, w: this.map.tileW, h: this.map.tileH - this.map.unitOffsetY };
+    return {x: this.x, y: this.y, w: this.map.theme.settings.image.width, h: this.map.theme.settings.image.height };
   };
 
   MapUnit.prototype.draw = function(ctx) {
@@ -910,25 +915,25 @@ define(["Theme", "aja/lib/aja", "vec2d", "pixastic.hsl"], function(Theme) {
     
     if(this.unit.deployed) {
       ctx.strokeStyle = "white";
-      ctx.strokeRect(this.x, this.y - this.map.unitOffsetY, this.map.tileW-1, this.map.tileH-1);
+      ctx.strokeRect(this.x, this.y, this.map.theme.settings.image.width-1, this.map.theme.settings.image.height-1);
     }
     
     var sprites = this.unit.moved ? this.map.spritesMoved : this.map.sprites;
     var coord = this.unit ? this.map.theme.getUnitCoordinates(this.unit.type, this.unit.owner) : null;
     if(coord) {
       ctx.drawImage(sprites,
-                    coord.x*this.map.tileW, coord.y*this.map.tileH, this.map.tileW, this.map.tileH,
-                    this.x, this.y, this.map.tileW, this.map.tileH);
+                    coord.x, coord.y, this.map.theme.settings.image.width, this.map.theme.settings.image.height,
+                    this.x, this.y, this.map.theme.settings.image.width, this.map.theme.settings.image.height);
     } 
 
     var en = Math.ceil(parseInt(this.unit.health)/10);
     if(en<10 && en >= 0) {
       var numCoord = this.map.theme.getHealthNumberCoordinates(en);
-      var enX = this.x + this.map.tileW - 24;
-      var enY = this.y + this.map.tileH - 24;
+      var enX = this.x + this.map.theme.settings.image.width - 24;
+      var enY = this.y + this.map.theme.settings.image.height - 24;
       ctx.drawImage(this.map.sprites,
-                    numCoord.x*this.map.tileW, numCoord.y*this.map.tileH, this.map.tileW/2, this.map.tileH/2,
-                    enX, enY, this.map.tileW/2, this.map.tileH/2);
+                    numCoord.x*this.map.theme.settings.image.width, numCoord.y*this.map.theme.settings.image.height, this.map.theme.settings.image.width/2, this.map.theme.settings.image.height/2,
+                    enX, enY, this.map.theme.settings.image.width/2, this.map.theme.settings.image.height/2);
     }
     
     if(this.map.rules) {
@@ -938,11 +943,11 @@ define(["Theme", "aja/lib/aja", "vec2d", "pixastic.hsl"], function(Theme) {
         ctx.fillStyle = "#fff";
         for(var i = 0; i < unitType.carryNum; ++i) {
           if(i < this.unit.carriedUnits.length) {
-            ctx.fillRect(this.x + 2, this.y + this.map.tileH - (i+1)*7, 5, 5);
-            ctx.strokeRect(this.x + 2, this.y + this.map.tileH - (i+1)*7, 5, 5);
+            ctx.fillRect(this.x + 2, this.y + this.map.theme.settings.image.height - (i+1)*7, 5, 5);
+            ctx.strokeRect(this.x + 2, this.y + this.map.theme.settings.image.height - (i+1)*7, 5, 5);
           } else {
             ctx.strokeStyle = "#fff";
-            ctx.strokeRect(this.x + 2, this.y + this.map.tileH - (i+1)*7, 5, 5);
+            ctx.strokeRect(this.x + 2, this.y + this.map.theme.settings.image.height - (i+1)*7, 5, 5);
           }
         }
       }

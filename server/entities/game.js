@@ -96,26 +96,19 @@ Game.prototype.getMapSize = function() {
 }
 
 Game.prototype.getMapArray = function() {
-    if(this.tiles === undefined)
-      return null;
-  
-    var mapArray = [];
-    for(var i = 0; i < this.tiles.length; ++i) {
-      var tile = this.tiles[i];
-      if(tile.y >= mapArray.length) {
-        var difference = tile.y - mapArray.length + 1;
-        for(var j = 0; j < difference; ++j) {
-          mapArray.push([]);
-        }
-      }
-      if(tile.x >= mapArray[tile.y].length) {
-          mapArray[tile.y].length = tile.x + 1;
-      }
+  if(this.tiles === undefined)
+    return null;
 
-      mapArray[tile.y][tile.x] = tile;
+  var mapArray = {};
+  this.tiles.forEach(function(tile){
+    if(mapArray[tile.y] === undefined) {
+      mapArray[tile.y] = {};
     }
+    
+    mapArray[tile.y][tile.x] = tile;
+  });
 
-    return mapArray;
+  return mapArray;
 }
 
 Game.prototype.turnRemaining = function() {

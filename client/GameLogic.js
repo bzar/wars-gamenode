@@ -14,21 +14,37 @@ if(typeof(define) !== "undefined") {
 }
 
 GameLogic.prototype.getNeighborTiles = function(mapArray, x, y) {
+    var adjacent = [{x: x - 1, y: y}, {x: x, y: y - 1}, 
+                    {x: x + 1, y: y}, {x: x, y: y + 1}, 
+                    {x: x + 1, y: y - 1}, {x: x - 1, y: y + 1}];
     var neighbors = [];
-    if(x > 0) {
-        neighbors.push({x: x - 1, y: y});
-    }
-    if(y > 0) {
-        neighbors.push({x: x, y: y - 1});
-    }
-    if(x < mapArray[y].length - 1) {
-        neighbors.push({x: x + 1, y: y});
-    }
-    if(y < mapArray.length - 1) {
-        neighbors.push({x: x, y: y + 1});
+    for(var i = 0; i < adjacent.length; ++i) {
+      if(mapArray[adjacent[i].y] && mapArray[adjacent[i].y][adjacent[i].x]) {
+        neighbors.push(adjacent[i]);
+      }
     }
     return neighbors;
 };
+
+GameLogic.prototype.getDistance = function(x1, y1, x2, y2) {
+  var distance = 0;
+  if(x1 < x2 && y1 < y2) {
+    var diagonal = Math.min(x2 - x1, y2 - y1);
+    x1 += diagonal;
+    y1 += diagonal;
+    distance += diagonal;
+  } else if(x1 > x2 && y1 > y2) {
+    var diagonal = Math.min(x1 - x2, y1 - y2);
+    x2 += diagonal;
+    y2 += diagonal;
+    distance += diagonal;
+  } 
+  
+  distance += Math.abs(x2 - x1)
+  distance += Math.abs(y2 - y1);
+
+  return distance;
+}
 
 GameLogic.prototype.tileHasMovableUnit = function(player, x, y) {
     var tile = this.map.getTile(x, y);
@@ -162,7 +178,7 @@ GameLogic.prototype.unitCanMoveTo = function(x, y, dx, dy) {
   
   var from = {};
   var next = {tile: mapArray[y][x], left: unitType.movement, next: null, from: null,
-              distance:Math.abs(x - dx) + Math.abs(y - dy)};
+              distance: this.getDistance(x, y, dx, dy)};
   
   function addNode(node) {
     function isBefore(a, b) {
@@ -253,7 +269,7 @@ GameLogic.prototype.unitCanMoveTo = function(x, y, dx, dy) {
         left: current.left - cost, 
         next: null, 
         from: current, 
-        distance: Math.abs(tile.x - dx) + Math.abs(tile.y - dy)
+        distance: this.getDistance(tile.x, tile.y, dx, dy)
       }
       
       if(existing === null) {
@@ -365,7 +381,7 @@ GameLogic.prototype.unitMovementOptions = function(x, y) {
         for(var i = 0; i < neighbors.length; ++i) {
             neighbor = neighbors[i];
 
-            if(node.prev != null &&
+            if(node.prev !== null &&
                neighbor.x == node.prev.pos.x &&
                neighbor.y == node.prev.pos.y) {
                 continue;
@@ -437,7 +453,7 @@ GameLogic.prototype.calculateAttackPower = function(unit, distance, targetArmor)
 GameLogic.prototype.calculateDamage = function(unit, unitTile, target, targetTile) {
     var targetUnitType = this.rules.units[target.type];
     var targetArmor = this.rules.armors[targetUnitType.armor];
-    var distance = Math.abs(targetTile.x-unitTile.x) + Math.abs(targetTile.y-unitTile.y);
+    var distance = this.getDistance(targetTile.x, targetTile.y, unitTile.x, unitTile.y);
 
     var weaponPower = this.calculateAttackPower(unit, distance, targetArmor);
 
@@ -787,7 +803,7 @@ GameLogic.prototype.getPowerMap = function() {
                     ty = parseInt(ty);
                     for(tx in mapArray[ty]) {
                         tx = parseInt(tx);
-                        var distance = Math.abs(movementOption.pos.x-tx) + Math.abs(movementOption.pos.y-ty);
+                        var distance = this.getDistance(movementOption.pos.x, movementOption.pos.y, tx, ty);
                         if((unitType.primaryWeapon != null &&
                             (!this.rules.weapons[unitType.primaryWeapon].requireDeployed || unit.deployed) &&
                             distance in this.rules.weapons[unitType.primaryWeapon].rangeMap) ||

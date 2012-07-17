@@ -90,18 +90,18 @@ define(["Theme", "sylvester"], function(Theme, sylvester) {
   };
 
   Map.prototype.getTile = function(x, y) {
-      if(x !== undefined && y !== undefined) {
-        return this.tiles.filter(function(d) {
-            if(d.x == x && d.y == y) return true;
-        })[0];
-      } else if(x !== undefined) {
-        var tiles = this.tiles.filter(function(tile){
-          return tile.tileId == x;
-        });
-        return tiles.length != 0 ? tiles[0] : null;
-      } else {
-        return null;
-      }
+    if(x !== undefined && y !== undefined) {
+      return this.tiles.filter(function(d) {
+          if(d.x == x && d.y == y) return true;
+      })[0];
+    } else if(x !== undefined) {
+      var tiles = this.tiles.filter(function(tile){
+        return tile.tileId == x;
+      });
+      return tiles.length != 0 ? tiles[0] : null;
+    } else {
+      return null;
+    }
   };
 
   Map.prototype.clear = function() {
@@ -175,31 +175,31 @@ define(["Theme", "sylvester"], function(Theme, sylvester) {
   };
   
   Map.prototype.refresh = function() {
-      this.sortTilesToRenderOrder();
+    this.sortTilesToRenderOrder();
+  
+    this.clear();
+
+    if(!this.autoscale) {
+        var mapSize = this.getMapDimensions();
+        this.canvas.width = mapSize.e(1);
+        this.canvas.height = mapSize.e(2);
+    }
+
+    var ctx = this.canvas.getContext("2d");
     
-      this.clear();
-
-      if(!this.autoscale) {
-          var mapSize = this.getMapDimensions();
-          this.canvas.width = mapSize.e(1);
-          this.canvas.height = mapSize.e(2);
-      }
-
-      var ctx = this.canvas.getContext("2d");
-      
-      ctx.save();
-      
-      var offset = this.getOffset();
-      ctx.translate(offset.e(1), offset.e(2));
-      
-      var scale = this.getScale();
-      ctx.scale(scale, scale);
-      
-      ctx.translate(0, this.theme.settings.image.height - this.theme.settings.hex.height - this.theme.settings.hex.thickness);
-      
-      this._redraw(ctx, this.tiles);
-      
-      ctx.restore();
+    ctx.save();
+    
+    var offset = this.getOffset();
+    ctx.translate(offset.e(1), offset.e(2));
+    
+    var scale = this.getScale();
+    ctx.scale(scale, scale);
+    
+    ctx.translate(0, this.theme.settings.image.height - this.theme.settings.hex.height - this.theme.settings.hex.thickness);
+    
+    this._redraw(ctx, this.tiles);
+    
+    ctx.restore();
   };
 
   Map.prototype.eventToTile = function(event) {
