@@ -66,9 +66,9 @@ require(["Theme", "Map", "jquery-1.6.2.min.js","gamenode", "base"], function(The
       $(".sprite", terrainSubtypePalette).hide();
       $('.sprite[type="' + terrainType + '"][owner="' + selectedOwner + '"]', terrainSubtypePalette).show();
       
-      if($(".selected:visible", terrainSubtypePalette).length == 0) {
+      if($(".sprite.selected:visible", terrainSubtypePalette).length == 0) {
         $(".sprite", terrainSubtypePalette).removeClass("selected");
-        $($(":visible", terrainSubtypePalette)[0]).addClass("selected");
+        $($(".sprite:visible", terrainSubtypePalette)[0]).addClass("selected");
       }
     } else {
       terrainPalette.hide();
@@ -112,7 +112,7 @@ require(["Theme", "Map", "jquery-1.6.2.min.js","gamenode", "base"], function(The
     var terrainSelection = $("#terrainSelection");
     
     if(terrainSelection.hasClass("selected")) {
-      var selected = $($("#terrainSubtypePalette .selected")[0]);
+      var selected = $($("#terrainSubtypePalette .sprite.selected")[0]);
       return {type: parseInt(selected.attr("type")), subtype: parseInt(selected.attr("subtype")), 
               owner: parseInt(selected.attr("owner"))}
     } else {
@@ -126,6 +126,9 @@ require(["Theme", "Map", "jquery-1.6.2.min.js","gamenode", "base"], function(The
   
   function paintTile(x, y, brush) {
     var tile = mapPainter.getTile(x, y);
+    if(!tile)
+      return;
+      
     if(brush.type !== undefined) {
       tile.type = brush.type;
     }
@@ -144,33 +147,35 @@ require(["Theme", "Map", "jquery-1.6.2.min.js","gamenode", "base"], function(The
   }
   
   function resizeMap(width, height) {
-    var mapSize = mapPainter.getMapSize();
-    if(width > mapSize.w) {
-      for(var x = mapSize.w; x < width; ++x) {
-        for(var y = 0; y < mapSize.h; ++y) {
-          mapPainter.currentTiles.push({x:x, y:y, type:1, subtype:0, owner:0, unit: null});
+    var mapSize = mapPainter.getMapLimits().max;
+    var w = mapSize.e(1) + 1;
+    var h = mapSize.e(2) + 1;
+    if(width > w) {
+      for(var x = w; x < width; ++x) {
+        for(var y = 0; y < h; ++y) {
+          mapPainter.tiles.push({x:x, y:y - Math.floor(x/2), type:1, subtype:0, owner:0, unit: null});
         }
       }
-    } else if(width < mapSize.w) {
-      for(var i = 0; i < mapPainter.currentTiles.length; ++i) {
-        var tile = mapPainter.currentTiles[i];
+    } else if(width < w) {
+      for(var i = 0; i < mapPainter.tiles.length; ++i) {
+        var tile = mapPainter.tiles[i];
         if(tile.x >= width) {
-          mapPainter.currentTiles.splice(i, 1);
+          mapPainter.tiles.splice(i, 1);
           i -= 1;
         }
       }
     }
-    if(height > mapSize.h) {
+    if(height > h) {
       for(var x = 0; x < width; ++x) {
-        for(var y = mapSize.h; y < height; ++y) {
-          mapPainter.currentTiles.push({x:x, y:y, type:1, subtype:0, owner:0, unit: null});
+        for(var y = h; y < height; ++y) {
+          mapPainter.tiles.push({x:x, y:y - Math.floor(x/2), type:1, subtype:0, owner:0, unit: null});
         }
       }
-    } else if(height < mapSize.h) {
-      for(var i = 0; i < mapPainter.currentTiles.length; ++i) {
-        var tile = mapPainter.currentTiles[i];
-        if(tile.y >= height) {
-          mapPainter.currentTiles.splice(i, 1);
+    } else if(height < h) {
+      for(var i = 0; i < mapPainter.tiles.length; ++i) {
+        var tile = mapPainter.tiles[i];
+        if(tile.y + Math.floor(tile.x/2) >= height) {
+          mapPainter.tiles.splice(i, 1);
           i -= 1;
         }
       }
@@ -178,11 +183,11 @@ require(["Theme", "Map", "jquery-1.6.2.min.js","gamenode", "base"], function(The
   }
   
   function shiftMapUp() {
-    var mapSize = mapPainter.getMapSize();
-    for(var i = 0; i < mapPainter.currentTiles.length; ++i) {
-      var tile = mapPainter.currentTiles[i];
-      if(tile.y == 0) {
-        tile.y = mapSize.h - 1;
+    var limits = mapPainter.getMapLimits();
+    for(var i = 0; i < mapPainter.tiles.length; ++i) {
+      var tile = mapPainter.tiles[i];
+      if(tile.y == -Math.floor(tile.x/2)) {
+        tile.y = limits.max.e(2) - Math.floor(tile.x/2);
       } else {
         tile.y -= 1;
       }
@@ -191,11 +196,11 @@ require(["Theme", "Map", "jquery-1.6.2.min.js","gamenode", "base"], function(The
   }
   
   function shiftMapDown() {
-    var mapSize = mapPainter.getMapSize();
-    for(var i = 0; i < mapPainter.currentTiles.length; ++i) {
-      var tile = mapPainter.currentTiles[i];
-      if(tile.y == mapSize.h - 1) {
-        tile.y = 0;
+    var limits = mapPainter.getMapLimits();
+    for(var i = 0; i < mapPainter.tiles.length; ++i) {
+      var tile = mapPainter.tiles[i];
+      if(tile.y + Math.floor(tile.x/2) == limits.max.e(2)) {
+        tile.y = -Math.floor(tile.x/2);
       } else {
         tile.y += 1;
       }
@@ -204,33 +209,41 @@ require(["Theme", "Map", "jquery-1.6.2.min.js","gamenode", "base"], function(The
   }
   
   function shiftMapLeft() {
-    var mapSize = mapPainter.getMapSize();
-    for(var i = 0; i < mapPainter.currentTiles.length; ++i) {
-      var tile = mapPainter.currentTiles[i];
+    var limits = mapPainter.getMapLimits();
+    for(var i = 0; i < mapPainter.tiles.length; ++i) {
+      var tile = mapPainter.tiles[i];
       if(tile.x == 0) {
-        tile.x = mapSize.w - 1;
+        tile.x = limits.max.e(1);
+        tile.y -= Math.floor(tile.x/2);
       } else {
         tile.x -= 1;
-      }
+        if(tile.x % 2) {
+          tile.y += 1;
+        }
+      }      
     }
     mapPainter.refresh();
   }
   
   function shiftMapRight() {
-    var mapSize = mapPainter.getMapSize();
-    for(var i = 0; i < mapPainter.currentTiles.length; ++i) {
-      var tile = mapPainter.currentTiles[i];
-      if(tile.x == mapSize.w - 1) {
+    var limits = mapPainter.getMapLimits();
+    for(var i = 0; i < mapPainter.tiles.length; ++i) {
+      var tile = mapPainter.tiles[i];
+      if(tile.x == limits.max.e(1)) {
+        tile.y += Math.floor(tile.x/2);
         tile.x = 0;
       } else {
         tile.x += 1;
+        if(tile.x % 2 == 0) {
+          tile.y -= 1;
+        }
       }
     }
     mapPainter.refresh();
   }
   
   function saveMap(name, funds) {
-    var mapData = mapPainter.currentTiles;
+    var mapData = mapPainter.tiles;
     if(mapId === null) {
       client.stub.createMap(name, funds, mapData, function(response) {
         if(response.success) {
@@ -261,7 +274,7 @@ require(["Theme", "Map", "jquery-1.6.2.min.js","gamenode", "base"], function(The
     if(info) {
       $("#mapName").val(info.name);
       $("#mapFunds").val(info.funds);
-      mapPainter.currentTiles = info.data;
+      mapPainter.tiles = info.data;
       setCanvasSize($("#mapEditorView"));
       mapPainter.refresh();
     } else {
@@ -270,7 +283,7 @@ require(["Theme", "Map", "jquery-1.6.2.min.js","gamenode", "base"], function(The
   }
   
   function exportMap() {
-    var info = {name: $("#mapName").val(), funds: $("#mapFunds").val(), data: mapPainter.currentTiles};
+    var info = {name: $("#mapName").val(), funds: $("#mapFunds").val(), data: mapPainter.tiles};
     $("#importExportData").val(JSON.stringify(info));
   }
   
@@ -307,28 +320,27 @@ require(["Theme", "Map", "jquery-1.6.2.min.js","gamenode", "base"], function(The
   }
   
   function setCanvasSize(canvas) {
-    var mapSize = mapPainter.getMapSize();
-    var width = mapSize.w * mapPainter.tileW;
-    var height = mapSize.h * mapPainter.tileH - mapPainter.unitOffsetY;
+    var mapSize = mapPainter.getMapDimensions();
+    var width = mapSize.e(1);
+    var height = mapSize.e(2);
     canvas.attr("width", width);
     canvas.attr("height", height);
   }
   
   function initializeMap(canvas, mapData) {
     mapPainter.canvas = canvas[0];
-    mapPainter.currentTiles = mapData;
-    mapPainter.showGrid = true;
+    mapPainter.tiles = mapData;
     setCanvasSize(canvas);
-    var mapSize = mapPainter.getMapSize();
-    $("#mapWidth").val(mapSize.w);
-    $("#mapHeight").val(mapSize.h);
+    var mapLimits = mapPainter.getMapLimits();
+    $("#mapWidth").val(mapLimits.max.e(1) + 1);
+    $("#mapHeight").val(mapLimits.max.e(2) + 1);
     mapPainter.refresh();
     canvas.mousedown(handleMouseDown);
     canvas.mouseup(handleMouseUp);
     canvas.mousemove(handleMouseMove);
     canvas.mouseenter(handleMouseEnter);
   }
-  
+
   function initializeMapEditor(client) {
     var canvas = $("#mapEditorView");
     mapPainter.doPreload(function() {
@@ -343,9 +355,10 @@ require(["Theme", "Map", "jquery-1.6.2.min.js","gamenode", "base"], function(The
         var mapData = [];
         for(var y = 0; y < 15; ++y) {
           for(var x = 0; x < 15; ++x) {
-            mapData.push({x:x, y:y, type:1, subtype:0, owner:0, unit: null});
+            mapData.push({x:x, y:y-Math.floor(x/2), type:1, subtype:0, owner:0, unit: null});
           }
         }
+
         initializeMap(canvas, mapData);
       }
     });
@@ -426,11 +439,23 @@ require(["Theme", "Map", "jquery-1.6.2.min.js","gamenode", "base"], function(The
       var terrainTypeItem = $("<span></span>");
       terrainTypeItem.css("background-image", "url('" + theme.getSpriteSheetUrl() + "')");
       terrainTypeItem.addClass("sprite");
+      terrainTypeItem.css("width", theme.settings.image.width);
+      terrainTypeItem.css("height", theme.settings.image.height);
       var pos = theme.getTileCoordinates(terrainType, 0, 0);
-      var imageX = pos.x * mapPainter.tileW;
-      var imageY = pos.y * mapPainter.tileH;
-      terrainTypeItem.css("background-position", -imageX + "px " + -imageY + "px")
+      terrainTypeItem.css("background-position", -pos.x + "px " + (-pos.y + (theme.settings.image.height - theme.settings.hex.height - theme.settings.hex.thickness))+ "px")
       terrainTypeItem.attr("type", terrainType);
+      
+      var propPos = theme.getTilePropCoordinates(terrainType, 0, 0);
+      if(propPos) {
+        var terrainProp = $("<span></span>");
+        terrainProp.css("background-image", "url('" + theme.getSpriteSheetUrl() + "')");
+        terrainProp.css("width", theme.settings.image.width);
+        terrainProp.css("height", theme.settings.image.height);
+        terrainProp.css("display", "block");
+        terrainProp.css("background-position", -propPos.x + "px " + (-propPos.y - theme.settings.hex.thickness) + "px")
+        terrainTypeItem.append(terrainProp);
+      }
+
       terrainTypePalette.append(terrainTypeItem);
             
       for(var terrainSubtype = 0; terrainSubtype < theme.getNumberOfTileSubtypes(terrainType); ++terrainSubtype) {
@@ -438,14 +463,28 @@ require(["Theme", "Map", "jquery-1.6.2.min.js","gamenode", "base"], function(The
           var terrainSubtypeItem = $("<span></span>");
           terrainSubtypeItem.css("background-image", "url('" + theme.getSpriteSheetUrl() + "')");
           terrainSubtypeItem.addClass("sprite");
+          terrainSubtypeItem.css("width", theme.settings.image.width);
+          terrainSubtypeItem.css("height", theme.settings.image.height);
           var pos = theme.getTileCoordinates(terrainType, terrainSubtype, terrainOwner);
-          var imageX = pos.x * mapPainter.tileW;
-          var imageY = pos.y * mapPainter.tileH;
-          terrainSubtypeItem.css("background-position", -imageX + "px " + -imageY + "px")
+          terrainSubtypeItem.css("background-position", -pos.x + "px " + (-pos.y + (theme.settings.image.height - theme.settings.hex.height - theme.settings.hex.thickness))+ "px")
           terrainSubtypeItem.attr("type", terrainType);
           terrainSubtypeItem.attr("subtype", terrainSubtype);
           terrainSubtypeItem.attr("owner", terrainOwner);
+          
+          var propPos = theme.getTilePropCoordinates(terrainType, terrainSubtype, terrainOwner);
+          if(propPos) {
+            var terrainProp = $("<span></span>");
+            terrainProp.css("background-image", "url('" + theme.getSpriteSheetUrl() + "')");
+            terrainProp.css("width", theme.settings.image.width);
+            terrainProp.css("height", theme.settings.image.height);
+            terrainProp.css("display", "block");
+            terrainProp.css("background-position", -propPos.x + "px " + (-propPos.y - theme.settings.hex.thickness) + "px")
+            terrainSubtypeItem.append(terrainProp);
+          }
+          
           terrainSubtypePalette.append(terrainSubtypeItem);
+          
+          
         }
       }
     }
@@ -479,9 +518,9 @@ require(["Theme", "Map", "jquery-1.6.2.min.js","gamenode", "base"], function(The
         unitItem.attr("owner", unitOwner);
         unitItem.css("background-image", "url('" + theme.getSpriteSheetUrl() + "')");
         unitItem.addClass('sprite');
-        var imageX = pos.x * mapPainter.tileW;
-        var imageY = pos.y * mapPainter.tileH;
-        unitItem.css("background-position", -imageX + "px " + -imageY + "px")
+        unitItem.css("width", theme.settings.image.width);
+        unitItem.css("height", theme.settings.image.width);
+        unitItem.css("background-position", -pos.x + "px " + -pos.y + "px")
         unitPalette.append(unitItem);
       }
     }

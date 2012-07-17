@@ -97,7 +97,7 @@ require(["Theme", "Map", "jquery-1.6.2.min.js","gamenode", "base"], function(The
           client.stub.mapData(map.mapId, function(response) {
             var mapData = response.mapData;
             mapPainter.canvas = previewCanvas[0];
-            mapPainter.currentTiles = mapData;
+            mapPainter.tiles = mapData;
             mapPainter.refresh();
           });
         });

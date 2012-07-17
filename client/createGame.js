@@ -116,10 +116,10 @@ require(["Theme", "Map", "jquery-1.6.2.min.js", "gamenode", "base"], function(Th
         populateMapTileStats(mapData);
         var canvas = $("#mapCanvas");
         mapPainter.canvas = canvas[0];
-        mapPainter.currentTiles = mapData;
-        var mapSize = mapPainter.getMapSize();
-        var width = mapSize.w * mapPainter.tileW;
-        var height = mapSize.h * mapPainter.tileH + mapPainter.unitOffsetY;
+        mapPainter.tiles = mapData;
+        var mapSize = mapPainter.getMapDimensions();
+        var width = mapSize.e(1);
+        var height = mapSize.e(2);
         canvas.attr("width", width);
         canvas.attr("height", height);
         mapPainter.scale = 1.0;
@@ -225,7 +225,7 @@ require(["Theme", "Map", "jquery-1.6.2.min.js", "gamenode", "base"], function(Th
         client.stub.mapData(map.mapId, function(response) {
           var mapData = response.mapData;
           mapPainter.canvas = previewCanvas[0];
-          mapPainter.currentTiles = mapData;
+          mapPainter.tiles = mapData;
           mapPainter.autoscale = true;
           mapPainter.refresh();
         });
@@ -357,12 +357,24 @@ require(["Theme", "Map", "jquery-1.6.2.min.js", "gamenode", "base"], function(Th
             var image = $("<span></span>");
             image.css("background-image", "url('" + theme.getSpriteSheetUrl() + "')");
             image.addClass("sprite");
+            image.css("width", theme.settings.image.width);
+            image.css("height", theme.settings.image.height);
             var pos = theme.getTileCoordinates(tileType, 0, 0);
-            var imageX = pos.x * mapPainter.tileW;
-            var imageY = pos.y * mapPainter.tileH;
-            image.css("background-position", -imageX + "px " + -imageY + "px")
+            image.css("background-position", -pos.x + "px " + (-pos.y + (theme.settings.image.height - theme.settings.hex.height - theme.settings.hex.thickness))+ "px")
             var text = $("<span></span");
             text.text("x" + stats[tileType]);
+            
+            var propPos = theme.getTilePropCoordinates(tileType, 0, 0);
+            if(propPos) {
+              var terrainProp = $("<span></span>");
+              terrainProp.css("background-image", "url('" + theme.getSpriteSheetUrl() + "')");
+              terrainProp.css("width", theme.settings.image.width);
+              terrainProp.css("height", theme.settings.image.height);
+              terrainProp.css("display", "block");
+              terrainProp.css("background-position", -propPos.x + "px " + (-propPos.y - theme.settings.hex.thickness) + "px")
+              image.append(terrainProp);
+            }
+            
             item.append(image);
             item.append(text);
             item.addClass("mapTileStat");

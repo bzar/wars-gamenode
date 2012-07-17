@@ -1,56 +1,66 @@
-define(["image_map"], function(imageMap) {
-  var GUI_IMAGES_HEALTH = 0;
-  var SPRITE_TERRAIN = 0;
-  var SPRITE_UNIT = 1;
-  var SPRITE_GUI = 2;
+define([], function() {
 
   function Theme(themeName) {
     this.themeName = themeName;
-    this.settings = {
-      playerColors: [
-        {r: 127, g: 127, b: 127},
-        {r: 214, g: 61, b: 56},
-        {r: 56, g: 67, b: 214},
-        {r: 217, g: 213, b: 43},
-        {r: 99, g: 173, b: 208}
-      ]
-    }
+    this.settings = {}
   }
 
   Theme.prototype.load = function(callback) {
-    var settings = this.settings;
+    var that = this;
     $.getJSON("/img/themes/" + this.themeName + "/settings.json", function(data) {
-      function process(d, t) {
-        for(k in d) {
-          if(d.hasOwnProperty(k) && t.hasOwnProperty(k)){
-            if(typeof(d[k]) == "object") {
-              process(d[k], t[k]);
-            } else if(typeof(d[k]) == typeof(t[k])) {
-              t[k] = d[k];
-            }
+      that.settings = data;
+      
+      var sheet = that.settings.sheet;
+      var image = that.settings.image;
+      var sheetLayout = that.settings.sheetLayout;
+      
+      var coords = {};
+      for(var i = 0; i < sheetLayout.length; ++i) {
+        var name = sheetLayout[i];
+        if(name !== null) {
+          coords[name] = { 
+            x: Math.floor(i % sheet.cols) * image.width,
+            y: Math.floor(i / sheet.cols) * image.height
           }
         }
       }
       
-      process(data, settings);
+      that.settings.sprites = coords;
+      
       callback();
     });
   }
 
   Theme.prototype.getSpriteSheetUrl = function() {
-    return "/img/themes/" + this.themeName + "/sprite_sheet.png";
+    return "/img/themes/" + this.themeName + "/" + this.settings.sheet.filename;
   }
 
-  Theme.prototype.getUnitCoordinates = function(unitType, unitOwner) {
-    return SPRITE_SHEET_MAP[SPRITE_UNIT][unitType][unitOwner];
+  Theme.prototype.getCoordinates = function(name) {
+    if(name === null || name === undefined)
+      return null;
+    
+    return this.settings.sprites[name];
   }
 
   Theme.prototype.getTileCoordinates = function(tileType, tileSubtype, tileOwner) {
-    return SPRITE_SHEET_MAP[SPRITE_TERRAIN][tileType][tileSubtype][tileOwner];
+    return this.getCoordinates(this.settings.tiles[tileType][tileSubtype][tileOwner].hex);
+  }
+  
+  Theme.prototype.getTilePropCoordinates = function(tileType, tileSubtype, tileOwner) {
+    return this.getCoordinates(this.settings.tiles[tileType][tileSubtype][tileOwner].prop);
+  }
+  
+  Theme.prototype.getTileOffset = function(tileType, tileSubtype, tileOwner) {
+    return this.settings.tiles[tileType][tileSubtype][tileOwner].offset;
   }
 
+  Theme.prototype.getUnitCoordinates = function(unitType, unitOwner) {
+    return this.getCoordinates(this.settings.units[unitType][unitOwner]);
+  }
+  
   Theme.prototype.getHealthNumberCoordinates = function(healthNumber) {
-    return SPRITE_SHEET_MAP[SPRITE_GUI][GUI_IMAGES_HEALTH][healthNumber];
+    //return SPRITE_SHEET_MAP[SPRITE_GUI][GUI_IMAGES_HEALTH][healthNumber];
+    return null;
   }
 
   Theme.prototype.getPlayerColor = function(playerNumber) {
@@ -67,23 +77,23 @@ define(["image_map"], function(imageMap) {
   }
 
   Theme.prototype.getNumberOfUnitTypes = function() {
-    return SPRITE_SHEET_MAP[SPRITE_UNIT].length;
+    return this.settings.units.length;
   }
 
   Theme.prototype.getNumberOfUnitOwners = function(unitType) {
-    return SPRITE_SHEET_MAP[SPRITE_UNIT][unitType].length;
+    return this.settings.units[unitType].length;
   }
 
   Theme.prototype.getNumberOfTileTypes = function() {
-    return SPRITE_SHEET_MAP[SPRITE_TERRAIN].length;
+    return this.settings.tiles.length;
   }
 
   Theme.prototype.getNumberOfTileSubtypes = function(tileType) {
-    return SPRITE_SHEET_MAP[SPRITE_TERRAIN][tileType].length;
+    return this.settings.tiles[tileType].length;
   }
 
   Theme.prototype.getNumberOfTileOwners = function(tileType, tileSubtype) {
-    return SPRITE_SHEET_MAP[SPRITE_TERRAIN][tileType][tileSubtype].length;
+    return this.settings.tiles[tileType][tileSubtype].length;
   }
 
   Theme.prototype.getAttackIconUrl = function() {

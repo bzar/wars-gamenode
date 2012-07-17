@@ -4,10 +4,11 @@
       {"r": 214, "g":  61, "b":  56},
       {"r":  56, "g":  67, "b": 214},
       {"r": 217, "g": 213, "b":  43},
-      {"r": 127, "g": 127, "b": 127},
-      {"r": 127, "g": 127, "b": 127},
-      {"r": 127, "g": 127, "b": 127},
-      {"r": 127, "g": 127, "b": 127},
+      {"r":  99, "g": 173, "b": 208},
+      {"r": 230, "g": 0, "b": 211},
+      {"r": 230, "g": 108, "b": 0},
+      {"r": 177, "g": 108, "b": 53},
+      {"r": 173, "g": 230, "b": 0}
   ],
   
   "sheet": {
@@ -101,15 +102,15 @@
     ],
     [
       [
-        {"hex": "concrete", "prop": "base", "offset": 0},
-        {"hex": "concrete", "prop": "base_1", "offset": 0},
-        {"hex": "concrete", "prop": "base_2", "offset": 0},
-        {"hex": "concrete", "prop": "base_3", "offset": 0},
-        {"hex": "concrete", "prop": "base_4", "offset": 0},
-        {"hex": "concrete", "prop": "base_5", "offset": 0},
-        {"hex": "concrete", "prop": "base_6", "offset": 0},
-        {"hex": "concrete", "prop": "base_7", "offset": 0},
-        {"hex": "concrete", "prop": "base_8", "offset": 0}
+        {"hex": "concrete", "prop": "factory", "offset": 0},
+        {"hex": "concrete", "prop": "factory_1", "offset": 0},
+        {"hex": "concrete", "prop": "factory_2", "offset": 0},
+        {"hex": "concrete", "prop": "factory_3", "offset": 0},
+        {"hex": "concrete", "prop": "factory_4", "offset": 0},
+        {"hex": "concrete", "prop": "factory_5", "offset": 0},
+        {"hex": "concrete", "prop": "factory_6", "offset": 0},
+        {"hex": "concrete", "prop": "factory_7", "offset": 0},
+        {"hex": "concrete", "prop": "factory_8", "offset": 0}
       ]
     ],
     [
@@ -155,11 +156,9 @@
       [{"hex": "beach", "prop": null, "offset": 4}]
     ],
     [
-      [
-        [{"hex": "water", "prop": "bridge-tl-br", "offset": 8}],
-        [{"hex": "water", "prop": "bridge-bl-tr", "offset": 8}],
-        [{"hex": "water", "prop": "bridge-t-b", "offset": 8}]
-      ]
+      [{"hex": "water", "prop": "bridge-tl-br", "offset": 8}],
+      [{"hex": "water", "prop": "bridge-bl-tr", "offset": 8}],
+      [{"hex": "water", "prop": "bridge-t-b", "offset": 8}]
     ]
   ],
 

@@ -19,10 +19,10 @@ require(["Theme", "Map", "jquery-1.6.2.min.js","gamenode", "base"], function(The
       populateNavigation(session);
       client.stub.profile(function(response) {
         theme = new Theme(response.profile.settings.gameTheme);
-        mapPainter = new Map(undefined, 1.0, theme);
-        mapPainter.canvas = $("#mapCanvas")[0];
         if(gameId !== null) {
           theme.load(function() {
+            mapPainter = new Map(undefined, 1.0, theme);
+            mapPainter.canvas = $("#mapCanvas")[0];
             client.stub.gameData(gameId, function(response) {
               if(response.success) {
                 if(response.game.state != "pregame") {
@@ -52,10 +52,10 @@ require(["Theme", "Map", "jquery-1.6.2.min.js","gamenode", "base"], function(The
     mapPainter.doPreload(function() {
       showPlayers(game.players, author);
       
-      mapPainter.currentTiles = game.tiles;
-      var mapSize = mapPainter.getMapSize();
-      var width = mapSize.w * mapPainter.tileW
-      var height = mapSize.h * mapPainter.tileH
+      mapPainter.tiles = game.tiles;
+      var mapSize = mapPainter.getMapDimensions();
+      var width = mapSize.e(1);
+      var height = mapSize.e(2);
       mapPainter.canvas.width = width;
       mapPainter.canvas.height = height;
       mapPainter.refresh();
