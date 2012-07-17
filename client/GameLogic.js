@@ -489,25 +489,25 @@ GameLogic.prototype.unitAttackOptions = function(x1, y1, x2, y2) {
     var unitType = this.rules.units[unit.type];
     var mapArray = this.map.getMapArray();
     
-    for(var ty = 0; ty < mapArray.length; ++ty) {
-        for(var tx = 0; tx < mapArray[ty].length; ++tx) {
-            var targetTile = mapArray[ty][tx]
+    for(var ty in mapArray) {
+      for(var tx in mapArray[ty]) {
+        var targetTile = mapArray[ty][tx]
 
-            if(targetTile.unit == null) {
-                continue;
-            }
-
-            var targetUnit = targetTile.unit;
-
-            if(targetUnit.owner == unit.owner) {
-                continue;
-            }
-
-            var power = this.calculateDamage(unit, attackFromTile, targetUnit, targetTile);
-            if(power !== null) {
-              attackOptions.push({pos:{x:tx, y:ty}, power:power});
-            }
+        if(targetTile.unit == null) {
+            continue;
         }
+
+        var targetUnit = targetTile.unit;
+
+        if(targetUnit.owner == unit.owner) {
+            continue;
+        }
+
+        var power = this.calculateDamage(unit, attackFromTile, targetUnit, targetTile);
+        if(power !== null) {
+          attackOptions.push({pos:{x:tx, y:ty}, power:power});
+        }
+      }
     }
 
     return attackOptions;
