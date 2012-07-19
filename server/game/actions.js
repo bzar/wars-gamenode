@@ -609,6 +609,7 @@ GameActions.prototype.startTurn = function(game, callback) {
             } else {
               tile.beingCaptured = false;
               tile.regenerateCapturePoints();
+              events.regenerateCapturePoints(tile, tile.capturePoints);
             }
           }
           
