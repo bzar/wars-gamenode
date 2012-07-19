@@ -314,8 +314,11 @@ define(["Theme", "aja/lib/aja", "pixastic", "sylvester"], function(Theme) {
 
     var ctx = this.canvas.background.getContext("2d");
     
+    ctx.fillStyle = "#eee";
+    ctx.fillRect(0, 0, this.canvas.canvas.width, this.canvas.canvas.height);
+
     this._redrawTerrain(ctx);
-    
+
     if(this.powerMap != null) {
       if(this.showPowerMap) {
         this.paintPowerMap(this.powerMap);
@@ -359,12 +362,6 @@ define(["Theme", "aja/lib/aja", "pixastic", "sylvester"], function(Theme) {
 
   AnimatedMap.prototype.capturedPercentage = function(el) {
       return el.capturePoints / 200;
-  };
-
-  AnimatedMap.prototype.clear = function() {
-      var mapSize = this.getMapSize();
-      var ctx = this.canvas.background.getContext("2d");
-      ctx.clearRect(0, 0, this.getScale()*mapSize.w*this.tileW, this.getScale()*mapSize.h*this.tileH);
   };
 
   AnimatedMap.prototype.resize = function(width, height) {
