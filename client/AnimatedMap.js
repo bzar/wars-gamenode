@@ -519,7 +519,9 @@ define(["Theme", "aja/lib/aja", "pixastic", "sylvester"], function(Theme) {
     this.tiles.forEach(function(el){
       if(el.unit) {
         var unit = new MapUnit(el.unit, el.x, el.y, that);
+        unit.healthIndicator = new HealthIndicator(unit);
         that.canvas.addEntity(unit);
+        that.canvas.addEntity(unit.healthIndicator);
       }
       
       if(el.capturePoints < 200) {
@@ -819,6 +821,7 @@ define(["Theme", "aja/lib/aja", "pixastic", "sylvester"], function(Theme) {
     });
     
     var u = new MapUnit(unit, t.x, t.y, this);
+    u.healthIndicator = new HealthIndicator(u);
     
     t.unit = u.unit;
     unit.moved = true;
@@ -833,6 +836,7 @@ define(["Theme", "aja/lib/aja", "pixastic", "sylvester"], function(Theme) {
     
     this.canvas.redrawEntity(carrier);
     this.canvas.addEntity(u);
+    this.canvas.addEntity(u.healthIndicator);
   };
 
   AnimatedMap.prototype.destroyUnit = function(unitId, callback) {
@@ -842,6 +846,7 @@ define(["Theme", "aja/lib/aja", "pixastic", "sylvester"], function(Theme) {
     var canvas = this.canvas;
     function doDestroy() {
       canvas.removeEntity(u);
+      canvas.removeEntity(u.healthIndicator);
       t.unit = null;
       if(callback !== undefined) 
         callback();      
@@ -896,14 +901,18 @@ define(["Theme", "aja/lib/aja", "pixastic", "sylvester"], function(Theme) {
     unit.carriedUnits = [];
     
     var u = new MapUnit(unit, t.x, t.y, this);
+    u.healthIndicator = new HealthIndicator(u);
+
     if(this.animate) {
       u.effects = [new aja.OpacityEffect];
       u.opacity = 0.0;
       
       this.canvas.addAnimation(new aja.NumberAnimation(u, {opacity: {from: 0.0, to: 1.0}}, 500 / this.animationSpeed, aja.easing.SineIn, callback));
       this.canvas.addEntity(u);
+      this.canvas.addEntity(u.healthIndicator);
     } else {
       this.canvas.addEntity(u);
+      this.canvas.addEntity(u.healthIndicator);
       callback();
     }
 
@@ -1006,19 +1015,6 @@ define(["Theme", "aja/lib/aja", "pixastic", "sylvester"], function(Theme) {
                     this.x, this.y, this.map.theme.settings.image.width, this.map.theme.settings.image.height);
     } 
 
-    if(this.unit.health < 100 && this.unit.health >= 0) {
-      var healthString = "" + this.unit.health;
-      
-      for(var i = 0; i < healthString.length; ++i) {
-        var n = healthString[i];
-        var numCoord = this.map.theme.getHealthNumberCoordinates(n);
-        ctx.drawImage(this.map.sprites,
-                      numCoord.x, numCoord.y, this.map.theme.settings.image.width, this.map.theme.settings.image.height,
-                      this.x - (healthString.length - 1 - i) * (this.map.theme.settings.number.width + 1), this.y, this.map.theme.settings.image.width, this.map.theme.settings.image.height);
-      }
-      
-    }
-    
     if(this.unit.deployed) {
       var deployCoord = this.map.theme.getDeployEmblemCoordinates();
       ctx.drawImage(sprites,
@@ -1110,8 +1106,33 @@ define(["Theme", "aja/lib/aja", "pixastic", "sylvester"], function(Theme) {
     }
   };
 
-  CaptureBar.prototype.rect = function(ctx) {
+  CaptureBar.prototype.rect = function() {
     return {x: this.x, y: this.y, w: this.map.theme.settings.image.width, h: this.map.theme.settings.image.height };
+  };
+
+  
+  function HealthIndicator(mapUnit) {
+    this.mapUnit = mapUnit;
+    this.z = 1;
+  };
+  
+  HealthIndicator.prototype.draw = function(ctx) {
+    if(this.mapUnit.unit.health < 100 && this.mapUnit.unit.health >= 0) {
+      var healthString = "" + this.mapUnit.unit.health;
+      
+      for(var i = 0; i < healthString.length; ++i) {
+        var n = healthString[i];
+        var numCoord = this.mapUnit.map.theme.getHealthNumberCoordinates(n);
+        ctx.drawImage(this.mapUnit.map.sprites,
+                      numCoord.x, numCoord.y, this.mapUnit.map.theme.settings.image.width, this.mapUnit.map.theme.settings.image.height,
+                      this.mapUnit.x - (healthString.length - 1 - i) * (this.mapUnit.map.theme.settings.number.width + 1), this.mapUnit.y, 
+                      this.mapUnit.map.theme.settings.image.width, this.mapUnit.map.theme.settings.image.height);
+      }
+    }
+  };
+
+  HealthIndicator.prototype.rect = function() {
+    return {x: this.mapUnit.x, y: this.mapUnit.y, w: this.mapUnit.map.theme.settings.image.width, h: this.mapUnit.map.theme.settings.image.height };
   };
 
   return AnimatedMap;
