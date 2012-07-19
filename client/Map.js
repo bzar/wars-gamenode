@@ -195,8 +195,6 @@ define(["Theme", "sylvester"], function(Theme, sylvester) {
     var scale = this.getScale();
     ctx.scale(scale, scale);
     
-    ctx.translate(0, this.theme.settings.image.height - this.theme.settings.hex.height - this.theme.settings.hex.thickness);
-    
     this._redraw(ctx, this.tiles);
     
     ctx.restore();

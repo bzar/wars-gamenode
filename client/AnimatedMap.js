@@ -373,7 +373,7 @@ define(["Theme", "aja/lib/aja", "pixastic", "sylvester"], function(Theme) {
   AnimatedMap.prototype.paintDamageIndicators = function(attacks) {
       var mapSize = this.getMapSize();
       var ctx = this.overlay.canvas.getContext("2d");
-      ctx.save();
+      
       ctx.scale(this.getScale(), this.getScale());
 
       for (i in attacks) {
@@ -386,7 +386,6 @@ define(["Theme", "aja/lib/aja", "pixastic", "sylvester"], function(Theme) {
           ctx.strokeText(power + '%', attacks[i].pos.x*this.tileW+2, attacks[i].pos.y*this.tileH+2 - this.unitOffsetY);
           ctx.fillText(power + '%', attacks[i].pos.x*this.tileW+2, attacks[i].pos.y*this.tileH+2 - this.unitOffsetY);
       }
-      ctx.restore();
       this.canvas.forceRedraw();
   };
 
@@ -1004,9 +1003,6 @@ define(["Theme", "aja/lib/aja", "pixastic", "sylvester"], function(Theme) {
   };
 
   MapUnit.prototype.draw = function(ctx) {
-    ctx.save();
-    
-    
     var sprites = this.unit.moved ? this.map.spritesMoved : this.map.sprites;
     var coord = this.unit ? this.map.theme.getUnitCoordinates(this.unit.type, this.unit.owner) : null;
     if(coord) {
@@ -1036,7 +1032,6 @@ define(["Theme", "aja/lib/aja", "pixastic", "sylvester"], function(Theme) {
         }
       }
     }
-    ctx.restore();
   }
 
   function MapDigit(n, x, y, map) {
