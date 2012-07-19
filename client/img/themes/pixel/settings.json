@@ -36,7 +36,16 @@
   
   "captureBar": {
     "bitHeight": 4,
-    "totalBits": 10
+    "totalBits": 10,
+    "barName": "captureBar",
+    "capturingName": "capturingBit",
+    "recoveringName": "recoveringBit"
+  },
+  
+  "carrierSlot": {
+    "slotHeight": 10,
+    "freeSlotName": "carrierFree",
+    "occupiedSlotName": "carrierOccupied"
   },
   
   "sheetLayout": [
@@ -70,7 +79,7 @@
     "aaship", "aaship_1", "aaship_2", "aaship_3", "aaship_4", "aaship_5", "aaship_6", "aaship_7", "aaship_8",
     "cruiser", "cruiser_1", "cruiser_2", "cruiser_3", "cruiser_4", "cruiser_5", "cruiser_6", "cruiser_7", "cruiser_8",
     "num_0", "num_1", "num_2", "num_3", "num_4", "deployEmblem", "captureBar", "capturingBit", "recoveringBit",
-    "num_5", "num_6", "num_7", "num_8", "num_9", null, null, null, null,
+    "num_5", "num_6", "num_7", "num_8", "num_9", "carrierFree", "carrierOccupied", null, null,
     "dnum_0", "dnum_1", "dnum_2", "dnum_3", "dnum_4", null, null, null, null,
     "dnum_5", "dnum_6", "dnum_7", "dnum_8", "dnum_9", null, null, null, null
   ],

@@ -170,9 +170,7 @@ define(["Theme", "aja/lib/aja", "pixastic", "sylvester"], function(Theme) {
   };
 
   AnimatedMap.prototype.clear = function() {
-      var ctx = this.canvas.getContext("2d");
-      var rect = this.getMapDimensions().multiply(this.getScale());
-      ctx.clearRect(0, 0, rect.e(1), rect.e(2));
+    this.canvas.ctx.clearRect(0, 0, this.canvas.canvas.width, this.canvas.canvas.height);
   };
 
   AnimatedMap.prototype._drawHex = function(ctx, tileType, tileSubtype, tileOwner, x, y, sheet) {
@@ -212,25 +210,6 @@ define(["Theme", "aja/lib/aja", "pixastic", "sylvester"], function(Theme) {
         } else {
           this._drawHex(ctx, tile.type, tile.subtype, tile.owner, r.e(1), r.e(2) + offset);
           this._drawPropOnHex(ctx, tile.type, tile.subtype, tile.owner, r.e(1), r.e(2) + offset);
-        }
-        
-        if(tile.capturePoints<200) {
-          // draw capture bar
-          var barCoords = this.theme.getCoordinates("captureBar");
-          var bitCoords = this.theme.getCoordinates(tile.beingCaptured ? "capturingBit" : "recoveringBit");
-          var numBits = Math.ceil(this.theme.settings.captureBar.totalBits * tile.capturePoints / 200);
-          ctx.drawImage(this.sprites, barCoords.x, barCoords.y,
-                        this.theme.settings.image.width, this.theme.settings.image.height,
-                        r.e(1), r.e(2) + offset - (this.theme.settings.image.height - this.theme.settings.hex.height),
-                        this.theme.settings.image.width, this.theme.settings.image.height);
-          
-          for(var j = 0; j < numBits; ++j) {
-            ctx.drawImage(this.sprites, bitCoords.x, bitCoords.y,
-                          this.theme.settings.image.width, this.theme.settings.image.height,
-                          r.e(1), r.e(2) + offset - j * this.theme.settings.captureBar.bitHeight - (this.theme.settings.image.height - this.theme.settings.hex.height),
-                          this.theme.settings.image.width, this.theme.settings.image.height);
-            
-          }
         }
       }
     }
@@ -538,14 +517,20 @@ define(["Theme", "aja/lib/aja", "pixastic", "sylvester"], function(Theme) {
       this.canvas.forceRedraw();
   };
 
-  AnimatedMap.prototype.initUnitEntities = function() {
-    var self = this;
+  AnimatedMap.prototype.initEntities = function() {
+    var that = this;
     this.tiles.forEach(function(el){
       if(el.unit) {
-        var unit = new MapUnit(el.unit, el.x, el.y, self);
-        self.canvas.addEntity(unit);
+        var unit = new MapUnit(el.unit, el.x, el.y, that);
+        that.canvas.addEntity(unit);
+      }
+      
+      if(el.capturePoints < 200) {
+        el.captureBar = new CaptureBar(el, that);
+        that.canvas.addEntity(el.captureBar);
       }
     });
+    
     this.canvas.forceRedraw();
   }
 
@@ -700,8 +685,15 @@ define(["Theme", "aja/lib/aja", "pixastic", "sylvester"], function(Theme) {
     var that = this;
     
     function doCapture() {
+      if(!t.captureBar) {
+        t.captureBar = new CaptureBar(t, that);
+        that.canvas.addEntity(t.captureBar);
+      }
+      
       t.capturePoints = left;
       t.beingCaptured = true;
+      t.captureBar.visible = t.capturePoints < 200;
+
       u.unit.moved = true;
       that.refresh();
       if(callback !== undefined) 
@@ -724,9 +716,16 @@ define(["Theme", "aja/lib/aja", "pixastic", "sylvester"], function(Theme) {
     
     var that = this;
     
-    function doCaptured() {    
+    function doCaptured() {
+      if(!t.captureBar) {
+        t.captureBar = new CaptureBar(t, that);
+        that.canvas.addEntity(t.captureBar);
+      }
+      
       t.capturePoints = 1;
       t.beingCaptured = false;
+      t.captureBar.visible = t.capturePoints < 200;
+
       t.owner = u.unit.owner;
       u.unit.moved = true;
       that.refresh();
@@ -915,6 +914,13 @@ define(["Theme", "aja/lib/aja", "pixastic", "sylvester"], function(Theme) {
   
   AnimatedMap.prototype.regenerateCapturePointsTile = function(tileId, newCapturePoints, callback) {
     var t = this.getTile(tileId);
+    if(!t.captureBar) {
+      t.captureBar = new CaptureBar(t, this);
+      this.canvas.addEntity(t.captureBar);
+    }
+    
+    t.captureBar.visible = t.capturePoints < 200;
+    
     t.capturePoints = newCapturePoints;
     t.beingCaptured = false;
     this.refresh();
@@ -1009,7 +1015,7 @@ define(["Theme", "aja/lib/aja", "pixastic", "sylvester"], function(Theme) {
       for(var i = 0; i < healthString.length; ++i) {
         var n = healthString[i];
         var numCoord = this.map.theme.getHealthNumberCoordinates(n);
-        ctx.drawImage(sprites,
+        ctx.drawImage(this.map.sprites,
                       numCoord.x, numCoord.y, this.map.theme.settings.image.width, this.map.theme.settings.image.height,
                       this.x - (healthString.length - 1 - i) * (this.map.theme.settings.number.width + 1), this.y, this.map.theme.settings.image.width, this.map.theme.settings.image.height);
       }
@@ -1020,22 +1026,20 @@ define(["Theme", "aja/lib/aja", "pixastic", "sylvester"], function(Theme) {
       var deployCoord = this.map.theme.getDeployEmblemCoordinates();
       ctx.drawImage(sprites,
                     deployCoord.x, deployCoord.y, this.map.theme.settings.image.width, this.map.theme.settings.image.height,
-                    this.x, this.y, this.map.theme.settings.image.width, this.map.theme.settings.image.height);      
+                    this.x, this.y, this.map.theme.settings.image.width, this.map.theme.settings.image.height);
     }
 
     if(this.map.rules) {
       var unitType = this.map.rules.units[this.unit.type];
       if(unitType.carryNum > 0) {
-        ctx.strokeStyle = "#111";
-        ctx.fillStyle = "#fff";
+          var freeCoords = this.map.theme.getCoordinates(this.map.theme.settings.carrierSlot.freeSlotName);
+          var occupiedCoords = this.map.theme.getCoordinates(this.map.theme.settings.carrierSlot.occupiedSlotName);
+          
         for(var i = 0; i < unitType.carryNum; ++i) {
-          if(i < this.unit.carriedUnits.length) {
-            ctx.fillRect(this.x + 2, this.y + this.map.theme.settings.image.height - (i+1)*7, 5, 5);
-            ctx.strokeRect(this.x + 2, this.y + this.map.theme.settings.image.height - (i+1)*7, 5, 5);
-          } else {
-            ctx.strokeStyle = "#fff";
-            ctx.strokeRect(this.x + 2, this.y + this.map.theme.settings.image.height - (i+1)*7, 5, 5);
-          }
+          var slotCoords = i < this.unit.carriedUnits.length ? occupiedCoords : freeCoords;
+          ctx.drawImage(this.map.sprites,
+                        slotCoords.x, slotCoords.y, this.map.theme.settings.image.width, this.map.theme.settings.image.height,
+                        this.x, this.y - i * this.map.theme.settings.carrierSlot.slotHeight, this.map.theme.settings.image.width, this.map.theme.settings.image.height);
         }
       }
     }
@@ -1046,7 +1050,7 @@ define(["Theme", "aja/lib/aja", "pixastic", "sylvester"], function(Theme) {
     this.coord = map.theme.getHealthNumberCoordinates(n);
     this.x = x;
     this.y = y;
-    this.z = 1;
+    this.z = 2;
     this.map = map;
   };
 
@@ -1078,5 +1082,40 @@ define(["Theme", "aja/lib/aja", "pixastic", "sylvester"], function(Theme) {
     return {x: 0, y: 0, w: this.canvas.width, h: this.canvas.height };
   };
   
+  function CaptureBar(tile, map) {
+    this.tile = tile;
+    this.map = map;
+    
+    var tileCoords = this.map.hex2rectCoords(tile.x, tile.y);
+    this.x = tileCoords.e(1);
+    this.y = tileCoords.e(2) - (this.map.theme.settings.image.height - this.map.theme.settings.hex.height) + this.map.theme.getTileOffset(tile.type, tile.subtype, tile.owner);
+    this.z = 1;
+  };
+  
+  CaptureBar.prototype.draw = function(ctx) {
+    if(this.tile.capturePoints<200) {
+      // draw capture bar
+      var barCoords = this.map.theme.getCoordinates(this.map.theme.settings.captureBar.barName);
+      var bitCoords = this.map.theme.getCoordinates(this.tile.beingCaptured ? this.map.theme.settings.captureBar.capturingName : this.map.theme.settings.captureBar.recoveringName);
+      var numBits = Math.ceil(this.map.theme.settings.captureBar.totalBits * this.tile.capturePoints / 200);
+      ctx.drawImage(this.map.sprites, barCoords.x, barCoords.y,
+                    this.map.theme.settings.image.width, this.map.theme.settings.image.height,
+                    this.x, this.y,
+                    this.map.theme.settings.image.width, this.map.theme.settings.image.height);
+      
+      for(var i = 0; i < numBits; ++i) {
+        ctx.drawImage(this.map.sprites, bitCoords.x, bitCoords.y,
+                      this.map.theme.settings.image.width, this.map.theme.settings.image.height,
+                      this.x, this.y - i * this.map.theme.settings.captureBar.bitHeight,
+                      this.map.theme.settings.image.width, this.map.theme.settings.image.height);
+        
+      }
+    }
+  };
+
+  CaptureBar.prototype.rect = function(ctx) {
+    return {x: this.x, y: this.y, w: this.map.theme.settings.image.width, h: this.map.theme.settings.image.height };
+  };
+
   return AnimatedMap;
 });

@@ -333,7 +333,7 @@ require(["Theme", "AnimatedMap", "GameLogic", "jquery-1.6.2.min.js","gamenode", 
             var mapSize = map.getMapDimensions();
             map.resize(mapSize.e(1), mapSize.e(2));
             map.refresh();
-            map.initUnitEntities();
+            map.initEntities();
             if(response.profile.settings.animationSpeed === undefined) {
               map.animationSpeed = 1;
               map.animate = true;
