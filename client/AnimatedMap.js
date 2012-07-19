@@ -968,10 +968,6 @@ define(["Theme", "aja/lib/aja", "pixastic", "sylvester"], function(Theme) {
   MapUnit.prototype.draw = function(ctx) {
     ctx.save();
     
-    if(this.unit.deployed) {
-      ctx.strokeStyle = "white";
-      ctx.strokeRect(this.x, this.y, this.map.theme.settings.image.width-1, this.map.theme.settings.image.height-1);
-    }
     
     var sprites = this.unit.moved ? this.map.spritesMoved : this.map.sprites;
     var coord = this.unit ? this.map.theme.getUnitCoordinates(this.unit.type, this.unit.owner) : null;
@@ -984,11 +980,18 @@ define(["Theme", "aja/lib/aja", "pixastic", "sylvester"], function(Theme) {
     var en = Math.ceil(parseInt(this.unit.health)/10);
     if(en<10 && en >= 0) {
       var numCoord = this.map.theme.getHealthNumberCoordinates(en);
-      ctx.drawImage(this.map.sprites,
+      ctx.drawImage(sprites,
                     numCoord.x, numCoord.y, this.map.theme.settings.image.width, this.map.theme.settings.image.height,
                     this.x, this.y, this.map.theme.settings.image.width, this.map.theme.settings.image.height);
     }
     
+    if(this.unit.deployed) {
+      var deployCoord = this.map.theme.getDeployEmblemCoordinates();
+      ctx.drawImage(sprites,
+                    deployCoord.x, deployCoord.y, this.map.theme.settings.image.width, this.map.theme.settings.image.height,
+                    this.x, this.y, this.map.theme.settings.image.width, this.map.theme.settings.image.height);      
+    }
+
     if(this.map.rules) {
       var unitType = this.map.rules.units[this.unit.type];
       if(unitType.carryNum > 0) {

@@ -61,6 +61,11 @@ define([], function() {
   Theme.prototype.getHealthNumberCoordinates = function(healthNumber) {
     return this.getCoordinates(this.settings.numbers[healthNumber]);
   }
+  
+  Theme.prototype.getDeployEmblemCoordinates = function() {
+    return this.getCoordinates(this.settings.emblems.deploy);
+  }
+  
 
   Theme.prototype.getPlayerColor = function(playerNumber) {
     if(playerNumber < this.settings.playerColors.length) {

@@ -64,7 +64,7 @@
     "gunship", "gunship_1", "gunship_2", "gunship_3", "gunship_4", "gunship_5", "gunship_6", "gunship_7", "gunship_8",
     "aaship", "aaship_1", "aaship_2", "aaship_3", "aaship_4", "aaship_5", "aaship_6", "aaship_7", "aaship_8",
     "cruiser", "cruiser_1", "cruiser_2", "cruiser_3", "cruiser_4", "cruiser_5", "cruiser_6", "cruiser_7", "cruiser_8",
-    "num_0", "num_1", "num_2", "num_3", "num_4", null, null, null, null,
+    "num_0", "num_1", "num_2", "num_3", "num_4", "deployEmblem", null, null, null,
     "num_5", "num_6", "num_7", "num_8", "num_9", null, null, null, null
   ],
   
@@ -192,5 +192,8 @@
     ["cruiser", "cruiser_1", "cruiser_2", "cruiser_3", "cruiser_4", "cruiser_5", "cruiser_6", "cruiser_7", "cruiser_8"]
   ],
   
-  "numbers": ["num_0", "num_1", "num_2", "num_3", "num_4", "num_5", "num_6", "num_7", "num_8", "num_9"]
+  "numbers": ["num_0", "num_1", "num_2", "num_3", "num_4", "num_5", "num_6", "num_7", "num_8", "num_9"],
+  "emblems": {
+    "deploy": "deployEmblem"
+  }
 }
