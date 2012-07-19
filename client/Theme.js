@@ -59,7 +59,11 @@ define([], function() {
   }
   
   Theme.prototype.getHealthNumberCoordinates = function(healthNumber) {
-    return this.getCoordinates(this.settings.numbers[healthNumber]);
+    return this.getCoordinates(this.settings.numbers.health[healthNumber]);
+  }
+
+  Theme.prototype.getDamageNumberCoordinates = function(damageNumber) {
+    return this.getCoordinates(this.settings.numbers.damage[damageNumber]);
   }
   
   Theme.prototype.getDeployEmblemCoordinates = function() {

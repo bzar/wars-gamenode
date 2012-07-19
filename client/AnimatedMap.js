@@ -32,8 +32,6 @@ define(["Theme", "aja/lib/aja", "pixastic", "sylvester"], function(Theme) {
     this.xAxis = $V([this.theme.settings.hex.width - this.theme.settings.hex.triWidth, this.theme.settings.hex.height / 2]);
     this.yAxis = $V([0, this.theme.settings.hex.height]);
 
-    this.canvas.ctx.translate(0, this.theme.settings.image.height - this.theme.settings.hex.height - this.theme.settings.hex.thickness);
-    
     this.tiles = null;
     this.sprites = null;
     this.rules = rules;
@@ -282,6 +280,28 @@ define(["Theme", "aja/lib/aja", "pixastic", "sylvester"], function(Theme) {
       that._drawHex(ctx, tile.type, tile.subtype, tile.owner, r.e(1), r.e(2) + offset, sheet);
       that._drawPropOnHex(ctx, tile.type, tile.subtype, tile.owner, r.e(1), r.e(2) + offset, sheet);
     });
+    
+    var octx = this.overlay.canvas.getContext("2d");
+    octx.clearRect(0, 0, octx.canvas.width, octx.canvas.height);
+    
+    for(var o = 0; o < attackOptions.length; ++o) {
+      var opt = attackOptions[o];
+      var damageString = "" + opt.power;
+      var coord = this.hex2rectCoords(opt.pos.x, opt.pos.y);
+      
+      for(var i = 0; i < damageString.length; ++i) {
+        var n = damageString[i];
+        var numCoord = this.theme.getDamageNumberCoordinates(n);
+        octx.drawImage(this.sprites,
+                       numCoord.x, numCoord.y, this.theme.settings.image.width, this.theme.settings.image.height,
+                       coord.e(1) - ((damageString.length - 1)/2 - i) * (this.theme.settings.number.width + 1), 
+                       coord.e(2) - (this.theme.settings.image.height - this.theme.settings.hex.height), 
+                       this.theme.settings.image.width, this.theme.settings.image.height);
+      }
+
+    }
+    
+    this.overlay.visible = true;
     
     this.canvas.forceRedraw();
   }
@@ -977,12 +997,17 @@ define(["Theme", "aja/lib/aja", "pixastic", "sylvester"], function(Theme) {
                     this.x, this.y, this.map.theme.settings.image.width, this.map.theme.settings.image.height);
     } 
 
-    var en = Math.ceil(parseInt(this.unit.health)/10);
-    if(en<10 && en >= 0) {
-      var numCoord = this.map.theme.getHealthNumberCoordinates(en);
-      ctx.drawImage(sprites,
-                    numCoord.x, numCoord.y, this.map.theme.settings.image.width, this.map.theme.settings.image.height,
-                    this.x, this.y, this.map.theme.settings.image.width, this.map.theme.settings.image.height);
+    if(this.unit.health < 100 && this.unit.health >= 0) {
+      var healthString = "" + this.unit.health;
+      
+      for(var i = 0; i < healthString.length; ++i) {
+        var n = healthString[i];
+        var numCoord = this.map.theme.getHealthNumberCoordinates(n);
+        ctx.drawImage(sprites,
+                      numCoord.x, numCoord.y, this.map.theme.settings.image.width, this.map.theme.settings.image.height,
+                      this.x - (healthString.length - 1 - i) * (this.map.theme.settings.number.width + 1), this.y, this.map.theme.settings.image.width, this.map.theme.settings.image.height);
+      }
+      
     }
     
     if(this.unit.deployed) {
