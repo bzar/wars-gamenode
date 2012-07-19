@@ -28,15 +28,15 @@ GameLogic.prototype.getNeighborTiles = function(mapArray, x, y) {
 
 GameLogic.prototype.getDistance = function(x1, y1, x2, y2) {
   var distance = 0;
-  if(x1 < x2 && y1 < y2) {
-    var diagonal = Math.min(x2 - x1, y2 - y1);
+  if(x1 < x2 && y1 > y2) {
+    var diagonal = Math.min(x2 - x1, y1 - y2);
     x1 += diagonal;
-    y1 += diagonal;
+    y1 -= diagonal;
     distance += diagonal;
-  } else if(x1 > x2 && y1 > y2) {
-    var diagonal = Math.min(x1 - x2, y1 - y2);
+  } else if(x1 > x2 && y1 < y2) {
+    var diagonal = Math.min(x1 - x2, y2 - y1);
     x2 += diagonal;
-    y2 += diagonal;
+    y2 -= diagonal;
     distance += diagonal;
   } 
   

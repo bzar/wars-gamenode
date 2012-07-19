@@ -34,7 +34,7 @@ if(configuration.enableFileServer) {
     "profile.html", "profile.js", "spectate.html", "spectate.js",
     "ticker.js", "Theme.js", "gameStatistics.html", "gameStatistics.js",
     "manual.html", "manual.js", "info.html", "info.js", "settings.js",
-    "AnimatedMap.js", "vec2d.js", "pixastic.hsl.js", "sylvester.js"
+    "AnimatedMap.js", "vec2d.js", "pixastic.js", "sylvester.js"
     ], 
     { 
       gamenode: "../lib/gamenode/web", 

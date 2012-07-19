@@ -1,4 +1,4 @@
-define(["Theme", "aja/lib/aja", "pixastic.hsl", "sylvester"], function(Theme) {
+define(["Theme", "aja/lib/aja", "pixastic", "sylvester"], function(Theme) {
   function AnimatedMap(canvasId, scale, theme, rules) {
     this.theme = theme ? theme : new Theme("pixel");
     this.autoscale = !scale;
@@ -16,7 +16,7 @@ define(["Theme", "aja/lib/aja", "pixastic.hsl", "sylvester"], function(Theme) {
     this.canvas.renderOrder = function(a, b) {
       if(a.z === undefined) {
         if(b.z === undefined) {
-          return a.y - b.y;
+          return (a.y + a.x/2) - (b.y + b.x/2);
         } else {
           return -b.z;
         }
@@ -47,7 +47,11 @@ define(["Theme", "aja/lib/aja", "pixastic.hsl", "sylvester"], function(Theme) {
   }
 
   AnimatedMap.prototype.hex2rectCoords = function(hx, hy) {
-    return this.xAxis.multiply(hx).add(this.yAxis.multiply(hy));
+    if(hy === undefined) {
+      return this.xAxis.multiply(hx.e(1)).add(this.yAxis.multiply(hx.e(2)));
+    } else {
+      return this.xAxis.multiply(hx).add(this.yAxis.multiply(hy));
+    }
   }
 
   AnimatedMap.prototype.rect2hexCoords = function(rx, ry) {
@@ -62,7 +66,11 @@ define(["Theme", "aja/lib/aja", "pixastic.hsl", "sylvester"], function(Theme) {
       [0,                  0,                  1]
     ]).inv();
     
-    return mat.multiply(origin.multiply($V([rx, ry, 1]))).round();
+    if(ry === undefined) {
+      return mat.multiply(origin.multiply($V([rx.e(1), rx.e(2), 1]))).round();
+    } else {
+      return mat.multiply(origin.multiply($V([rx, ry, 1]))).round();
+    }
   }
   
   AnimatedMap.prototype.getScale = function() {
@@ -90,8 +98,12 @@ define(["Theme", "aja/lib/aja", "pixastic.hsl", "sylvester"], function(Theme) {
   AnimatedMap.prototype.doPreload = function(callback) {
       this.sprites = new Image();
       this.spritesMoved = new Image();
+      this.spritesAttack = new Image();
+      
       var sprites = this.sprites;
       var spritesMoved = this.spritesMoved;
+      var spritesAttack = this.spritesAttack;
+      
       this.sprites.src = this.theme.getSpriteSheetUrl();
       var that = this ;
       sprites.onload = function() {
@@ -99,7 +111,14 @@ define(["Theme", "aja/lib/aja", "pixastic.hsl", "sylvester"], function(Theme) {
         spritesMoved.onload = function() {
           Pixastic.process(spritesMoved, "hsl", {hue:0,saturation:-30,lightness:-30}, function(img) {
             that.spritesMoved = img;
-            callback();
+            
+            spritesAttack.src = sprites.src;
+            spritesAttack.onload = function() {
+              Pixastic.process(spritesAttack, "coloradjust", {red:1.0,green:-0.2,blue:-0.2}, function(img) {
+                that.spritesAttack = img;
+                callback();
+              });
+            }
           });
         }
       }
@@ -221,6 +240,42 @@ define(["Theme", "aja/lib/aja", "pixastic.hsl", "sylvester"], function(Theme) {
       for(var i = 0; i < movementOptions.length; ++i) {
         if(movementOptions[i].pos.x == tile.x && movementOptions[i].pos.y == tile.y) {
           sheet = null;
+          break;
+        }
+      }
+      that._drawHex(ctx, tile.type, tile.subtype, tile.owner, r.e(1), r.e(2) + offset, sheet);
+      that._drawPropOnHex(ctx, tile.type, tile.subtype, tile.owner, r.e(1), r.e(2) + offset, sheet);
+    });
+    
+    this.canvas.forceRedraw();
+  }
+  
+  AnimatedMap.prototype.paintUnloadMask = function(unloadOptions) {
+    var ctx = this.canvas.background.getContext("2d");
+    var that = this;
+    this._redrawTerrain(ctx, function(ctx, tile, r, offset) {
+      var sheet = that.spritesMoved;
+      for(var i = 0; i < unloadOptions.length; ++i) {
+        if(unloadOptions[i].x == tile.x && unloadOptions[i].y == tile.y) {
+          sheet = null;
+          break;
+        }
+      }
+      that._drawHex(ctx, tile.type, tile.subtype, tile.owner, r.e(1), r.e(2) + offset, sheet);
+      that._drawPropOnHex(ctx, tile.type, tile.subtype, tile.owner, r.e(1), r.e(2) + offset, sheet);
+    });
+    
+    this.canvas.forceRedraw();
+  }
+  
+  AnimatedMap.prototype.paintAttackMask = function(attackOptions) {
+    var ctx = this.canvas.background.getContext("2d");
+    var that = this;
+    this._redrawTerrain(ctx, function(ctx, tile, r, offset) {
+      var sheet = null;
+      for(var i = 0; i < attackOptions.length; ++i) {
+        if(attackOptions[i].pos.x == tile.x && attackOptions[i].pos.y == tile.y) {
+          sheet = that.spritesAttack;
           break;
         }
       }
@@ -554,34 +609,34 @@ define(["Theme", "aja/lib/aja", "pixastic.hsl", "sylvester"], function(Theme) {
     
     if(attacker !== null && target !== null) {
       if(this.animate) {
-        var va = new Vec2D(attacker.x, attacker.y);
-        var vt = new Vec2D(target.x, target.y);
+        var va = $V([attacker.x, attacker.y]);
+        var vt = $V([target.x, target.y]);
         
-        var vx = vt.subtract(va).uniti();
-        vx.x *= this.tileW/2;
-        vx.y *= this.tileH/2;
+        var direction = vt.subtract(va).toUnitVector();
+        var halfHex = this.xAxis.add(this.yAxis).multiply(0.5);
+        var vx = $V([halfHex.e(1) * direction.e(1), halfHex.e(2) * direction.e(2)]);
 
         var damageParts = [];
         var damageString = "" + damage;
         var numbers = []
         for(var i = 0; i < damageString.length; ++i) {
           var n = parseInt(damageString[i]);
-          var number = new MapDigit(n, vt.x + i*this.tileW/4, vt.y + this.tileH/2, this);
+          var number = new MapDigit(n, target.x - (damageString.length - i) * this.theme.settings.number.width - 2, target.y, this);
           numbers.push(number);
           this.canvas.addEntity(number);
           var parts = [];
           parts.push(new aja.PauseAnimation(i*50 / this.animationSpeed));
-          parts.push(new aja.PositionDeltaAnimation(number, 0, -2*this.tileH/3, 100 / this.animationSpeed, aja.easing.QuadOut));
-          parts.push(new aja.PositionDeltaAnimation(number, 0, 2*this.tileH/3, 100 / this.animationSpeed, aja.easing.QuadIn));
+          parts.push(new aja.PositionDeltaAnimation(number, 0, -2*this.theme.settings.image.height/3, 100 / this.animationSpeed, aja.easing.QuadOut));
+          parts.push(new aja.PositionDeltaAnimation(number, 0, 2*this.theme.settings.image.height/3, 100 / this.animationSpeed, aja.easing.QuadIn));
           parts.push(new aja.PauseAnimation(200 / this.animationSpeed));
           damageParts.push(new aja.SequentialAnimation(parts));
         }
         damageParts.push(new aja.PauseAnimation(500 / this.animationSpeed));
         
         var parts = [];
-        parts.push(new aja.PositionDeltaAnimation(attacker, vx.x, vx.y, 100 / this.animationSpeed));
+        parts.push(new aja.PositionDeltaAnimation(attacker, vx.e(1), vx.e(2), 100 / this.animationSpeed));
         parts.push(new aja.ParallelAnimation(damageParts));
-        parts.push(new aja.PositionDeltaAnimation(attacker, -vx.x, -vx.y, 200 / this.animationSpeed));
+        parts.push(new aja.PositionDeltaAnimation(attacker, -vx.e(1), -vx.e(2), 200 / this.animationSpeed));
         
         this.canvas.addAnimation(new aja.SequentialAnimation(parts, function() {
           for(var i = 0; i < numbers.length; ++i) {
@@ -629,8 +684,8 @@ define(["Theme", "aja/lib/aja", "pixastic.hsl", "sylvester"], function(Theme) {
     
     if(this.animate) {
       this.canvas.addAnimation(new aja.SequentialAnimation([
-        new aja.PositionDeltaAnimation(u, 0, -this.tileH/2, 100 / this.animationSpeed, aja.easing.QuadOut),
-        new aja.PositionDeltaAnimation(u, 0, this.tileH/2, 100 / this.animationSpeed, aja.easing.QuadIn)
+        new aja.PositionDeltaAnimation(u, 0, -this.theme.settings.hex.height/2, 100 / this.animationSpeed, aja.easing.QuadOut),
+        new aja.PositionDeltaAnimation(u, 0, this.theme.settings.hex.height/2, 100 / this.animationSpeed, aja.easing.QuadIn)
       ], doCapture));
     } else {
       doCapture();
@@ -655,8 +710,8 @@ define(["Theme", "aja/lib/aja", "pixastic.hsl", "sylvester"], function(Theme) {
     
     if(this.animate) {
       var anim = new aja.SequentialAnimation([
-        new aja.PositionDeltaAnimation(u, 0, -this.tileH/2, 100 / this.animationSpeed, aja.easing.QuadOut),
-        new aja.PositionDeltaAnimation(u, 0, this.tileH/2, 100 / this.animationSpeed, aja.easing.QuadIn)
+        new aja.PositionDeltaAnimation(u, 0, -this.theme.settings.hex.height/2, 100 / this.animationSpeed, aja.easing.QuadOut),
+        new aja.PositionDeltaAnimation(u, 0, this.theme.settings.hex.height/2, 100 / this.animationSpeed, aja.easing.QuadIn)
       ], doCaptured);
       anim.loops = 3;
       this.canvas.addAnimation(anim);
@@ -679,15 +734,15 @@ define(["Theme", "aja/lib/aja", "pixastic.hsl", "sylvester"], function(Theme) {
     
     if(this.animate) {
       var rumble = new aja.SequentialAnimation([
-        new aja.PositionDeltaAnimation(u, 0, -5, 20 / this.animationSpeed, aja.easing.SineOut),
-        new aja.PositionDeltaAnimation(u, 0, 5, 20 / this.animationSpeed, aja.easing.SineIn)
+        new aja.PositionDeltaAnimation(u, 0, -this.theme.settings.hex.height / 8, 20 / this.animationSpeed, aja.easing.SineOut),
+        new aja.PositionDeltaAnimation(u, 0, this.theme.settings.hex.height / 8, 20 / this.animationSpeed, aja.easing.SineIn)
       ]);
       rumble.loops = 3;
       
       this.canvas.addAnimation(new aja.SequentialAnimation([
-        new aja.PositionDeltaAnimation(u, 0, -this.tileH/2, 100 / this.animationSpeed, aja.easing.QuadOut),
-        new aja.PauseAnimation(100),
-        new aja.PositionDeltaAnimation(u, 0, this.tileH/2, 100 / this.animationSpeed, aja.easing.QuadIn),
+        new aja.PositionDeltaAnimation(u, 0, -this.theme.settings.hex.height/2, 100 / this.animationSpeed, aja.easing.QuadOut),
+        new aja.PauseAnimation(300 / this.animationSpeed),
+        new aja.PositionDeltaAnimation(u, 0, this.theme.settings.hex.height/2, 100 / this.animationSpeed, aja.easing.QuadIn),
         rumble
       ], doDeploy));
     } else {
@@ -709,8 +764,8 @@ define(["Theme", "aja/lib/aja", "pixastic.hsl", "sylvester"], function(Theme) {
 
     if(this.animate) {
       this.canvas.addAnimation(new aja.SequentialAnimation([
-        new aja.PositionDeltaAnimation(u, 0, -this.tileH/4, 50 / this.animationSpeed, aja.easing.QuadOut),
-        new aja.PositionDeltaAnimation(u, 0, this.tileH/4, 50 / this.animationSpeed, aja.easing.QuadIn)
+        new aja.PositionDeltaAnimation(u, 0, -this.theme.settings.hex.height/4, 50 / this.animationSpeed, aja.easing.QuadOut),
+        new aja.PositionDeltaAnimation(u, 0, this.theme.settings.hex.height/4, 50 / this.animationSpeed, aja.easing.QuadIn)
       ], doUndeploy));
     } else {
       doUndeploy();
@@ -790,7 +845,7 @@ define(["Theme", "aja/lib/aja", "pixastic.hsl", "sylvester"], function(Theme) {
       
       for(var i = 0; i < changeString.length; ++i) {
         var n = parseInt(changeString[i]);
-        var number = new MapDigit(n, u.x + i*this.tileW/4, u.y + this.tileH/4, this);
+        var number = new MapDigit(n, u.x - (changeString.length - i) * this.theme.settings.number.width, u.y, this);
         number.effects = [new aja.OpacityEffect];
         number.opacity = 1.0;
         canvas.addEntity(number);
@@ -929,11 +984,9 @@ define(["Theme", "aja/lib/aja", "pixastic.hsl", "sylvester"], function(Theme) {
     var en = Math.ceil(parseInt(this.unit.health)/10);
     if(en<10 && en >= 0) {
       var numCoord = this.map.theme.getHealthNumberCoordinates(en);
-      var enX = this.x + this.map.theme.settings.image.width - 24;
-      var enY = this.y + this.map.theme.settings.image.height - 24;
       ctx.drawImage(this.map.sprites,
-                    numCoord.x*this.map.theme.settings.image.width, numCoord.y*this.map.theme.settings.image.height, this.map.theme.settings.image.width/2, this.map.theme.settings.image.height/2,
-                    enX, enY, this.map.theme.settings.image.width/2, this.map.theme.settings.image.height/2);
+                    numCoord.x, numCoord.y, this.map.theme.settings.image.width, this.map.theme.settings.image.height,
+                    this.x, this.y, this.map.theme.settings.image.width, this.map.theme.settings.image.height);
     }
     
     if(this.map.rules) {
@@ -965,12 +1018,12 @@ define(["Theme", "aja/lib/aja", "pixastic.hsl", "sylvester"], function(Theme) {
 
   MapDigit.prototype.draw = function(ctx) {
     ctx.drawImage(this.map.sprites,
-                  this.coord.x * this.map.tileW, this.coord.y * this.map.tileH, this.map.tileW/2, this.map.tileH/2,
-                  this.x, this.y, this.map.tileW/2, this.map.tileH/2);
+                  this.coord.x, this.coord.y, this.map.theme.settings.image.width, this.map.theme.settings.image.height,
+                  this.x, this.y, this.map.theme.settings.image.width, this.map.theme.settings.image.height);
   };
 
   MapDigit.prototype.rect = function(ctx) {
-    return {x: this.x, y: this.y, w: this.map.tileW/2, h: this.map.tileH/2 };
+    return {x: this.x, y: this.y, w: this.map.theme.settings.image.width, h: this.map.theme.settings.image.height };
   };
   
   function Overlay(map) {

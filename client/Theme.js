@@ -59,8 +59,7 @@ define([], function() {
   }
   
   Theme.prototype.getHealthNumberCoordinates = function(healthNumber) {
-    //return SPRITE_SHEET_MAP[SPRITE_GUI][GUI_IMAGES_HEALTH][healthNumber];
-    return null;
+    return this.getCoordinates(this.settings.numbers[healthNumber]);
   }
 
   Theme.prototype.getPlayerColor = function(playerNumber) {

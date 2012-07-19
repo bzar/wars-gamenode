@@ -627,6 +627,7 @@ require(["Theme", "AnimatedMap", "GameLogic", "jquery-1.6.2.min.js","gamenode", 
   }
 
   function handleAttackMapClick(tilePosition) {
+    map.refresh();
     map.hideOverlay();
     var tx = tilePosition.x;
     var ty = tilePosition.y;
@@ -661,20 +662,21 @@ require(["Theme", "AnimatedMap", "GameLogic", "jquery-1.6.2.min.js","gamenode", 
   }
 
   function handleUnloadTargetMapClick(tilePosition) {
+    map.refresh();
     map.hideOverlay();
     var tx = tilePosition.x;
     var ty = tilePosition.y;
-    var canUndeploy = false;
+    var canUnload = false;
 
     for(var i = 0; i < gameUIState.unloadTargetOptions.length; ++i) {
       var option = gameUIState.unloadTargetOptions[i];
       if(option.x == tx && option.y == ty) {
-        canUndeploy = true;
+        canUnload = true;
         break;
       }          
     }
     
-    if(!canUndeploy) {
+    if(!canUnload) {
       undoMove();
     } else {
       var unitId = map.getTile(gameUIState.x, gameUIState.y).unit.unitId;
@@ -701,6 +703,7 @@ require(["Theme", "AnimatedMap", "GameLogic", "jquery-1.6.2.min.js","gamenode", 
       }
     }
     gameUIState = {stateName: "select"};
+    map.refresh();
     map.hideOverlay();
     
     $("#actionMenu").hide();
@@ -829,6 +832,7 @@ require(["Theme", "AnimatedMap", "GameLogic", "jquery-1.6.2.min.js","gamenode", 
         if(!response.success) {
           alert(response.reason);
         }
+        map.refresh();
         gameUIState = {stateName: "select"};        
       }
       
@@ -889,7 +893,7 @@ require(["Theme", "AnimatedMap", "GameLogic", "jquery-1.6.2.min.js","gamenode", 
   function showUnloadMenu(units, canvasPosition) {
     var unloadMenu = $("#unloadMenu");
     var content = $("#content");
-    var size = fitElement(units.length, 52, 52, content);
+    var size = fitElement(units.length, theme.settings.image.width + 12, theme.settings.image.height + 12, content);
     var optimalLeft = canvasPosition.x;
     var optimalTop = canvasPosition.y;
     var position = clampElement(optimalLeft, optimalTop, size.width, size.height, content);
@@ -905,10 +909,10 @@ require(["Theme", "AnimatedMap", "GameLogic", "jquery-1.6.2.min.js","gamenode", 
       var item = $('<span></span>');
       item.css("background-image", "url('" + theme.getSpriteSheetUrl() + "')");
       item.addClass("sprite");
+      item.css("width", theme.settings.image.width);
+      item.css("height", theme.settings.image.height);
       var pos = theme.getUnitCoordinates(unit.type, inTurnNumber);
-      var unitImageX = pos.x * map.tileW;
-      var unitImageY = pos.y * map.tileH;
-      item.css("background-position", -unitImageX + "px " + -unitImageY + "px")
+      item.css("background-position", -pos.x + "px " + -pos.y + "px")
       item.addClass("unloadItem");
       item.attr("unitId", unit.unitId);
       unloadMenu.append(item);
