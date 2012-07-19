@@ -859,7 +859,6 @@ require(["Theme", "AnimatedMap", "GameLogic", "jquery-1.6.2.min.js","gamenode", 
         var unitId = map.getTile(gameUIState.x, gameUIState.y).unit.unitId;
         var destination = {x: gameUIState.dx, y: gameUIState.dy};
         $("#spinner").show();
-        console.log(gameUIState.path);
         client.stub.moveAndCapture(gameId, unitId, destination, gameUIState.path, resetUI);
       } else if(action == "deploy") {
         var unitId = map.getTile(gameUIState.x, gameUIState.y).unit.unitId;

@@ -34,6 +34,11 @@
     "height": 14
   },
   
+  "captureBar": {
+    "bitHeight": 4,
+    "totalBits": 10
+  },
+  
   "sheetLayout": [
     "concrete", "plains", "beach", "water", "emptyplains", null, null, null, null,
     "forest", "mountain", "bridge-tl-br", "bridge-bl-tr", "bridge-t-b", "road-tl-br", "road-bl-tr", "road-t-b", null,
@@ -64,7 +69,7 @@
     "gunship", "gunship_1", "gunship_2", "gunship_3", "gunship_4", "gunship_5", "gunship_6", "gunship_7", "gunship_8",
     "aaship", "aaship_1", "aaship_2", "aaship_3", "aaship_4", "aaship_5", "aaship_6", "aaship_7", "aaship_8",
     "cruiser", "cruiser_1", "cruiser_2", "cruiser_3", "cruiser_4", "cruiser_5", "cruiser_6", "cruiser_7", "cruiser_8",
-    "num_0", "num_1", "num_2", "num_3", "num_4", "deployEmblem", null, null, null,
+    "num_0", "num_1", "num_2", "num_3", "num_4", "deployEmblem", "captureBar", "capturingBit", "recoveringBit",
     "num_5", "num_6", "num_7", "num_8", "num_9", null, null, null, null,
     "dnum_0", "dnum_1", "dnum_2", "dnum_3", "dnum_4", null, null, null, null,
     "dnum_5", "dnum_6", "dnum_7", "dnum_8", "dnum_9", null, null, null, null

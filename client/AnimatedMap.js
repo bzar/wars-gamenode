@@ -216,15 +216,21 @@ define(["Theme", "aja/lib/aja", "pixastic", "sylvester"], function(Theme) {
         
         if(tile.capturePoints<200) {
           // draw capture bar
-          if(tile.beingCaptured) {
-            ctx.fillStyle = "red";
-          } else {
-            ctx.fillStyle = "lightblue";
+          var barCoords = this.theme.getCoordinates("captureBar");
+          var bitCoords = this.theme.getCoordinates(tile.beingCaptured ? "capturingBit" : "recoveringBit");
+          var numBits = Math.ceil(this.theme.settings.captureBar.totalBits * tile.capturePoints / 200);
+          ctx.drawImage(this.sprites, barCoords.x, barCoords.y,
+                        this.theme.settings.image.width, this.theme.settings.image.height,
+                        r.e(1), r.e(2) + offset - (this.theme.settings.image.height - this.theme.settings.hex.height),
+                        this.theme.settings.image.width, this.theme.settings.image.height);
+          
+          for(var j = 0; j < numBits; ++j) {
+            ctx.drawImage(this.sprites, bitCoords.x, bitCoords.y,
+                          this.theme.settings.image.width, this.theme.settings.image.height,
+                          r.e(1), r.e(2) + offset - j * this.theme.settings.captureBar.bitHeight - (this.theme.settings.image.height - this.theme.settings.hex.height),
+                          this.theme.settings.image.width, this.theme.settings.image.height);
+            
           }
-          ctx.strokeStyle = "black";
-          var height = this.theme.settings.hex.height * this.capturedPercentage(el);
-          ctx.fillRect(r.e(1), r.e(2) + (this.theme.settings.hex.height - height), this.theme.settings.hex.width/10, height);
-          ctx.strokeRect(r.e(1), r.e(2), this.tileW/10, this.theme.settings.hex.height);
         }
       }
     }
