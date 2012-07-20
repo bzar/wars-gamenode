@@ -52,16 +52,21 @@ GameManagement.prototype.createGame = function(game, callback) {
 
         tile.unit = null;
         if(mapTile.unit !== null) {
-          if(playerIds.indexOf(mapTile.unit.owner) == -1) {
+          if(mapTile.unit.owner !== 0 && playerIds.indexOf(mapTile.unit.owner) == -1) {
             var player = new entities.Player(null, null, null, mapTile.unit.owner, null, map.funds, 0, 
                                             {emailNotifications: true});
             players.push(player);
             playerIds.push(mapTile.unit.owner);
           }
+            
           tile.unit = new entities.Unit(null, null, mapTile.unit.type, 
                                         mapTile.unit.owner, null, 100, 
                                         false, false, false);
-          players[playerIds.indexOf(mapTile.unit.owner)].score += parseInt(tile.unit.health * tile.unit.unitType().price / 100)
+          
+          if(mapTile.unit.owner !== 0) {
+            players[playerIds.indexOf(mapTile.unit.owner)].score += parseInt(tile.unit.health * tile.unit.unitType().price / 100)
+          }
+          
         }
         
         gameData.push(tile);

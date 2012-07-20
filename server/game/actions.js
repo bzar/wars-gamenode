@@ -101,7 +101,10 @@ GameActions.prototype.moveAndAttack = function(gameId, userId, unitId, destinati
           var deletedUnits = [];
 
           events.attack(unit, destinationTile, target, power);
-          targetPlayer.score -= parseInt(Math.min(target.health, power) * target.unitType().price / 100);
+          
+          if(targetPlayer)
+            targetPlayer.score -= parseInt(Math.min(target.health, power) * target.unitType().price / 100);
+          
           player.score += parseInt(Math.min(target.health, power) * target.unitType().price / 100);
           target.health -= power;
           unit.moved = true;
@@ -112,7 +115,8 @@ GameActions.prototype.moveAndAttack = function(gameId, userId, unitId, destinati
             if(power !== null) {
               unit.health = unit.health - power;
               player.score -= parseInt(Math.min(unit.health, power) * unit.unitType().price / 100);
-              targetPlayer.score += parseInt(Math.min(unit.health, power) * unit.unitType().price / 100);
+              if(targetPlayer)
+                targetPlayer.score += parseInt(Math.min(unit.health, power) * unit.unitType().price / 100);
             }
             updatedUnits.push(target);
           } else {
@@ -132,7 +136,7 @@ GameActions.prototype.moveAndAttack = function(gameId, userId, unitId, destinati
           database.deleteUnits(deletedUnits, function(result) {
             database.updateUnits(updatedUnits, function(result) {
               database.updateTiles([sourceTile, destinationTile, targetTile], function(result) {
-                database.updatePlayers([player, targetPlayer], function(result) {
+                database.updatePlayers(targetPlayer ? [player, targetPlayer] : [player], function(result) {
                   database.createGameEvents(events.objects, function(result) {
                     callback({success: true, events: events.objects});
                   });
