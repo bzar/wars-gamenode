@@ -48,7 +48,7 @@ GameLogic.prototype.getDistance = function(x1, y1, x2, y2) {
 
 GameLogic.prototype.tileHasMovableUnit = function(player, x, y) {
     var tile = this.map.getTile(x, y);
-    if(!tile.unit) {
+    if(!tile || !tile.unit) {
         return false;
     } else if(tile.unit.owner != player) {
         return false;
@@ -61,7 +61,7 @@ GameLogic.prototype.tileHasMovableUnit = function(player, x, y) {
 
 GameLogic.prototype.tileCanBuild = function(player, x, y) {
     var tile = this.map.getTile(x, y);
-    if(tile.owner != player) {
+    if(!tile || tile.owner != player) {
         return false;
     } else if(tile.unit) {
         return false;

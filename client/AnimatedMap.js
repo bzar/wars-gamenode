@@ -31,6 +31,7 @@ define(["Theme", "aja/lib/aja", "pixastic", "sylvester"], function(Theme) {
     
     this.xAxis = $V([this.theme.settings.hex.width - this.theme.settings.hex.triWidth, this.theme.settings.hex.height / 2]);
     this.yAxis = $V([0, this.theme.settings.hex.height]);
+    this.origin = $V([0, this.theme.settings.image.height - this.theme.settings.hex.height]);
 
     this.tiles = null;
     this.sprites = null;
@@ -45,14 +46,16 @@ define(["Theme", "aja/lib/aja", "pixastic", "sylvester"], function(Theme) {
   }
 
   AnimatedMap.prototype.hex2rectCoords = function(hx, hy) {
-    if(hy === undefined) {
-      return this.xAxis.multiply(hx.e(1)).add(this.yAxis.multiply(hx.e(2)));
-    } else {
-      return this.xAxis.multiply(hx).add(this.yAxis.multiply(hy));
-    }
+    var p = hy !== undefined ? $V([hx, hy]) : hx;
+    p = this.xAxis.multiply(p.e(1)).add(this.yAxis.multiply(p.e(2)));
+    p = p.add(this.origin);
+    return p;
   }
 
   AnimatedMap.prototype.rect2hexCoords = function(rx, ry) {
+    var p = ry !== undefined ? $V([rx, ry]) : rx;
+    p = p.subtract(this.origin);
+    
     var origin = $M([
       [1, 0, -this.theme.settings.hex.width/2],
       [0, 1, -this.theme.settings.hex.height/2],
@@ -64,11 +67,7 @@ define(["Theme", "aja/lib/aja", "pixastic", "sylvester"], function(Theme) {
       [0,                  0,                  1]
     ]).inv();
     
-    if(ry === undefined) {
-      return mat.multiply(origin.multiply($V([rx.e(1), rx.e(2), 1]))).round();
-    } else {
-      return mat.multiply(origin.multiply($V([rx, ry, 1]))).round();
-    }
+    return mat.multiply(origin.multiply($V([p.e(1), p.e(2), 1]))).round();
   }
   
   AnimatedMap.prototype.getScale = function() {
@@ -149,8 +148,8 @@ define(["Theme", "aja/lib/aja", "pixastic", "sylvester"], function(Theme) {
   AnimatedMap.prototype.getMapDimensions = function() {
     var size = this.getMapLimits().max;
     var w = this.hex2rectCoords(size.e(1) + 1, 0).e(1);
-    var h = this.hex2rectCoords(0, size.e(2) + 2).e(2);
-    var rectSize = $V([w, h]).add($V([this.theme.settings.hex.triWidth, this.theme.settings.image.height - this.theme.settings.hex.height - this.theme.settings.hex.thickness]));
+    var h = this.hex2rectCoords(0, size.e(2) + 1).e(2);
+    var rectSize = $V([w, h]).add($V([this.theme.settings.hex.triWidth + this.origin.e(1), this.origin.e(2)]));
     return rectSize;
   };
 
