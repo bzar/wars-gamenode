@@ -205,18 +205,30 @@ MessageTicker.prototype.createTickerMessage = function(parts, rootElement) {
       image.addClass("sprite");
       image.css("background-image", "url(" + this.map.theme.getSpriteSheetUrl() + ")");
       var pos = this.map.theme.getUnitCoordinates(part.unit.type, part.unit.owner);
-      var x = pos.x * this.map.tileW;
-      var y = pos.y * this.map.tileH;
-      image.css("background-position", -x + "px " + -y + "px");
+      image.css("background-position", -pos.x + "px " + -pos.y + "px");
+      image.css("width", this.map.theme.settings.image.width);
+      image.css("height", this.map.theme.settings.image.height);
       rootElement.append(image);
     } else if(part.type == "tile") {
       var image = $("<span></span>");
       image.addClass("sprite");
       image.css("background-image", "url(" + this.map.theme.getSpriteSheetUrl() + ")");
       var pos = this.map.theme.getTileCoordinates(part.tile.type, part.tile.subtype, part.tile.owner);
-      var x = pos.x * this.map.tileW;
-      var y = pos.y * this.map.tileH;
-      image.css("background-position", -x + "px " + -y + "px");
+      image.css("background-position", -pos.x + "px " + (-pos.y + (this.map.theme.settings.image.height - this.map.theme.settings.hex.height - this.map.theme.settings.hex.thickness))+ "px")
+      image.css("width", this.map.theme.settings.image.width);
+      image.css("height", this.map.theme.settings.image.height);
+      
+      var propPos = this.map.theme.getTilePropCoordinates(part.tile.type, part.tile.subtype, part.tile.owner);
+      if(propPos) {
+        var terrainProp = $("<span></span>");
+        terrainProp.css("background-image", "url('" + this.map.theme.getSpriteSheetUrl() + "')");
+        terrainProp.css("width", this.map.theme.settings.image.width);
+        terrainProp.css("height", this.map.theme.settings.image.height);
+        terrainProp.css("display", "block");
+        terrainProp.css("background-position", -propPos.x + "px " + (-propPos.y - this.map.theme.settings.hex.thickness) + "px")
+        image.append(terrainProp);
+      }
+
       rootElement.append(image);
     }
   }
