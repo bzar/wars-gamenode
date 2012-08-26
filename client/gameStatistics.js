@@ -108,12 +108,9 @@ require(["Theme", "jquery-1.6.2.min.js","gamenode", "base", "d3/d3"], function(T
   }
 
   function parseStatisticData(data) {
-    data.sort(function(a,b){
-      if(a.roundNumber===b.roundNumber) {
-        return a.turnNumber>b.turnNumber
-      } else {
-        return a.roundNumber>b.roundNumber
-      }
+    data.sort(function(a,b) {
+      if(a.turnNumber === b.turnNumber) return 0;
+      return a.turnNumber < b.turnNumber ? -1 : 1;
     });
 
     var result = {};
