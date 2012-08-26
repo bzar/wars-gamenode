@@ -2,13 +2,13 @@ require(["Theme", "jquery-1.6.2.min.js","gamenode", "base", "d3/d3"], function(T
   var client = new GameNodeClient(Skeleton);
   var session = null;
   var theme = null;
-  
+
   var gameId = /[?&]gameId=([0-9a-f]+)/.exec(window.location.search);
   if(gameId !== null)
     gameId = gameId[1];
   else
     document.location = "/";
-  
+
   $(document).ready(function() {
     var loginUrl = "login.html?next=" + document.location.pathname + document.location.search;
     session = resumeSessionOrRedirect(client, WARS_CLIENT_SETTINGS.gameServer, loginUrl, function() {
@@ -17,7 +17,7 @@ require(["Theme", "jquery-1.6.2.min.js","gamenode", "base", "d3/d3"], function(T
       initialize(client);
     });
   });
-  
+
   function initialize(client) {
     client.stub.profile(function(response) {
       theme = new Theme(response.profile.settings.gameTheme);
@@ -30,7 +30,7 @@ require(["Theme", "jquery-1.6.2.min.js","gamenode", "base", "d3/d3"], function(T
             if(!response.success) { alert("Error loading game! " + response.reason); return; }
             var data = response.gameStatistics;
             var parsedData = parseStatisticData(data);
-            
+
             drawGraph(parsedData, "score", "#scoreChart");
             drawGraph(parsedData, "power", "#powerChart");
             drawGraph(parsedData, "property", "#propertyChart");
@@ -39,7 +39,7 @@ require(["Theme", "jquery-1.6.2.min.js","gamenode", "base", "d3/d3"], function(T
       });
     });
   }
-  
+
   function drawGraph(parsedData, statName, selector) {
     var w = Math.max(400, Math.min(3*$(selector).innerWidth()/4, parsedData.max.turn*50));
     var h = 400;
@@ -106,8 +106,16 @@ require(["Theme", "jquery-1.6.2.min.js","gamenode", "base", "d3/d3"], function(T
       .attr("text-anchor", "right")
       .attr("dy", 4)
   }
-  
+
   function parseStatisticData(data) {
+    data.sort(function(a,b){
+      if(a.roundNumber===b.roundNumber) {
+        return a.turnNumber>b.turnNumber
+      } else {
+        return a.roundNumber>b.roundNumber
+      }
+    });
+
     var result = {};
     var players = [];
     var lastRoundNumber = 0;
@@ -117,14 +125,14 @@ require(["Theme", "jquery-1.6.2.min.js","gamenode", "base", "d3/d3"], function(T
     var maxScore = 0;
     var maxPower = 0;
     var maxProperty = 0;
-    
+
     for(var i = 0; i < data.length; ++i) {
       var turnData = data[i];
       var roundChange = lastRoundNumber != turnData.roundNumber;
-      
+
       maxTurn = Math.max(maxTurn, turnData.turnNumber);
       maxRound = Math.max(maxRound, turnData.roundNumber);
-      
+
       for(var j = 0; j < turnData.content.length; ++j) {
         var playerData = turnData.content[j];
         var playerNumber = playerData.playerNumber;
@@ -132,13 +140,13 @@ require(["Theme", "jquery-1.6.2.min.js","gamenode", "base", "d3/d3"], function(T
         if(result[playerNumber] === undefined) {
           result[playerNumber] = {
             byTurn: [],
-            byRound: [{turnNumber: turnData.turnNumber, roundNumber: turnData.roundNumber, 
+            byRound: [{turnNumber: turnData.turnNumber, roundNumber: turnData.roundNumber,
                        score: playerData.score, power: playerData.power, property: playerData.property}]
           };
         }
         var playerResults = result[playerNumber];
         playerResults.byTurn.push({
-          turnNumber: turnData.turnNumber, 
+          turnNumber: turnData.turnNumber,
           score: playerData.score,
           power: playerData.power,
           property: playerData.property
@@ -147,40 +155,40 @@ require(["Theme", "jquery-1.6.2.min.js","gamenode", "base", "d3/d3"], function(T
         maxScore = Math.max(maxScore, playerData.score);
         maxPower = Math.max(maxPower, playerData.power);
         maxProperty = Math.max(maxProperty, playerData.property);
-        
+
         var roundStatistics = playerResults.byRound[playerResults.byRound.length - 1];
-        
+
         if(roundChange || i == data.length - 1) {
           roundStatistics.score /= roundTurnNumber;
           roundStatistics.power /= roundTurnNumber;
           roundStatistics.property /= roundTurnNumber;
           roundStatistics.turnNumber = turnData.turnNumber - 1;
           roundStatistics = {
-            turnNumber: turnData.turnNumber, 
-            roundNumber: turnData.roundNumber, 
+            turnNumber: turnData.turnNumber,
+            roundNumber: turnData.roundNumber,
             score: 0,
             power: 0,
             property: 0
           };
           playerResults.byRound.push(roundStatistics);
         }
-        
+
         roundStatistics.score += playerData.score;
         roundStatistics.power += playerData.power;
         roundStatistics.property += playerData.property;
       }
       roundTurnNumber = roundChange ? 1 : roundTurnNumber + 1;
-      lastRoundNumber = turnData.roundNumber;      
+      lastRoundNumber = turnData.roundNumber;
     }
-    
+
     return {
-      data: result, 
+      data: result,
       players: players,
       max: {
-        turn: maxTurn, 
-        round: maxRound, 
-        score: maxScore, 
-        power: maxPower, 
+        turn: maxTurn,
+        round: maxRound,
+        score: maxScore,
+        power: maxPower,
         property: maxProperty
       }
     };
