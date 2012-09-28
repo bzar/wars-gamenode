@@ -1,4 +1,4 @@
-require(["Theme", "AnimatedMap", "GameLogic", "jquery-1.6.2.min.js","gamenode", "base", "d3/d3", "ticker.js"], 
+require(["Theme", "AnimatedMap", "GameLogic", "jquery-1.6.2.min.js","gamenode", "base", "d3/d3", "ticker.js"],
         function(Theme, AnimatedMap, GameLogic) {
   var client = new GameNodeClient(Skeleton);
   gameClient = client;
@@ -15,17 +15,17 @@ require(["Theme", "AnimatedMap", "GameLogic", "jquery-1.6.2.min.js","gamenode", 
   var finished = false;
   var gameClient = null;
   var gameMap = null;
-  
+
   var gameUIState = {
     stateName: "select"
   }
-  
+
   var gameId = /[?&]gameId=([0-9a-f]+)/.exec(window.location.search);
   if(gameId !== null)
     gameId = gameId[1];
   else
     document.location = "/";
-  
+
   $(document).ready(function() {
     var loginUrl = "login.html?next=" + document.location.pathname + document.location.search;
     session = resumeSessionOrRedirect(client, WARS_CLIENT_SETTINGS.gameServer, loginUrl, function() {
@@ -47,7 +47,7 @@ require(["Theme", "AnimatedMap", "GameLogic", "jquery-1.6.2.min.js","gamenode", 
             } else {
               $("#authorTools").hide();
             }
-            
+
             initializeGame(response.game, response.author, response.turnRemaining);
           } else {
             alert("Error loading game!");
@@ -56,15 +56,15 @@ require(["Theme", "AnimatedMap", "GameLogic", "jquery-1.6.2.min.js","gamenode", 
       }
     });
   });
-  
+
   function initializeMenuControls() {
     var showGameMenu = $("#showGameMenu");
     var showMainMenu = $("#showMainMenu");
     var gameMenu = $("#gameMenu");
     var navigation = $("#navigation");
-    
+
     $("#gameStatistics").attr("href", "gameStatistics.html?gameId=" + gameId);
-    
+
     showGameMenu.click(function(e) {
       e.preventDefault();
       showGameMenu.hide();
@@ -72,7 +72,7 @@ require(["Theme", "AnimatedMap", "GameLogic", "jquery-1.6.2.min.js","gamenode", 
       gameMenu.show();
       navigation.hide();
     });
-    
+
     showMainMenu.click(function(e) {
       e.preventDefault();
       showGameMenu.show();
@@ -80,10 +80,10 @@ require(["Theme", "AnimatedMap", "GameLogic", "jquery-1.6.2.min.js","gamenode", 
       gameMenu.hide();
       navigation.show();
     });
-    
+
     showGameMenu.click();
   }
-  
+
   function refreshFunds() {
     client.stub.myFunds(gameId, function(response) {
       if(response.success) {
@@ -93,12 +93,12 @@ require(["Theme", "AnimatedMap", "GameLogic", "jquery-1.6.2.min.js","gamenode", 
       }
     });
   }
-  
+
   function initializeGameTools() {
     $("#endTurn").click(function(e) {
       e.preventDefault();
       undoMove();
-      
+
       $("#spinner").show();
       client.stub.endTurn(gameId, function(response) {
         if(!response.success) {
@@ -107,7 +107,7 @@ require(["Theme", "AnimatedMap", "GameLogic", "jquery-1.6.2.min.js","gamenode", 
         }
       });
     });
-    
+
     $("#surrender").click(function(e) {
       e.preventDefault();
       if(window.confirm("Are you sure you want to SURRENDER? This means you LOSE the game.")){
@@ -120,7 +120,7 @@ require(["Theme", "AnimatedMap", "GameLogic", "jquery-1.6.2.min.js","gamenode", 
         });
       };
     });
-    
+
     $("#leaveGame").click(function(e) {
       e.preventDefault();
       if(window.confirm("Are you sure you want to leave the game?")){
@@ -135,7 +135,7 @@ require(["Theme", "AnimatedMap", "GameLogic", "jquery-1.6.2.min.js","gamenode", 
         });
       };
     });
-    
+
     var chat = $("#chat");
     $("#showChat").click(function(e) {
       e.preventDefault();
@@ -149,12 +149,12 @@ require(["Theme", "AnimatedMap", "GameLogic", "jquery-1.6.2.min.js","gamenode", 
         $("#content").css("top", chat.outerHeight());
       }
     });
-    
+
     $("#showHideChat").click(function(e) {
       e.preventDefault();
       $("#content").css("top", chat.outerHeight());
     });
-    
+
     client.stub.emailNotifications(gameId, function(response) {
       if(response.success) {
         if(response.value) {
@@ -164,7 +164,7 @@ require(["Theme", "AnimatedMap", "GameLogic", "jquery-1.6.2.min.js","gamenode", 
         $("#sendNotifications").hide();
       }
     });
-    
+
     $("#sendNotifications").click(function(e) {
       e.preventDefault();
       var status = $("#sendNotificationsStatus");
@@ -177,7 +177,7 @@ require(["Theme", "AnimatedMap", "GameLogic", "jquery-1.6.2.min.js","gamenode", 
         }
       });
     });
-    
+
     $("#showGrid").click(function(e) {
       e.preventDefault();
       map.showGrid = !map.showGrid;
@@ -188,7 +188,7 @@ require(["Theme", "AnimatedMap", "GameLogic", "jquery-1.6.2.min.js","gamenode", 
       }
       map.refresh();
     });
-    
+
     $("#showBorders").click(function(e) {
       e.preventDefault();
       map.showBorders = !map.showBorders;
@@ -200,7 +200,7 @@ require(["Theme", "AnimatedMap", "GameLogic", "jquery-1.6.2.min.js","gamenode", 
       }
       map.refresh();
     });
-    
+
     $("#showPowerMap").click(function(e) {
       e.preventDefault();
       map.showPowerMap = !map.showPowerMap;
@@ -212,9 +212,9 @@ require(["Theme", "AnimatedMap", "GameLogic", "jquery-1.6.2.min.js","gamenode", 
       }
       map.refresh();
     });
-    
+
     var speeds = [{x:"1",t:"1x"},{x:"1.5",t:"1.5x"},{x:"2",t:"2x"},{x:"3",t:"3x"},{x:"4",t:"4x"},{x:"5",t:"5x"},{x:"0",t:"off"}];
-    
+
     $("#animationSpeedPlus").click(function(e) {
       var current = $("#animationSpeedLabel").text();
       for(var i = 0; i < speeds.length; ++i) {
@@ -225,9 +225,9 @@ require(["Theme", "AnimatedMap", "GameLogic", "jquery-1.6.2.min.js","gamenode", 
             $("#animationSpeedLabel").text(speeds[i + 1].t);
           }
         }
-      }      
+      }
     });
-    
+
     $("#animationSpeedMinus").click(function(e) {
       var current = $("#animationSpeedLabel").text();
       for(var i = 0; i < speeds.length; ++i) {
@@ -238,37 +238,37 @@ require(["Theme", "AnimatedMap", "GameLogic", "jquery-1.6.2.min.js","gamenode", 
             $("#animationSpeedLabel").text(speeds[i - 1].t);
           }
         }
-      }      
+      }
     });
   }
-  
+
   function initializeAuthorTools() {
 
   }
-  
+
   function formatTime(t) {
     var s = "";
     if(t >= 60*60) {
       var h = Math.floor(t/(60*60));
       if(h < 10) s += 0;
       s += h + ":";
-    } 
+    }
     if(t >= 60) {
       var m = Math.floor(t/60)%60;
       if(m < 10) s += 0;
       s += m + ":";
-    } 
-    
+    }
+
     var sec = Math.ceil(t)%60;
     if(sec < 10) s += 0;
     s += sec;
-    
+
     return s;
   }
-  
+
   function initializeGame(game, author, turnRemaining) {
     showGame(game, author, turnRemaining);
-    
+
     client.skeleton.gameTurnChange = function(gameId, newTurn, newRound, turnRemaining) {
       $("#round").text(newRound);
       inTurnNumber = newTurn;
@@ -284,24 +284,24 @@ require(["Theme", "AnimatedMap", "GameLogic", "jquery-1.6.2.min.js","gamenode", 
       turnCounter = turnRemaining;
       updateStatistic();
     }
-    
+
     client.skeleton.gameFinished = function(gameId) {
       $("#leaveGame").show();
       finalizeTurn();
       finished = true;
     }
-    
+
     $("#mapCanvas").click(handleMapClick);
   }
-  
+
   function showGame(game, author, turnRemaining) {
     $("#gameName").text(game.name);
-    
+
     finished = game.state == "finished";
     if(!finished) {
       $("#leaveGame").hide();
-    } 
-    
+    }
+
     if(turnRemaining === null) {
       $("#turnTimeItem").hide();
     } else {
@@ -311,7 +311,7 @@ require(["Theme", "AnimatedMap", "GameLogic", "jquery-1.6.2.min.js","gamenode", 
         turnCounter = turnCounter > 0 ? turnCounter - 1 : 0;
       }, 1000);
     }
-    
+
     client.stub.profile(function(response) {
       theme = new Theme(response.profile.settings.gameTheme);
       theme.load(function() {
@@ -320,7 +320,7 @@ require(["Theme", "AnimatedMap", "GameLogic", "jquery-1.6.2.min.js","gamenode", 
           map = new AnimatedMap("mapCanvas", 1.0, theme, rules);
           gameLogic = new GameLogic(map, rules);
           gameMap = map;
-          
+
           map.doPreload(function() {
             inTurnNumber = game.inTurnNumber;
             $("#content").css("border-color", theme.getPlayerColorString(inTurnNumber));
@@ -345,46 +345,53 @@ require(["Theme", "AnimatedMap", "GameLogic", "jquery-1.6.2.min.js","gamenode", 
               map.animate = false;
               $("#animationSpeedLabel").text("off");
             }
-            
-            
-            
+
+
+
             $("#spinner").hide();
           });
         });
       });
     });
   }
-  
+
   function initializeMessageTicker() {
     ticker = new MessageTicker($("#messageTicker"), map);
     var messageTicker = $("#messageTicker");
     var messageTickerContainer = $("#messageTickerContainer");
+
+    var queue = [];
+
     client.skeleton.gameEvents = function(gameId, events) {
+      var alreadyProcessing = queue.length != 0;
+      for(var i = 0; i < events.length; ++i) {
+        queue.push(events[i]);
+      };
+
+
       $("#spinner").hide();
       ticker.showMessages(events);
       if(messageTickerContainer.css("display") == "none") {
         $("#showMessageTicker").addClass("highlight");
       }
-      
-      function processEvents(events, callback, i) {
-        if(i === undefined)
-          i = 0;
-        
+
+      function processEvents(callback) {
         function nextEvent() {
-          i = i + 1;
-          if(i < events.length) {
-            processEvents(events, callback, i);
+          if(queue.length != 0) {
+            processEvents(callback);
           } else {
             callback();
           }
         }
-        
-        var e = events[i].content;
-        
+
+        var e = queue.shift();
+        if(e.content)
+          e = e.content;
+
         if(e.action == "move") {
           map.moveUnit(e.unit.unitId, e.tile.tileId, e.path, nextEvent);
         } else if(e.action == "wait") {
-          map.waitUnit(e.unit.unitId);
+          map.waitUnit(e.unit.unitId, nextEvent);
         } else if(e.action == "attack") {
           map.attackUnit(e.attacker.unitId, e.target.unitId, e.damage, nextEvent);
         } else if(e.action == "counterattack") {
@@ -421,16 +428,18 @@ require(["Theme", "AnimatedMap", "GameLogic", "jquery-1.6.2.min.js","gamenode", 
           map.finished(e.winner, nextEvent);
         } else if(e.action == "surrender") {
           map.surrender(e.player, nextEvent);
-        } 
-      }
-      
-      processEvents(events, function() {
-        if(map.showPowerMap || map.showBorders) {
-          map.powerMap = getPowerMap();
         }
-      });
+      }
+
+      if(!alreadyProcessing) {
+        processEvents(function() {
+          /*if(map.showPowerMap || map.showBorders) {
+            map.powerMap = getPowerMap();
+          }*/
+        });
+      }
     };
-    
+
     client.stub.gameEvents(gameId, 0, 10, function(response) {
       if(!response.success) {
         alert("Could not get game events! " + response.reason);
@@ -438,7 +447,7 @@ require(["Theme", "AnimatedMap", "GameLogic", "jquery-1.6.2.min.js","gamenode", 
         ticker.setMessages(response.gameEvents, true);
       }
     });
-    
+
     $("#showHideMessageTicker").click(function(e) {
       e.preventDefault();
       if(messageTicker.hasClass("small")) {
@@ -450,7 +459,7 @@ require(["Theme", "AnimatedMap", "GameLogic", "jquery-1.6.2.min.js","gamenode", 
       }
       messageTicker.scrollTop(0);
     });
-    
+
     $("#showMessageTicker").click(function(e) {
       e.preventDefault();
       messageTickerContainer.toggle();
@@ -463,7 +472,7 @@ require(["Theme", "AnimatedMap", "GameLogic", "jquery-1.6.2.min.js","gamenode", 
         $("#content").css("bottom", messageTickerContainer.outerHeight());
       }
     });
-    
+
     messageTicker.scroll(function(e) {
       if($(this).scrollTop() + $(this).innerHeight() >= this.scrollHeight - 16) {
         client.stub.gameEvents(gameId, messageTicker.children().length, 10, function(response) {
@@ -476,18 +485,18 @@ require(["Theme", "AnimatedMap", "GameLogic", "jquery-1.6.2.min.js","gamenode", 
       }
     });
   }
-  
+
   function initializePlayers(players) {
     players.sort(function(a, b) { return a.playerNumber - b.playerNumber; });
     var playerList = $("#players");
     for(var i = 0; i < players.length; ++i) {
       var player = players[i];
       if(player.playerName === null) continue;
-      
+
       var item = $("<li></li>");
       var number = $("<span></span>");
       var name = $("<span></span>");
-      
+
       item.addClass("playerItem");
       if(player.playerNumber == inTurnNumber) {
         item.addClass("inTurn");
@@ -501,14 +510,14 @@ require(["Theme", "AnimatedMap", "GameLogic", "jquery-1.6.2.min.js","gamenode", 
         item.addClass("isMe");
       }
       item.attr("playerNumber", player.playerNumber);
-      
+
       number.text(player.playerNumber);
       number.css("background-color", theme.getPlayerColorString(player.playerNumber));
       number.addClass("playerNumber");
-      
+
       name.text(player.playerName !== null ? player.playerName : "");
       name.addClass("playerName");
-      
+
       item.append(number);
       item.append(name);
 
@@ -517,35 +526,35 @@ require(["Theme", "AnimatedMap", "GameLogic", "jquery-1.6.2.min.js","gamenode", 
         star.addClass("selfIndicator");
         item.append(star);
       }
-      
+
       playerList.append(item);
     }
   }
-  
+
   function initializeTurn() {
     inTurn = true;
     refreshFunds();
     $("#turnActions").show();
   }
-  
+
   function finalizeTurn() {
     inTurn = false;
     refreshFunds();
     $("#turnActions").hide();
   }
-  
+
   function handleMapClick(e) {
     if(finished) return;
-    
+
     var buildMenu = $("#buildMenu");
     var canvas = $("#mapCanvas");
     var content = $("#content");
-    var canvasPosition = {x: e.offsetX !== undefined ? e.offsetX : e.layerX, 
+    var canvasPosition = {x: e.offsetX !== undefined ? e.offsetX : e.layerX,
                           y: e.offsetY !== undefined ? e.offsetY : e.layerY};
     var windowPosition = {x: e.pageX, y: e.pageY};
     var hexCoords = map.coordToTile(canvasPosition.x, canvasPosition.y);
     var tilePosition = {x: hexCoords.e(1), y: hexCoords.e(2)};
-    
+
     if(inTurn) {
       buildMenu.hide();
       if(gameUIState.stateName == "select") {
@@ -563,12 +572,12 @@ require(["Theme", "AnimatedMap", "GameLogic", "jquery-1.6.2.min.js","gamenode", 
       }
     }
   }
-  
+
   function handleSelectMapClick(tilePosition, canvasPosition) {
     if(gameLogic.tileHasMovableUnit(inTurnNumber, tilePosition.x, tilePosition.y)) {
       var movementOptions = gameLogic.unitMovementOptions(tilePosition.x, tilePosition.y);
       map.paintMovementMask(movementOptions);
-      
+
       if(movementOptions.length > 1) {
         gameUIState = {
           stateName: "move",
@@ -578,7 +587,7 @@ require(["Theme", "AnimatedMap", "GameLogic", "jquery-1.6.2.min.js","gamenode", 
         };
       } else {
         map.hideOverlay();
-        switchToActionState(tilePosition.x, tilePosition.y, tilePosition.x, tilePosition.y, 
+        switchToActionState(tilePosition.x, tilePosition.y, tilePosition.x, tilePosition.y,
                             [{x: tilePosition.x, y: tilePosition.y}], movementOptions, canvasPosition);
       }
     } else if(gameLogic.tileCanBuild(inTurnNumber, tilePosition.x, tilePosition.y)) {
@@ -595,7 +604,7 @@ require(["Theme", "AnimatedMap", "GameLogic", "jquery-1.6.2.min.js","gamenode", 
     var dy = tilePosition.y;
     var canMove = false;
     var path = null;
-    
+
     for(var i = 0; i < gameUIState.movementOptions.length; ++i) {
       var option = gameUIState.movementOptions[i];
       if(option.pos.x == dx && option.pos.y == dy) {
@@ -610,7 +619,7 @@ require(["Theme", "AnimatedMap", "GameLogic", "jquery-1.6.2.min.js","gamenode", 
         break;
       }
     }
-    
+
     if(!canMove) {
       gameUIState = {stateName: "select"};
       map.refresh();
@@ -640,7 +649,7 @@ require(["Theme", "AnimatedMap", "GameLogic", "jquery-1.6.2.min.js","gamenode", 
         break;
       }
     }
-    
+
     if(!canAttack) {
       undoMove();
     } else {
@@ -673,9 +682,9 @@ require(["Theme", "AnimatedMap", "GameLogic", "jquery-1.6.2.min.js","gamenode", 
       if(option.x == tx && option.y == ty) {
         canUnload = true;
         break;
-      }          
+      }
     }
-    
+
     if(!canUnload) {
       undoMove();
     } else {
@@ -692,7 +701,7 @@ require(["Theme", "AnimatedMap", "GameLogic", "jquery-1.6.2.min.js","gamenode", 
       });
     }
   }
-  
+
   function undoMove() {
     if(gameUIState.stateName !== "select") {
       var tile = map.getTile(gameUIState.x, gameUIState.y);
@@ -705,12 +714,12 @@ require(["Theme", "AnimatedMap", "GameLogic", "jquery-1.6.2.min.js","gamenode", 
     gameUIState = {stateName: "select"};
     map.refresh();
     map.hideOverlay();
-    
+
     $("#actionMenu").hide();
     $("#unloadMenu").hide();
     $("#buildMenu").hide();
   }
-  
+
   function switchToActionState(x, y, dx, dy, path, movementOptions, canvasPosition) {
     gameUIState = {
       stateName: "action",
@@ -739,22 +748,22 @@ require(["Theme", "AnimatedMap", "GameLogic", "jquery-1.6.2.min.js","gamenode", 
         actions.push("wait");
     }
     actions.push("cancel");
-    showActionMenu(actions, canvasPosition);  
+    showActionMenu(actions, canvasPosition);
   }
-  
+
   function fitElement(numItems, itemWidth, itemHeight, content) {
     var gridOptimalWidth = Math.ceil(Math.sqrt(numItems));
     var gridOptimalHeight = Math.ceil(numItems / gridOptimalWidth);
-    
+
     var optimalWidth = itemWidth * gridOptimalWidth;
     var optimalHeight = itemHeight * gridOptimalHeight;
-    
+
     var maxWidth = content.width();
     var maxHeight = content.height();
-    
+
     var width = optimalWidth;
     var height = optimalHeight;
-    
+
     if(width > maxWidth) {
       var gridWidth = parseInt(maxWidth/itemWidth);
       var gridHeight = Math.ceil(numItems / gridWidth);
@@ -764,31 +773,31 @@ require(["Theme", "AnimatedMap", "GameLogic", "jquery-1.6.2.min.js","gamenode", 
     if(height > maxHeight) {
       height = maxHeight;
     }
-    
+
     return {width: width, height: height};
   }
-  
+
   function clampElement(left, top, width, height, content) {
     var minLeft = content.scrollLeft();
     var minTop = content.scrollTop();
     var maxRight = content.scrollLeft() + content.width();
     var maxBottom = content.scrollTop() + content.height();;
-    
+
     if(left < minLeft) {
       left = minLeft;
     } else if(left + width > maxRight) {
       left = maxRight - width;
     }
-    
+
     if(top < minTop) {
       top = minTop;
     } else if(top + height > maxBottom) {
       top = maxBottom - height;
     }
-    
+
     return {left: left, top: top};
   }
-  
+
   function showActionMenu(actions, canvasPosition) {
     var actionMenu = $("#actionMenu");
     var content = $("#content");
@@ -802,15 +811,15 @@ require(["Theme", "AnimatedMap", "GameLogic", "jquery-1.6.2.min.js","gamenode", 
     actionMenu.css("left", position.left)
     actionMenu.css("top", position.top)
     actionMenu.show();
-    
+
     var actionMap = {
-      attack: {img:theme.getAttackIconUrl(), name:"Attack", action:"attack"}, 
-      deploy: {img:theme.getDeployIconUrl(), name:"Deploy", action:"deploy"}, 
-      undeploy: {img:theme.getUndeployIconUrl(), name:"Undeploy", action:"undeploy"}, 
-      capture: {img:theme.getCaptureIconUrl(), name:"Capture", action:"capture"}, 
-      wait: {img:theme.getWaitIconUrl(), name:"Wait", action:"wait"}, 
-      load: {img:theme.getLoadIconUrl(), name:"Load", action:"load"}, 
-      unload: {img:theme.getUnloadIconUrl(), name:"Unload", action:"unload"}, 
+      attack: {img:theme.getAttackIconUrl(), name:"Attack", action:"attack"},
+      deploy: {img:theme.getDeployIconUrl(), name:"Deploy", action:"deploy"},
+      undeploy: {img:theme.getUndeployIconUrl(), name:"Undeploy", action:"undeploy"},
+      capture: {img:theme.getCaptureIconUrl(), name:"Capture", action:"capture"},
+      wait: {img:theme.getWaitIconUrl(), name:"Wait", action:"wait"},
+      load: {img:theme.getLoadIconUrl(), name:"Load", action:"load"},
+      unload: {img:theme.getUnloadIconUrl(), name:"Unload", action:"unload"},
       cancel: {img:theme.getCancelIconUrl(), name:"Cancel", action:"cancel"}
     }
 
@@ -823,19 +832,19 @@ require(["Theme", "AnimatedMap", "GameLogic", "jquery-1.6.2.min.js","gamenode", 
       item.attr("action", action.action);
       actionMenu.append(item);
     }
-    
+
     $(".actionItem").click(function(e) {
       var action = $(this).attr("action");
       actionMenu.hide();
-      
+
       function resetUI(response) {
         if(!response.success) {
           alert(response.reason);
         }
         map.refresh();
-        gameUIState = {stateName: "select"};        
+        gameUIState = {stateName: "select"};
       }
-      
+
       if(action == "cancel") {
         undoMove();
       } else if(action == "attack") {
@@ -849,7 +858,7 @@ require(["Theme", "AnimatedMap", "GameLogic", "jquery-1.6.2.min.js","gamenode", 
           path: gameUIState.path
         };
         map.paintAttackMask(gameUIState.attackOptions);
-        
+
       } else if(action == "wait") {
         var unitId = map.getTile(gameUIState.x, gameUIState.y).unit.unitId;
         var destination = {x: gameUIState.dx, y: gameUIState.dy};
@@ -885,10 +894,10 @@ require(["Theme", "AnimatedMap", "GameLogic", "jquery-1.6.2.min.js","gamenode", 
           path: gameUIState.path
         };
         showUnloadMenu(gameUIState.unloadOptions, canvasPosition);
-      } 
+      }
     });
   }
-  
+
   function showUnloadMenu(units, canvasPosition) {
     var unloadMenu = $("#unloadMenu");
     var content = $("#content");
@@ -902,7 +911,7 @@ require(["Theme", "AnimatedMap", "GameLogic", "jquery-1.6.2.min.js","gamenode", 
     unloadMenu.css("left", position.left)
     unloadMenu.css("top", position.top)
     unloadMenu.show();
-    
+
     for(var i = 0; i < units.length; ++i) {
       var unit = units[i];
       var item = $('<span></span>');
@@ -916,10 +925,10 @@ require(["Theme", "AnimatedMap", "GameLogic", "jquery-1.6.2.min.js","gamenode", 
       item.attr("unitId", unit.unitId);
       unloadMenu.append(item);
     }
-    
+
     $(".unloadItem").click(function(e) {
       var carriedUnitId = $(this).attr("unitId");
-      var unloadTargetOptions = gameLogic.unitUnloadTargetOptions(gameUIState.x, gameUIState.y, gameUIState.dx, 
+      var unloadTargetOptions = gameLogic.unitUnloadTargetOptions(gameUIState.x, gameUIState.y, gameUIState.dx,
                                                                   gameUIState.dy, carriedUnitId);
       gameUIState = {
         stateName: "unloadTarget",
@@ -935,29 +944,29 @@ require(["Theme", "AnimatedMap", "GameLogic", "jquery-1.6.2.min.js","gamenode", 
       unloadMenu.hide();
     });
   }
-  
+
   function showBuildMenu(buildOptions, canvasPosition, tilePosition) {
     var buildMenu = $("#buildMenu");
     var content = $("#content");
-    
+
     var size = fitElement(buildOptions.length, 140, 140, content);
     var optimalLeft = canvasPosition.x - size.width/2;
     var optimalTop = canvasPosition.y - size.height/2;
     var position = clampElement(optimalLeft, optimalTop, size.width, size.height, content);
-    
+
     buildMenu.empty();
     buildMenu.width(size.width);
     buildMenu.height(size.height);
     buildMenu.css("left", position.left)
     buildMenu.css("top", position.top)
     buildMenu.show();
-    
+
     for(var i = 0; i < buildOptions.length; ++i) {
       var unitType = buildOptions[i];
       var buildItem = $("<span></span>");
       buildItem.addClass("buildItem");
       buildItem.attr("unitTypeId", unitType.id);
-      
+
       var unitPrice = $('<span></span>');
       unitPrice.text(unitType.price);
       unitPrice.addClass('price');
@@ -978,7 +987,7 @@ require(["Theme", "AnimatedMap", "GameLogic", "jquery-1.6.2.min.js","gamenode", 
       buildItem.append(unitName);
 
       var funds = parseInt($("#funds").text());
-      
+
       if(parseInt(unitType.price) <= funds) {
         buildItem.click(function() {
           var unitTypeId = parseInt($(this).attr("unitTypeId"));
@@ -995,26 +1004,26 @@ require(["Theme", "AnimatedMap", "GameLogic", "jquery-1.6.2.min.js","gamenode", 
       } else {
         buildItem.addClass("disabled");
       }
-      
+
       buildMenu.append(buildItem);
     }
   }
-  
+
   function updateStatistic() {
     client.stub.gameLatestStatistic(gameId, function(response) {
       if(response.latestStatistic === null)
         return;
-      
+
       var latestStatistic = response.latestStatistic;
       var container = d3.select("#gameStatistic");
       container.selectAll("div").remove();
-      
+
       var data = latestStatistic.content.sort(function(a, b){return a.playerNumber - b.playerNumber;});
-      
+
       function addChart(container, data, property, label) {
         var chart = container.append("div").attr("class", "statisticBarChart").attr("chartProperty", property);
         chart.append("div").text(label).attr("class", "label");
-        
+
         // Needed to have all the chart elements laid out correctly before adding content
         setTimeout(function() {
           var width = $(".statisticBarChart[chartProperty=\"" + property + "\"]").innerWidth() - 10;
@@ -1023,7 +1032,7 @@ require(["Theme", "AnimatedMap", "GameLogic", "jquery-1.6.2.min.js","gamenode", 
           var scale = d3.scale.linear()
             .domain([0, totalValue])
             .range(["0px", width + "px"]);
-        
+
           chart.selectAll(".bar")
             .data(data)
             .enter().append("div")
@@ -1034,13 +1043,13 @@ require(["Theme", "AnimatedMap", "GameLogic", "jquery-1.6.2.min.js","gamenode", 
               .attr("title", function(d){ return Math.round(100*d[property]/totalValue) + "%" });
         }, 0);
       }
-      
+
       addChart(container, data, "score", "Score");
       addChart(container, data, "power", "Power");
       addChart(container, data, "property", "Property");
     });
   }
-  
+
   function getPowerMap() {
     if(powerMap === null) {
       powerMap = gameLogic.getPowerMap();

@@ -12,21 +12,21 @@ var configuration = {
   },
 
   salt: "Change this to a random string to salt the passwords with",
-  
+
   io: {
     logLevel: 0,
     transports: [
-      //    'websocket'
+          'websocket'
       //, 'flashsocket'
-      , 'htmlfile'
-      , 'xhr-polling'
-      , 'jsonp-polling'
+      //, 'htmlfile'
+      //, 'xhr-polling'
+      //, 'jsonp-polling'
     ]
   },
-  
+
   email: {
     enabled: false,
-    
+
     server: {
       host: "localhost",
       port: 587,
@@ -34,7 +34,7 @@ var configuration = {
       username: "wars",
       password: "secret",
     },
-        
+
     message: {
       senderAddress: "wars@localhost",
       subject: "Wars: [{{game.name}}] {{user.username}}, it's your turn!",

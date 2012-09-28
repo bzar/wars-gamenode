@@ -4,15 +4,15 @@ define(["Theme", "aja/lib/aja", "pixastic", "sylvester"], function(Theme) {
     this.autoscale = !scale;
     this.scale = scale;
     this.canvas = new aja.Canvas(canvasId);
-    
+
     this.overlay = new Overlay(this);
     this.overlay.z = 100;
     this.canvas.addEntity(this.overlay);
     this.overlay.visible = false;
-    
+
     this.animationSpeed = 1.0;
     this.animate = true;
-    
+
     this.canvas.renderOrder = function(a, b) {
       if(a.z === undefined) {
         if(b.z === undefined) {
@@ -28,7 +28,7 @@ define(["Theme", "aja/lib/aja", "pixastic", "sylvester"], function(Theme) {
         }
       }
     }
-    
+
     this.xAxis = $V([this.theme.settings.hex.width - this.theme.settings.hex.triWidth, this.theme.settings.hex.height / 2]);
     this.yAxis = $V([0, this.theme.settings.hex.height]);
     this.origin = $V([0, this.theme.settings.image.height - this.theme.settings.hex.height]);
@@ -36,7 +36,7 @@ define(["Theme", "aja/lib/aja", "pixastic", "sylvester"], function(Theme) {
     this.tiles = null;
     this.sprites = null;
     this.rules = rules;
-    
+
     this.powerMap = null;
     this.showPowerMap = false;
     this.showBorders = false;
@@ -55,7 +55,7 @@ define(["Theme", "aja/lib/aja", "pixastic", "sylvester"], function(Theme) {
   AnimatedMap.prototype.rect2hexCoords = function(rx, ry) {
     var p = ry !== undefined ? $V([rx, ry]) : rx;
     p = p.subtract(this.origin);
-    
+
     var origin = $M([
       [1, 0, -this.theme.settings.hex.width/2],
       [0, 1, -this.theme.settings.hex.height/2],
@@ -66,10 +66,10 @@ define(["Theme", "aja/lib/aja", "pixastic", "sylvester"], function(Theme) {
       [this.xAxis.e(2), this.yAxis.e(2), 0],
       [0,                  0,                  1]
     ]).inv();
-    
+
     return mat.multiply(origin.multiply($V([p.e(1), p.e(2), 1]))).round();
   }
-  
+
   AnimatedMap.prototype.getScale = function() {
     if(this.autoscale) {
       var mapSize = this.getMapDimensions();
@@ -79,7 +79,7 @@ define(["Theme", "aja/lib/aja", "pixastic", "sylvester"], function(Theme) {
     }
     return this.scale;
   };
-  
+
   AnimatedMap.prototype.getOffset = function() {
     if(this.autoscale) {
       var mapSize = this.getMapDimensions();
@@ -91,16 +91,16 @@ define(["Theme", "aja/lib/aja", "pixastic", "sylvester"], function(Theme) {
     }
   };
 
-  
+
   AnimatedMap.prototype.doPreload = function(callback) {
       this.sprites = new Image();
       this.spritesMoved = new Image();
       this.spritesAttack = new Image();
-      
+
       var sprites = this.sprites;
       var spritesMoved = this.spritesMoved;
       var spritesAttack = this.spritesAttack;
-      
+
       this.sprites.src = this.theme.getSpriteSheetUrl();
       var that = this ;
       sprites.onload = function() {
@@ -108,7 +108,7 @@ define(["Theme", "aja/lib/aja", "pixastic", "sylvester"], function(Theme) {
         spritesMoved.onload = function() {
           Pixastic.process(spritesMoved, "hsl", {hue:0,saturation:-30,lightness:-30}, function(img) {
             that.spritesMoved = img;
-            
+
             spritesAttack.src = sprites.src;
             spritesAttack.onload = function() {
               Pixastic.process(spritesAttack, "coloradjust", {red:1.0,green:-0.2,blue:-0.2}, function(img) {
@@ -124,27 +124,27 @@ define(["Theme", "aja/lib/aja", "pixastic", "sylvester"], function(Theme) {
   AnimatedMap.prototype.getMapLimits = function() {
     var min = null;
     var max = null;
-    
+
     this.tiles.forEach(function(tile){
       if(min === null) {
         min = $V([tile.x, tile.y]);
         max = $V([tile.x, tile.y]);
       } else {
-        min = $V([tile.x < min.e(1) ? tile.x : min.e(1), 
+        min = $V([tile.x < min.e(1) ? tile.x : min.e(1),
                  tile.y < min.e(2) ? tile.y : min.e(2)]);
-        max = $V([tile.x > max.e(1) ? tile.x : max.e(1), 
+        max = $V([tile.x > max.e(1) ? tile.x : max.e(1),
                  tile.y > max.e(2) ? tile.y : max.e(2)]);
       }
     });
-    
+
     return {min: min, max: max};
   };
-  
+
   AnimatedMap.prototype.getMapSize = function() {
     var size = this.getMapLimits();
-    return size.max.subtract(size.min);    
+    return size.max.subtract(size.min);
   }
-  
+
   AnimatedMap.prototype.getMapDimensions = function() {
     var size = this.getMapLimits().max;
     var w = this.hex2rectCoords(size.e(1) + 1, 0).e(1);
@@ -174,7 +174,7 @@ define(["Theme", "aja/lib/aja", "pixastic", "sylvester"], function(Theme) {
 
   AnimatedMap.prototype._drawHex = function(ctx, tileType, tileSubtype, tileOwner, x, y, sheet) {
     var imageCoords = this.theme.getTileCoordinates(tileType, tileSubtype, tileOwner);
-    ctx.drawImage(sheet ? sheet : this.sprites, imageCoords.x, imageCoords.y, 
+    ctx.drawImage(sheet ? sheet : this.sprites, imageCoords.x, imageCoords.y,
                   this.theme.settings.image.width, this.theme.settings.image.height,
                   x, y, this.theme.settings.image.width, this.theme.settings.image.height);
   }
@@ -182,17 +182,17 @@ define(["Theme", "aja/lib/aja", "pixastic", "sylvester"], function(Theme) {
 
   AnimatedMap.prototype._drawProp = function(ctx, tileType, tileSubtype, tileOwner, x, y, sheet) {
     var imageCoords = this.theme.getTilePropCoordinates(tileType, tileSubtype, tileOwner);
-    
+
     if(imageCoords === null)
       return;
 
-    ctx.drawImage(sheet ? sheet : this.sprites, imageCoords.x, imageCoords.y, 
+    ctx.drawImage(sheet ? sheet : this.sprites, imageCoords.x, imageCoords.y,
                   this.theme.settings.image.width, this.theme.settings.image.height,
                   x, y, this.theme.settings.image.width, this.theme.settings.image.height);
   }
 
   AnimatedMap.prototype._drawPropOnHex = function(ctx, tileType, tileSubtype, tileOwner, x, y, sheet) {
-    this._drawProp(ctx, tileType, tileSubtype, tileOwner, 
+    this._drawProp(ctx, tileType, tileSubtype, tileOwner,
               x, y - (this.theme.settings.image.height - this.theme.settings.hex.height), sheet);
   }
 
@@ -203,7 +203,7 @@ define(["Theme", "aja/lib/aja", "pixastic", "sylvester"], function(Theme) {
       if(tile) {
         var r = this.hex2rectCoords(tile.x, tile.y);
         var offset = this.theme.getTileOffset(tile.type, tile.subtype, tile.owner);
-        
+
         if(redrawFunc) {
           redrawFunc(ctx, tile, r, offset);
         } else {
@@ -228,10 +228,10 @@ define(["Theme", "aja/lib/aja", "pixastic", "sylvester"], function(Theme) {
       that._drawHex(ctx, tile.type, tile.subtype, tile.owner, r.e(1), r.e(2) + offset, sheet);
       that._drawPropOnHex(ctx, tile.type, tile.subtype, tile.owner, r.e(1), r.e(2) + offset, sheet);
     });
-    
+
     this.canvas.forceRedraw();
   }
-  
+
   AnimatedMap.prototype.paintUnloadMask = function(unloadOptions) {
     var ctx = this.canvas.background.getContext("2d");
     var that = this;
@@ -246,10 +246,10 @@ define(["Theme", "aja/lib/aja", "pixastic", "sylvester"], function(Theme) {
       that._drawHex(ctx, tile.type, tile.subtype, tile.owner, r.e(1), r.e(2) + offset, sheet);
       that._drawPropOnHex(ctx, tile.type, tile.subtype, tile.owner, r.e(1), r.e(2) + offset, sheet);
     });
-    
+
     this.canvas.forceRedraw();
   }
-  
+
   AnimatedMap.prototype.paintAttackMask = function(attackOptions) {
     var ctx = this.canvas.background.getContext("2d");
     var that = this;
@@ -264,34 +264,34 @@ define(["Theme", "aja/lib/aja", "pixastic", "sylvester"], function(Theme) {
       that._drawHex(ctx, tile.type, tile.subtype, tile.owner, r.e(1), r.e(2) + offset, sheet);
       that._drawPropOnHex(ctx, tile.type, tile.subtype, tile.owner, r.e(1), r.e(2) + offset, sheet);
     });
-    
+
     var octx = this.overlay.canvas.getContext("2d");
     octx.clearRect(0, 0, octx.canvas.width, octx.canvas.height);
-    
+
     for(var o = 0; o < attackOptions.length; ++o) {
       var opt = attackOptions[o];
       var damageString = "" + opt.power;
       var coord = this.hex2rectCoords(opt.pos.x, opt.pos.y);
-      
+
       for(var i = 0; i < damageString.length; ++i) {
         var n = damageString[i];
         var numCoord = this.theme.getDamageNumberCoordinates(n);
         octx.drawImage(this.sprites,
                        numCoord.x, numCoord.y, this.theme.settings.image.width, this.theme.settings.image.height,
-                       coord.e(1) - ((damageString.length - 1)/2 - i) * (this.theme.settings.number.width + 1), 
-                       coord.e(2) - (this.theme.settings.image.height - this.theme.settings.hex.height), 
+                       coord.e(1) - ((damageString.length - 1)/2 - i) * (this.theme.settings.number.width + 1),
+                       coord.e(2) - (this.theme.settings.image.height - this.theme.settings.hex.height),
                        this.theme.settings.image.width, this.theme.settings.image.height);
       }
 
     }
-    
+
     this.overlay.visible = true;
-    
+
     this.canvas.forceRedraw();
   }
-  
+
   AnimatedMap.prototype.sortTilesToRenderOrder = function() {
-    this.tiles.sort(function(a, b){ 
+    this.tiles.sort(function(a, b){
       if(a.y !== b.y) {
         return a.y - b.y;
       } else {
@@ -299,10 +299,10 @@ define(["Theme", "aja/lib/aja", "pixastic", "sylvester"], function(Theme) {
       }
     });
   };
-  
+
   AnimatedMap.prototype.refresh = function() {
     this.sortTilesToRenderOrder();
-  
+
     this.clear();
 
     if(!this.autoscale) {
@@ -312,7 +312,7 @@ define(["Theme", "aja/lib/aja", "pixastic", "sylvester"], function(Theme) {
     }
 
     var ctx = this.canvas.background.getContext("2d");
-    
+
     ctx.fillStyle = "#eee";
     ctx.fillRect(0, 0, this.canvas.canvas.width, this.canvas.canvas.height);
 
@@ -337,24 +337,24 @@ define(["Theme", "aja/lib/aja", "pixastic", "sylvester"], function(Theme) {
   AnimatedMap.prototype.coordToTile = function(cx, cy) {
     var offset = this.getOffset();
     var scale = this.getScale();
-    return this.rect2hexCoords((cx - offset.e(1)) / scale, (cy - offset.e(2)) / scale);    
+    return this.rect2hexCoords((cx - offset.e(1)) / scale, (cy - offset.e(2)) / scale);
   }
-  
+
   AnimatedMap.prototype.hideOverlay = function() {
     this.overlay.visible = false;
     this.canvas.forceRedraw();
   }
-  
+
   AnimatedMap.prototype.eventToTile = function(event) {
       var cx = event.pageX - $(this.canvas).offset().left;
       var cy = event.pageY - $(this.canvas).offset().top;
       return coordToTile(cx, cy);
   };
-  
+
   AnimatedMap.prototype.eventToTileX = function(event) {
       return this.eventToTile(event).e(1);
   };
-  
+
   AnimatedMap.prototype.eventToTileY = function(event) {
       return this.eventToTile(event).e(2);
   };
@@ -367,12 +367,12 @@ define(["Theme", "aja/lib/aja", "pixastic", "sylvester"], function(Theme) {
     this.canvas.resize(width, height);
     this.overlay.resize(width, height);
   };
-  
+
 
   AnimatedMap.prototype.paintDamageIndicators = function(attacks) {
       var mapSize = this.getMapSize();
       var ctx = this.overlay.canvas.getContext("2d");
-      
+
       ctx.scale(this.getScale(), this.getScale());
 
       for (i in attacks) {
@@ -393,7 +393,7 @@ define(["Theme", "aja/lib/aja", "pixastic", "sylvester"], function(Theme) {
     var tiles = this.tiles.filter(function(tile){
       return tile.unit !== null && tile.unit.unitId == unitId;
     });
-    
+
     return tiles.length != 0 ? tiles[0] : null;
   }
 
@@ -403,7 +403,7 @@ define(["Theme", "aja/lib/aja", "pixastic", "sylvester"], function(Theme) {
       if(mapArray[tile.y] === undefined) {
         mapArray[tile.y] = {};
       }
-      
+
       mapArray[tile.y][tile.x] = tile;
     });
 
@@ -521,13 +521,13 @@ define(["Theme", "aja/lib/aja", "pixastic", "sylvester"], function(Theme) {
         that.canvas.addEntity(unit);
         that.canvas.addEntity(unit.healthIndicator);
       }
-      
+
       if(el.capturePoints < 200) {
         el.captureBar = new CaptureBar(el, that);
         that.canvas.addEntity(el.captureBar);
       }
     });
-    
+
     this.canvas.forceRedraw();
   }
 
@@ -538,7 +538,7 @@ define(["Theme", "aja/lib/aja", "pixastic", "sylvester"], function(Theme) {
         return u;
       }
     }
-    
+
     return null;
   }
 
@@ -560,23 +560,23 @@ define(["Theme", "aja/lib/aja", "pixastic", "sylvester"], function(Theme) {
       u.x = endPos.e(1);
       u.y = endPos.e(2);
       this.canvas.redrawEntity(u);
-      
+
       if(callback !== undefined)
         callback();
     }
   }
-  
-  AnimatedMap.prototype.moveUnit = function(unitId, tileId, path, callback) {    
+
+  AnimatedMap.prototype.moveUnit = function(unitId, tileId, path, callback) {
     var that = this;
     this.showMoveUnit(unitId, path, function() {
       var u = that.getUnitEntity(unitId);
       var prevTile = that.getTile(u.tx, u.ty);
       var t = that.getTile(tileId);
-      
+
       prevTile.unit = null;
       if(t.unit === null)
         t.unit = u.unit;
-      
+
       that.canvas.eraseEntity(u);
       u.tx = t.x;
       u.ty = t.y;
@@ -584,8 +584,8 @@ define(["Theme", "aja/lib/aja", "pixastic", "sylvester"], function(Theme) {
       u.x = pos.e(1);
       u.y = pos.e(2);
       that.canvas.drawEntity(u);
-      
-      if(callback !== undefined) 
+
+      if(callback !== undefined)
         callback();
     });
   };
@@ -594,32 +594,32 @@ define(["Theme", "aja/lib/aja", "pixastic", "sylvester"], function(Theme) {
     var u = this.getUnitEntity(unitId);
     u.unit.moved = true;
     this.canvas.redrawEntity(u);
-    if(callback !== undefined) 
+    if(callback !== undefined)
       callback();
   };
 
   AnimatedMap.prototype.showAttack = function(unitId, targetId, damage, callback) {
     if(damage === null)
       return;
-    
+
     var attacker = this.getUnitEntity(unitId);
     var target = this.getUnitEntity(targetId);
-    
+
     var canvas = this.canvas;
-    
+
     function doAttack() {
       target.unit.health -= damage;
       canvas.redrawEntities([target, attacker]);
-      
-      if(callback !== undefined) 
+
+      if(callback !== undefined)
         callback();
     }
-    
+
     if(attacker !== null && target !== null) {
       if(this.animate) {
         var va = $V([attacker.x, attacker.y]);
         var vt = $V([target.x, target.y]);
-        
+
         var direction = vt.subtract(va).toUnitVector();
         var halfHex = this.xAxis.add(this.yAxis).multiply(0.5);
         var vx = $V([halfHex.e(1) * direction.e(1), halfHex.e(2) * direction.e(2)]);
@@ -640,24 +640,22 @@ define(["Theme", "aja/lib/aja", "pixastic", "sylvester"], function(Theme) {
           damageParts.push(new aja.SequentialAnimation(parts));
         }
         damageParts.push(new aja.PauseAnimation(500 / this.animationSpeed));
-        
+
         var parts = [];
         parts.push(new aja.PositionDeltaAnimation(attacker, vx.e(1), vx.e(2), 100 / this.animationSpeed));
         parts.push(new aja.ParallelAnimation(damageParts));
         parts.push(new aja.PositionDeltaAnimation(attacker, -vx.e(1), -vx.e(2), 200 / this.animationSpeed));
-        
+
         this.canvas.addAnimation(new aja.SequentialAnimation(parts, function() {
           for(var i = 0; i < numbers.length; ++i) {
             canvas.removeEntity(numbers[i]);
           }
-          
+
           doAttack();
         }));
       } else {
         doAttack();
       }
-    } else {
-      console.log("ERROR: unknown unit id");
     }
   };
   AnimatedMap.prototype.attackUnit = function(unitId, targetId, damage, callback) {
@@ -666,8 +664,8 @@ define(["Theme", "aja/lib/aja", "pixastic", "sylvester"], function(Theme) {
     this.showAttack(unitId, targetId, damage, function() {
       attacker.unit.moved = true;
       canvas.redrawEntity(attacker);
-      
-      if(callback !== undefined) 
+
+      if(callback !== undefined)
         callback();
     });
   };
@@ -680,23 +678,23 @@ define(["Theme", "aja/lib/aja", "pixastic", "sylvester"], function(Theme) {
     var u = this.getUnitEntity(unitId);
     var t = this.getTile(tileId);
     var that = this;
-    
+
     function doCapture() {
       if(!t.captureBar) {
         t.captureBar = new CaptureBar(t, that);
         that.canvas.addEntity(t.captureBar);
       }
-      
+
       t.capturePoints = left;
       t.beingCaptured = true;
       t.captureBar.visible = t.capturePoints < 200;
 
       u.unit.moved = true;
       that.refresh();
-      if(callback !== undefined) 
+      if(callback !== undefined)
         callback();
     }
-    
+
     if(this.animate) {
       this.canvas.addAnimation(new aja.SequentialAnimation([
         new aja.PositionDeltaAnimation(u, 0, -this.theme.settings.hex.height/2, 100 / this.animationSpeed, aja.easing.QuadOut),
@@ -710,15 +708,15 @@ define(["Theme", "aja/lib/aja", "pixastic", "sylvester"], function(Theme) {
   AnimatedMap.prototype.capturedTile = function(unitId, tileId, callback) {
     var u = this.getUnitEntity(unitId);
     var t = this.getTile(tileId);
-    
+
     var that = this;
-    
+
     function doCaptured() {
       if(!t.captureBar) {
         t.captureBar = new CaptureBar(t, that);
         that.canvas.addEntity(t.captureBar);
       }
-      
+
       t.capturePoints = 1;
       t.beingCaptured = false;
       t.captureBar.visible = t.capturePoints < 200;
@@ -726,10 +724,10 @@ define(["Theme", "aja/lib/aja", "pixastic", "sylvester"], function(Theme) {
       t.owner = u.unit.owner;
       u.unit.moved = true;
       that.refresh();
-      if(callback !== undefined) 
+      if(callback !== undefined)
         callback();
     }
-    
+
     if(this.animate) {
       var anim = new aja.SequentialAnimation([
         new aja.PositionDeltaAnimation(u, 0, -this.theme.settings.hex.height/2, 100 / this.animationSpeed, aja.easing.QuadOut),
@@ -745,22 +743,22 @@ define(["Theme", "aja/lib/aja", "pixastic", "sylvester"], function(Theme) {
   AnimatedMap.prototype.deployUnit = function(unitId, callback) {
     var u = this.getUnitEntity(unitId);
     var canvas = this.canvas;
-    
+
     function doDeploy() {
       u.unit.deployed = true;
       u.unit.moved = true;
       canvas.redrawEntity(u);
-      if(callback !== undefined) 
+      if(callback !== undefined)
         callback();
     }
-    
+
     if(this.animate) {
       var rumble = new aja.SequentialAnimation([
         new aja.PositionDeltaAnimation(u, 0, -this.theme.settings.hex.height / 8, 20 / this.animationSpeed, aja.easing.SineOut),
         new aja.PositionDeltaAnimation(u, 0, this.theme.settings.hex.height / 8, 20 / this.animationSpeed, aja.easing.SineIn)
       ]);
       rumble.loops = 3;
-      
+
       this.canvas.addAnimation(new aja.SequentialAnimation([
         new aja.PositionDeltaAnimation(u, 0, -this.theme.settings.hex.height/2, 100 / this.animationSpeed, aja.easing.QuadOut),
         new aja.PauseAnimation(300 / this.animationSpeed),
@@ -775,12 +773,12 @@ define(["Theme", "aja/lib/aja", "pixastic", "sylvester"], function(Theme) {
   AnimatedMap.prototype.undeployUnit = function(unitId, callback) {
     var u = this.getUnitEntity(unitId);
     var canvas = this.canvas;
-    
+
     function doUndeploy() {
       u.unit.deployed = false;
       u.unit.moved = true;
       canvas.redrawEntity(u);
-      if(callback !== undefined) 
+      if(callback !== undefined)
         callback();
     }
 
@@ -802,7 +800,7 @@ define(["Theme", "aja/lib/aja", "pixastic", "sylvester"], function(Theme) {
     u.unit.moved = true;
     this.canvas.removeEntity(u);
     this.canvas.redrawEntity(carrier);
-    if(callback !== undefined) 
+    if(callback !== undefined)
       callback();
   };
 
@@ -810,28 +808,28 @@ define(["Theme", "aja/lib/aja", "pixastic", "sylvester"], function(Theme) {
     var t = this.getTile(tileId);
     var carrier = this.getUnitEntity(carrierId);
 
-    var unit = carrier.unit.carriedUnits.filter(function(unit) { 
+    var unit = carrier.unit.carriedUnits.filter(function(unit) {
       return unit.unitId === unitId;
     })[0];
-    
-    carrier.unit.carriedUnits = carrier.unit.carriedUnits.filter(function(unit) { 
+
+    carrier.unit.carriedUnits = carrier.unit.carriedUnits.filter(function(unit) {
       return unit.unitId !== unitId;
     });
-    
+
     var u = new MapUnit(unit, t.x, t.y, this);
     u.healthIndicator = new HealthIndicator(u);
-    
+
     t.unit = u.unit;
     unit.moved = true;
     carrier.unit.moved = true;
-    
-    
+
+
     if(this.animate) {
       this.canvas.addAnimation(new aja.PositionAnimation(u, carrier.x, carrier.y, u.x, u.y, 200 / this.animationSpeed, aja.easing.Linear, callback));
       u.x = carrier.x;
       u.y = carrier.y;
     }
-    
+
     this.canvas.redrawEntity(carrier);
     this.canvas.addEntity(u);
     this.canvas.addEntity(u.healthIndicator);
@@ -840,16 +838,16 @@ define(["Theme", "aja/lib/aja", "pixastic", "sylvester"], function(Theme) {
   AnimatedMap.prototype.destroyUnit = function(unitId, callback) {
     var u = this.getUnitEntity(unitId);
     var t = this.getTile(u.tx, u.ty);
-    
+
     var canvas = this.canvas;
     function doDestroy() {
       canvas.removeEntity(u);
       canvas.removeEntity(u.healthIndicator);
       t.unit = null;
-      if(callback !== undefined) 
-        callback();      
+      if(callback !== undefined)
+        callback();
     }
-    
+
     if(this.animate) {
       u.effects = [new aja.OpacityEffect];
       u.opacity = 1.0;
@@ -862,12 +860,12 @@ define(["Theme", "aja/lib/aja", "pixastic", "sylvester"], function(Theme) {
   AnimatedMap.prototype.repairUnit = function(unitId, newHealth, callback) {
     var u = this.getUnitEntity(unitId);
     var change = newHealth - u.unit.health;
-    
+
     if(change > 0 && this.animate) {
       var changeString = "" + change;
       var canvas = this.canvas;
       var that = this;
-      
+
       for(var i = 0; i < changeString.length; ++i) {
         var n = parseInt(changeString[i]);
         var number = new MapDigit(n, u.x - (changeString.length - i) * this.theme.settings.number.width, u.y, this);
@@ -882,29 +880,29 @@ define(["Theme", "aja/lib/aja", "pixastic", "sylvester"], function(Theme) {
         }(number);
       }
     }
-    
+
     u.unit.health = newHealth;
     this.canvas.redrawEntity(u);
-    if(callback !== undefined) 
+    if(callback !== undefined)
       callback();
   };
 
   AnimatedMap.prototype.buildUnit = function(tileId, unit, callback) {
     var t = this.getTile(tileId);
-    
+
     t.unit = unit;
     unit.health = 100;
     unit.deployed = false;
     unit.moved = true;
     unit.carriedUnits = [];
-    
+
     var u = new MapUnit(unit, t.x, t.y, this);
     u.healthIndicator = new HealthIndicator(u);
 
     if(this.animate) {
       u.effects = [new aja.OpacityEffect];
       u.opacity = 0.0;
-      
+
       this.canvas.addAnimation(new aja.NumberAnimation(u, {opacity: {from: 0.0, to: 1.0}}, 500 / this.animationSpeed, aja.easing.SineIn, callback));
       this.canvas.addEntity(u);
       this.canvas.addEntity(u.healthIndicator);
@@ -915,30 +913,30 @@ define(["Theme", "aja/lib/aja", "pixastic", "sylvester"], function(Theme) {
     }
 
   };
-  
+
   AnimatedMap.prototype.regenerateCapturePointsTile = function(tileId, newCapturePoints, callback) {
     var t = this.getTile(tileId);
     if(!t.captureBar) {
       t.captureBar = new CaptureBar(t, this);
       this.canvas.addEntity(t.captureBar);
     }
-    
+
     t.captureBar.visible = t.capturePoints < 200;
-    
+
     t.capturePoints = newCapturePoints;
     t.beingCaptured = false;
     this.refresh();
-    if(callback !== undefined) 
+    if(callback !== undefined)
       callback();
   };
 
   AnimatedMap.prototype.produceFundsTile = function(tileId, callback) {
-    if(callback !== undefined) 
+    if(callback !== undefined)
       callback();
   };
 
   AnimatedMap.prototype.beginTurn = function(player, callback) {
-    if(callback !== undefined) 
+    if(callback !== undefined)
       callback();
   };
 
@@ -950,22 +948,22 @@ define(["Theme", "aja/lib/aja", "pixastic", "sylvester"], function(Theme) {
     });
 
     this.refresh();
-    if(callback !== undefined) 
+    if(callback !== undefined)
       callback();
   };
 
   AnimatedMap.prototype.turnTimeout = function(player, callback) {
-    if(callback !== undefined) 
+    if(callback !== undefined)
       callback();
   };
 
   AnimatedMap.prototype.finished = function(winner, callback) {
-    if(callback !== undefined) 
+    if(callback !== undefined)
       callback();
   };
 
   AnimatedMap.prototype.surrender = function(player, callback) {
-    if(callback !== undefined) 
+    if(callback !== undefined)
       callback();
   };
 
@@ -990,13 +988,13 @@ define(["Theme", "aja/lib/aja", "pixastic", "sylvester"], function(Theme) {
     var unitPos = $V([pos.e(1), pos.e(2) - (this.map.theme.settings.image.height - this.map.theme.settings.hex.height)]);
     return unitPos;
   }
-  
+
   MapUnit.prototype.setToHex = function(x, y) {
     var pos = this.hexPos(x, y);
     this.x = pos.e(1);
     this.y = pos.e(2);
   }
-  
+
   MapUnit.prototype.rect = function(ctx) {
     return {x: this.x, y: this.y, w: this.map.theme.settings.image.width, h: this.map.theme.settings.image.height };
   };
@@ -1008,7 +1006,7 @@ define(["Theme", "aja/lib/aja", "pixastic", "sylvester"], function(Theme) {
       ctx.drawImage(sprites,
                     coord.x, coord.y, this.map.theme.settings.image.width, this.map.theme.settings.image.height,
                     this.x, this.y, this.map.theme.settings.image.width, this.map.theme.settings.image.height);
-    } 
+    }
 
     if(this.unit.deployed) {
       var deployCoord = this.map.theme.getDeployEmblemCoordinates();
@@ -1022,7 +1020,7 @@ define(["Theme", "aja/lib/aja", "pixastic", "sylvester"], function(Theme) {
       if(unitType.carryNum > 0) {
           var freeCoords = this.map.theme.getCoordinates(this.map.theme.settings.carrierSlot.freeSlotName);
           var occupiedCoords = this.map.theme.getCoordinates(this.map.theme.settings.carrierSlot.occupiedSlotName);
-          
+
         for(var i = 0; i < unitType.carryNum; ++i) {
           var slotCoords = i < this.unit.carriedUnits.length ? occupiedCoords : freeCoords;
           ctx.drawImage(this.map.sprites,
@@ -1050,35 +1048,35 @@ define(["Theme", "aja/lib/aja", "pixastic", "sylvester"], function(Theme) {
   MapDigit.prototype.rect = function(ctx) {
     return {x: this.x, y: this.y, w: this.map.theme.settings.image.width, h: this.map.theme.settings.image.height };
   };
-  
+
   function Overlay(map) {
     this.canvas = document.createElement("canvas");
     this.resize(map.canvas.width, map.canvas.height);
   };
-  
+
   Overlay.prototype.resize = function(w, h) {
     this.canvas.width = w;
     this.canvas.height = h;
   };
-  
+
   Overlay.prototype.draw = function(ctx) {
     ctx.drawImage(this.canvas, 0, 0);
   };
-  
+
   Overlay.prototype.rect = function(ctx) {
     return {x: 0, y: 0, w: this.canvas.width, h: this.canvas.height };
   };
-  
+
   function CaptureBar(tile, map) {
     this.tile = tile;
     this.map = map;
-    
+
     var tileCoords = this.map.hex2rectCoords(tile.x, tile.y);
     this.x = tileCoords.e(1);
     this.y = tileCoords.e(2) - (this.map.theme.settings.image.height - this.map.theme.settings.hex.height) + this.map.theme.getTileOffset(tile.type, tile.subtype, tile.owner);
     this.z = 1;
   };
-  
+
   CaptureBar.prototype.draw = function(ctx) {
     if(this.tile.capturePoints<200) {
       // draw capture bar
@@ -1089,13 +1087,13 @@ define(["Theme", "aja/lib/aja", "pixastic", "sylvester"], function(Theme) {
                     this.map.theme.settings.image.width, this.map.theme.settings.image.height,
                     this.x, this.y,
                     this.map.theme.settings.image.width, this.map.theme.settings.image.height);
-      
+
       for(var i = 0; i < numBits; ++i) {
         ctx.drawImage(this.map.sprites, bitCoords.x, bitCoords.y,
                       this.map.theme.settings.image.width, this.map.theme.settings.image.height,
                       this.x, this.y - i * this.map.theme.settings.captureBar.bitHeight,
                       this.map.theme.settings.image.width, this.map.theme.settings.image.height);
-        
+
       }
     }
   };
@@ -1104,22 +1102,22 @@ define(["Theme", "aja/lib/aja", "pixastic", "sylvester"], function(Theme) {
     return {x: this.x, y: this.y, w: this.map.theme.settings.image.width, h: this.map.theme.settings.image.height };
   };
 
-  
+
   function HealthIndicator(mapUnit) {
     this.mapUnit = mapUnit;
     this.z = 1;
   };
-  
+
   HealthIndicator.prototype.draw = function(ctx) {
     if(this.mapUnit.unit.health < 100 && this.mapUnit.unit.health >= 0) {
       var healthString = "" + this.mapUnit.unit.health;
-      
+
       for(var i = 0; i < healthString.length; ++i) {
         var n = healthString[i];
         var numCoord = this.mapUnit.map.theme.getHealthNumberCoordinates(n);
         ctx.drawImage(this.mapUnit.map.sprites,
                       numCoord.x, numCoord.y, this.mapUnit.map.theme.settings.image.width, this.mapUnit.map.theme.settings.image.height,
-                      this.mapUnit.x - (healthString.length - 1 - i) * (this.mapUnit.map.theme.settings.number.width + 1), this.mapUnit.y, 
+                      this.mapUnit.x - (healthString.length - 1 - i) * (this.mapUnit.map.theme.settings.number.width + 1), this.mapUnit.y,
                       this.mapUnit.map.theme.settings.image.width, this.mapUnit.map.theme.settings.image.height);
       }
     }
