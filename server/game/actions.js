@@ -20,39 +20,43 @@ function checkMove(database, gameId, userId, unitId, destination, path, callback
     if(!result.success) {
       callback({success: false, reason: result.reason}); return;
     }
-    
+
+    if(result.tile === null) {
+      callback({success: false, reason: "Unit is inside a carrier!"}); return;
+    }
+
     var unit = result.unit;
     var sourceTile = result.tile;
-    
+
     if(unit.moved) {
       callback({success: false, reason: "Unit already moved!"}); return;
-    } 
-    
+    }
+
     gameInformation.gameData(gameId, function(result) {
       if(!result.success) {
         callback({success: false, reason: result.reason}); return;
-      } 
-      
+      }
+
       var game = result.game;
       if(game.state != game.STATE_IN_PROGRESS) {
         callback({success: false, reason: "Game not in progress!"}); return;
-      } 
-      
+      }
+
       var playerInTurn = game.playerInTurn();
       if(playerInTurn.userId != userId) {
         callback({success: false, reason: "User not in turn!"}); return;
       }
-      
+
       var gameLogic = new GameLogic(game, settings.gameElements);
       var destinationTile = null;
       if(destination !== null) {
         if(!gameLogic.unitCanMovePath(sourceTile.x, sourceTile.y, destination.x, destination.y, path)) {
           callback({success: false, reason: "Error determining path!"}); return;
         }
-        
+
         destinationTile = game.getTile(destination.x, destination.y);
       }
-      
+
       callback({success: true}, game, playerInTurn, unit, sourceTile, destinationTile, path, gameLogic);
     });
   });
@@ -60,33 +64,33 @@ function checkMove(database, gameId, userId, unitId, destination, path, callback
 
 GameActions.prototype.moveAndAttack = function(gameId, userId, unitId, destination, path, targetId, callback) {
   var database = this.database;
-  checkMove(database, gameId, userId, unitId, destination, path, 
+  checkMove(database, gameId, userId, unitId, destination, path,
             function(result, game, player, unit, sourceTile, destinationTile, path, gameLogic) {
     if(!result.success) {
       callback({success: false, reason: result.reason}); return;
     }
-    
+
     if(destinationTile.unit !== null && destinationTile.unit.unitId != unitId) {
       callback({success: false, reason: "Destination tile occupied!"}); return;
     }
-    
+
     database.unit(targetId, function(result) {
       if(!result.success) {
         callback({success: false, reason: result.reason}); return;
       }
-      
+
       var target = result.unit;
       database.tile(target.tileId, function(result) {
         var targetTile = result.tile;
         targetTile.setUnit(target);
-        
+
         if(target.owner == unit.owner) {
           callback({success: false, reason: "Cannot attack own units!"}); return;
         }
-      
+
         database.gamePlayer(gameId, target.owner, function(result) {
           var targetPlayer = result.player;
-          
+
           var power = gameLogic.calculateDamage(unit, destinationTile, target, targetTile);
           if(power === null) {
             callback({success: false, reason: "Cannot attack target from destination!"}); return;
@@ -96,19 +100,19 @@ GameActions.prototype.moveAndAttack = function(gameId, userId, unitId, destinati
           events.move(unit, destinationTile, path);
           sourceTile.setUnit(null);
           destinationTile.setUnit(unit);
-          
+
           var updatedUnits = [];
           var deletedUnits = [];
 
           events.attack(unit, destinationTile, target, power);
-          
+
           if(targetPlayer)
             targetPlayer.score -= parseInt(Math.min(target.health, power) * target.unitType().price / 100);
-          
+
           player.score += parseInt(Math.min(target.health, power) * target.unitType().price / 100);
           target.health -= power;
           unit.moved = true;
-          
+
           if(target.health > 0) {
             power = gameLogic.calculateDamage(target, targetTile, unit, destinationTile);
             events.counterattack(target, unit, power);
@@ -124,7 +128,7 @@ GameActions.prototype.moveAndAttack = function(gameId, userId, unitId, destinati
             targetTile.setUnit(null);
             deletedUnits.push(target);
           }
-          
+
           if(unit.health <= 0) {
             events.destroyed(unit);
             destinationTile.setUnit(null);
@@ -132,6 +136,19 @@ GameActions.prototype.moveAndAttack = function(gameId, userId, unitId, destinati
           } else {
             updatedUnits.push(unit);
           }
+
+          function getCarriedUnits(units) {
+            var carried = [];
+            for(var i = 0; i < units.length; ++i) {
+              var unit = units[i];
+              if(unit.carriedUnits && unit.carriedUnits.length > 0) {
+                carried = carried.concat(unit.carriedUnits).concat(getCarriedUnits(unit.carriedUnits));
+              }
+            }
+            return carried;
+          }
+
+          deletedUnits = deletedUnits.concat(getCarriedUnits(deletedUnits));
 
           database.deleteUnits(deletedUnits, function(result) {
             database.updateUnits(updatedUnits, function(result) {
@@ -157,18 +174,18 @@ GameActions.prototype.moveAndWait = function(gameId, userId, unitId, destination
     if(!result.success) {
       callback({success: false, reason: result.reason}); return;
     }
-            
+
     if(destinationTile.unit !== null && destinationTile.unit.unitId != unitId) {
       callback({success: false, reason: "Destination tile occupied!"}); return;
     }
-    
+
     var events = new GameEventManager(gameId);
     events.move(unit, destinationTile, path);
     sourceTile.setUnit(null);
     destinationTile.setUnit(unit);
     unit.wait();
     events.wait(unit);
-    
+
     database.updateUnit(unit, function(result) {
       database.updateTiles([sourceTile, destinationTile], function(result) {
         callback({success: true, events: events.objects});
@@ -179,36 +196,36 @@ GameActions.prototype.moveAndWait = function(gameId, userId, unitId, destination
 
 GameActions.prototype.moveAndCapture = function(gameId, userId, unitId, destination, path, callback) {
   var database = this.database;
-  checkMove(database, gameId, userId, unitId, destination, path, 
+  checkMove(database, gameId, userId, unitId, destination, path,
             function(result, game, player, unit, sourceTile, destinationTile, path, gameLogic) {
     if(!result.success) {
       callback({success: false, reason: result.reason}); return;
     }
-            
+
     if(destinationTile.unit !== null && destinationTile.unit.unitId != unitId) {
       callback({success: false, reason: "Destination tile occupied!"}); return;
     }
-    
+
     var canCapture = gameLogic.unitCanCapture(sourceTile.x, sourceTile.y, destinationTile.x, destinationTile.y);
-    
+
     if(canCapture === null) {
       callback({success: false, reason: "Error determining if unit can capture!"}); return;
     } else if(canCapture == false) {
       callback({success: false, reason: "Unit cannot capture tile at destination!"}); return;
     }
-    
+
     var events = new GameEventManager(gameId);
     events.move(unit, destinationTile, path);
     sourceTile.setUnit(null);
     destinationTile.setUnit(unit);
     unit.capture(destinationTile);
-    
+
     if(destinationTile.owner != unit.owner) {
       events.capture(unit, destinationTile, destinationTile.capturePoints);
     } else {
       events.captured(unit, destinationTile);
     }
-    
+
     database.updateUnit(unit, function(result) {
       database.updateTiles([sourceTile, destinationTile], function(result) {
         database.createGameEvents(events.objects, function(result) {
@@ -221,33 +238,33 @@ GameActions.prototype.moveAndCapture = function(gameId, userId, unitId, destinat
 
 GameActions.prototype.moveAndDeploy = function(gameId, userId, unitId, destination, path, callback) {
   var database = this.database;
-  checkMove(database, gameId, userId, unitId, destination, path, 
+  checkMove(database, gameId, userId, unitId, destination, path,
             function(result, game, player, unit, sourceTile, destinationTile, path, gameLogic) {
     if(!result.success) {
       callback({success: false, reason: result.reason}); return;
     }
-            
+
     if(destinationTile.unit !== null && destinationTile.unit.unitId != unitId) {
       callback({success: false, reason: "Destination tile occupied!"}); return;
     }
-    
+
     var canDeploy = gameLogic.unitCanDeploy(sourceTile.x, sourceTile.y, destinationTile.x, destinationTile.y);
-    
+
     if(canDeploy === null) {
       callback({success: false, reason: "Error determining if unit can deploy!"}); return;
     } else if(canDeploy == false) {
       callback({success: false, reason: "Unit cannot deploy!"}); return;
     }
-    
+
     var events = new GameEventManager(gameId);
     events.move(unit, destinationTile, path);
-    
+
     sourceTile.setUnit(null);
     destinationTile.setUnit(unit);
     unit.deploy();
-    
+
     events.deploy(unit);
-    
+
     database.updateUnit(unit, function(result) {
       database.updateTiles([sourceTile, destinationTile], function(result) {
         database.createGameEvents(events.objects, function(result) {
@@ -265,20 +282,20 @@ GameActions.prototype.undeploy = function(gameId, userId, unitId, callback) {
     if(!result.success) {
       callback({success: false, reason: result.reason}); return;
     }
-    
+
     var canUndeploy = gameLogic.unitCanUndeploy(sourceTile.x, sourceTile.y);
-    
+
     if(canUndeploy === null) {
       callback({success: false, reason: "Error determining if unit can undeploy!"}); return;
     } else if(canUndeploy == false) {
       callback({success: false, reason: "Unit cannot undeploy!"}); return;
     }
-    
+
     unit.undeploy();
-    
+
     var events = new GameEventManager(gameId);
     events.undeploy(unit);
-    
+
     database.updateUnit(unit, function(result) {
       database.updateTiles([sourceTile], function(result) {
         database.createGameEvents(events.objects, function(result) {
@@ -286,7 +303,7 @@ GameActions.prototype.undeploy = function(gameId, userId, unitId, callback) {
         });
       });
     });
-  });  
+  });
 }
 
 GameActions.prototype.moveAndLoadInto = function(gameId, userId, unitId, carrierId, path, callback) {
@@ -296,31 +313,31 @@ GameActions.prototype.moveAndLoadInto = function(gameId, userId, unitId, carrier
     if(!result.success) {
       callback({success: false, reason: result.reason}); return;
     }
-    
+
     var carrier = result.unit;
     var carrierTile = result.tile;
-    checkMove(database, gameId, userId, unitId, {x:carrierTile.x, y:carrierTile.y}, path, 
+    checkMove(database, gameId, userId, unitId, {x:carrierTile.x, y:carrierTile.y}, path,
               function(result, game, player, unit, sourceTile, destinationTile, path, gameLogic) {
       if(!result.success) {
         callback({success: false, reason: result.reason}); return;
       }
-  
+
       var canLoad = gameLogic.unitCanLoadInto(sourceTile.x, sourceTile.y, carrierTile.x, carrierTile.y);
-      
+
       if(canLoad === null) {
         callback({success: false, reason: "Error determining if unit can load!"}); return;
       } else if(canLoad == false) {
         callback({success: false, reason: "Unit cannot load here!"}); return;
       }
-      
+
       var events = new GameEventManager(gameId);
       events.move(unit, destinationTile, path);
-      
+
       sourceTile.setUnit(null);
       unit.loadInto(carrier);
-      
+
       events.load(unit, carrier);
-      
+
       database.updateUnits([unit, carrier], function(result) {
         database.updateTiles([sourceTile], function(result) {
           database.createGameEvents(events.objects, function(result) {
@@ -334,15 +351,20 @@ GameActions.prototype.moveAndLoadInto = function(gameId, userId, unitId, carrier
 
 GameActions.prototype.moveAndUnload = function(gameId, userId, carrierId, destination, path, unitId, unloadDestination, callback) {
   var database = this.database;
-  checkMove(database, gameId, userId, carrierId, destination, path, 
+  checkMove(database, gameId, userId, carrierId, destination, path,
             function(result, game, player, unit, sourceTile, destinationTile, path, gameLogic) {
+    if(!result.success) {
+      callback(result); return;
+    }
+
     database.unit(unitId, function(result) {
       if(!result.success) {
         callback({success: false, reason: result.reason}); return;
       }
-      
+
       var carriedUnit = result.unit;
-      var unloadTargetOptions = gameLogic.unitUnloadTargetOptions(sourceTile.x, sourceTile.y, 
+
+      var unloadTargetOptions = gameLogic.unitUnloadTargetOptions(sourceTile.x, sourceTile.y,
                                                               destinationTile.x, destinationTile.y, unitId);
 
       if(unloadTargetOptions === null) {
@@ -350,29 +372,29 @@ GameActions.prototype.moveAndUnload = function(gameId, userId, carrierId, destin
       }
 
       var canUnload = false;
-      
+
       for(var i = 0; i < unloadTargetOptions.length; ++i) {
         if(unloadTargetOptions[i].x == unloadDestination.x && unloadTargetOptions[i].y == unloadDestination.y) {
           canUnload = true;
         }
       }
-      
+
       if(canUnload == false) {
         callback({success: false, reason: "Unit cannot be unloaded here!"}); return;
       }
-      
+
       var events = new GameEventManager(gameId);
       events.move(unit, destinationTile, path);
-      
+
       sourceTile.setUnit(null);
       destinationTile.setUnit(unit);
       var unloadTile = game.getTile(unloadDestination.x, unloadDestination.y);
       carriedUnit.unloadFrom(unit);
       unloadTile.setUnit(carriedUnit);
       unit.moved = true;
-      
+
       events.unload(carriedUnit, unit, unloadTile);
-      
+
       database.updateUnits([unit, carriedUnit], function(result) {
         database.updateTiles([sourceTile, destinationTile, unloadTile], function(result) {
           database.createGameEvents(events.objects, function(result) {
@@ -392,23 +414,23 @@ GameActions.prototype.build = function(gameId, userId, unitTypeId, destination, 
     } else if(result.game.state != result.game.STATE_IN_PROGRESS) {
       callback({success: false, reason: "Game not in progress!"}); return;
     }
-    
+
     var game = result.game;
     database.userPlayerInTurn(gameId, userId, function(result) {
       if(!result.success) {
         callback({success: false, reason: result.reason}); return;
       }
-      
+
       var player = result.player;
       database.tileAt(gameId, destination.x, destination.y, function(result) {
         if(!result.success) {
           callback({success: false, reason: result.reason}); return;
         }
-        
+
         var tile = result.tile;
         var tileType = tile.terrainType();
         var unitType = settings.gameElements.units[unitTypeId];
-        
+
         if(tile.owner != player.playerNumber) {
           callback({success: false, reason: "Tile not owned by player!"}); return;
         } else if(!tileType.canBuild(unitTypeId)) {
@@ -420,21 +442,21 @@ GameActions.prototype.build = function(gameId, userId, unitTypeId, destination, 
         } else if(player.funds < unitType.price) {
           callback({success: false, reason: "Not enough funds!"}); return;
         }
-        
-        var unit = new entities.Unit(null, tile.tileId, unitType.id, 
-                                      player.playerNumber, null, 100, 
+
+        var unit = new entities.Unit(null, tile.tileId, unitType.id,
+                                      player.playerNumber, null, 100,
                                       false, true, false);
         player.funds -= unitType.price;
-        
+
         database.updatePlayer(player, function(result) {
           database.createUnit(gameId, unit, function(result) {
             tile.unitId = result.unitId;
             unit.unitId = result.unitId;
             tile.unit = unit;
-            
+
             var events = new GameEventManager(gameId);
             events.build(tile, unit);
-        
+
             database.updateTile(tile, function(result) {
               database.createGameEvents(events.objects, function(result) {
                 callback({success: true, events: events.objects});
@@ -449,16 +471,16 @@ GameActions.prototype.build = function(gameId, userId, unitTypeId, destination, 
 
 GameActions.prototype.endTurn = function(game, userId, callback) {
   var database = this.database;
-  
+
   function endTurn(result) {
     if(!result.success) {
       callback({success: false, reason: result.reason});
     } else {
       var previousPlayer = result.player;
-      
+
       var events = new GameEventManager(game.gameId);
       events.endTurn(previousPlayer);
-      
+
       // Clean up last turn
       database.tiles(game.gameId, function(result) {
         var tiles = result.tiles;
@@ -489,7 +511,7 @@ GameActions.prototype.endTurn = function(game, userId, callback) {
       });
     }
   };
-  
+
   if(userId !== null) {
     database.userPlayerInTurn(game.gameId, userId, endTurn);
   } else {
@@ -503,7 +525,7 @@ GameActions.prototype.startTurn = function(game, callback) {
   // Determine next player
   database.players(game.gameId, function(result) {
     var players = result.players.sort(function(a, b) { return a.playerNumber - b.playerNumber });
-    
+
     var currentIndex = -1;
     if(game.inTurnNumber != 0) {
       for(var currentIndex = 0; currentIndex < players.length; ++currentIndex) {
@@ -520,17 +542,17 @@ GameActions.prototype.startTurn = function(game, callback) {
         var stats = [];
         for(var i = 1; i <= players.length; ++i) {
           var player = players[(currentIndex + i) % players.length];
-          
+
           if(player.userId == null)
             continue;
-          
+
           var playerStats = {
             playerNumber: player.playerNumber,
             power: 0,
             property: 0,
             score: player.score
           }
-          
+
           var stillAlive = false;
           for(var j = 0; j < units.length; ++j) {
             var unit = units[j];
@@ -539,7 +561,7 @@ GameActions.prototype.startTurn = function(game, callback) {
               playerStats.power += parseInt(unit.unitType().price * unit.health / 100);
             }
           }
-          
+
           for(var j = 0; j < tiles.length; ++j) {
             var tile = tiles[j];
             var tileType = tile.terrainType();
@@ -556,10 +578,10 @@ GameActions.prototype.startTurn = function(game, callback) {
               nextPlayer = player;
             }
           }
-          
+
           stats.push(playerStats);
         }
-        
+
         // Change turn
         var events = new GameEventManager(game.gameId);
         if(nextPlayer.playerNumber == game.inTurnNumber || numAlivePlayers < 2) {
@@ -572,7 +594,7 @@ GameActions.prototype.startTurn = function(game, callback) {
           });
         } else {
           game.changeTurn(nextPlayer.playerNumber);
-          
+
           // Handle turn start events for next player
           var nextPlayerTiles = [];
           for(var i = 0; i < tiles.length; ++i) {
@@ -582,7 +604,7 @@ GameActions.prototype.startTurn = function(game, callback) {
             } else {
               nextPlayerTiles.push(tile);
             }
-            
+
             var tileType = tile.terrainType();
             // Produce funds
             if(tileType.producesFunds()) {
@@ -590,7 +612,7 @@ GameActions.prototype.startTurn = function(game, callback) {
               nextPlayer.funds += settings.defaultFundsPerProperty;
               nextPlayer.score += settings.defaultFundsPerProperty;
             }
-            
+
             if(tile.unitId !== null) {
               for(var j = 0; j < units.length; ++j) {
                 var unit = units[j];
@@ -616,13 +638,13 @@ GameActions.prototype.startTurn = function(game, callback) {
               events.regenerateCapturePoints(tile, tile.capturePoints);
             }
           }
-          
-          var gameStatistic = new entities.GameStatistic(null, game.gameId, game.turnNumber, 
+
+          var gameStatistic = new entities.GameStatistic(null, game.gameId, game.turnNumber,
                                                          game.roundNumber, game.inTurnNumber, stats);
 
           game.turnStart = new Date().getTime() / 1000;
           var untilNextTurn = game.turnRemaining();
-          
+
           events.beginTurn(nextPlayer);
 
           // Save tiles and units
@@ -662,24 +684,24 @@ GameActions.prototype.nextTurn = function(gameId, userId, callback) {
         if(!result.success) {
           callback({success: false, reason: result.reason}); return;
         }
-        callback({success: true, finished: result.finished, 
-                  inTurnNumber: result.inTurnNumber, events: result.events, 
+        callback({success: true, finished: result.finished,
+                  inTurnNumber: result.inTurnNumber, events: result.events,
                   untilNextTurn: result.untilNextTurn});
-      });      
+      });
     } else {
       var game = result.game;
       this_.endTurn(game, userId, function(result) {
         if(!result.success) {
           callback({success: false, reason: result.reason}); return;
-        } 
+        }
         var firstEvents = result.events;
         this_.startTurn(game, function(result) {
           if(!result.success) {
             callback({success: false, reason: result.reason}); return;
-          } 
-          
+          }
+
           var events = firstEvents.concat(result.events);
-          callback({success: true, finished: result.finished, inTurnNumber: result.inTurnNumber, roundNumber: game.roundNumber, 
+          callback({success: true, finished: result.finished, inTurnNumber: result.inTurnNumber, roundNumber: game.roundNumber,
                     events: events, untilNextTurn: result.untilNextTurn});
         });
       });
@@ -702,15 +724,15 @@ GameActions.prototype.surrender = function(gameId, userId, callback) {
         callback({success: false, reason: result.reason}); return;
       }
       var player = result.player;
-      
+
       this_.gameProcedures.surrenderPlayer(game, player, function(result) {
         if(!result.success) {
           callback({success: false, reason: result.reason}); return;
         }
-        
+
         var events = new GameEventManager(gameId);
         events.surrender(player);
-        
+
         this_.nextTurn(gameId, userId, function(result) {
           events.objects = events.objects.concat(result.events);
           var finished = result.finished;
@@ -718,7 +740,7 @@ GameActions.prototype.surrender = function(gameId, userId, callback) {
           var untilNextTurn = result.untilNextTurn;
           this_.gameInformation.tilesWithUnits(gameId, function(result) {
             database.createGameEvents(events.objects, function(result) {
-              callback({success: true, finished: finished, inTurnNumber: inTurnNumber, 
+              callback({success: true, finished: finished, inTurnNumber: inTurnNumber,
                        events: events.objects, untilNextTurn: untilNextTurn});
             });
           });

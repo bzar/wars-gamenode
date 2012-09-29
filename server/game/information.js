@@ -40,7 +40,7 @@ GameInformation.prototype.playerInTurn = function(gameId, callback) {
         callback({success: false, reason: result.reason}); return;
       }
       var players = result.players;
-      
+
       for(var i = 0; i < players.length; ++i) {
         if(players[i].playerNumber == game.inTurnNumber) {
           callback({success: true, player: players[i]});
@@ -73,7 +73,7 @@ GameInformation.prototype.tilesWithUnits = function(gameId, callback) {
       var carriedUnits = {};
       var carrierUnits = [];
       var units = {};
-      
+
       allUnits.forEach(function(unit) {
         if(unit.carriedBy !== null) {
           if(carriedUnits[unit.carriedBy] === undefined) carriedUnits[unit.carriedBy] = [];
@@ -81,18 +81,18 @@ GameInformation.prototype.tilesWithUnits = function(gameId, callback) {
         } else {
           units[unit.unitId] = unit;
         }
-        
+
         if(unit.unitType().carryNum > 0) {
           carrierUnits.push(unit);
         }
       });
-      
+
       carrierUnits.forEach(function(unit) {
         getCarriedUnits(unit, carriedUnits);
       });
-      
+
       tiles.forEach(function(tile) {
-        if(tile.unitId !== null) {
+        if(tile.unitId !== null && units.hasOwnProperty(tile.unitId)) {
           tile.setUnit(units[tile.unitId]);
         } else {
           tile.setUnit(null);
@@ -110,8 +110,8 @@ GameInformation.prototype.unitWithTile = function(unitId, callback) {
     if(!result.success) { callback(result); return; }
     var unit = result.unit;
     var tile = null
-    if(unit.tileId === null) { 
-      callback({success: true, unit: unit, tile: null}); 
+    if(unit.tileId === null) {
+      callback({success: true, unit: unit, tile: null});
     } else {
       database.tile(unit.tileId, function(result) {
         if(!result.success) { callback(result); return; }

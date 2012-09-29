@@ -387,7 +387,6 @@ require(["Theme", "AnimatedMap", "GameLogic", "jquery-1.6.2.min.js","gamenode", 
         var e = queue.shift();
         if(e.content)
           e = e.content;
-
         if(e.action == "move") {
           map.moveUnit(e.unit.unitId, e.tile.tileId, e.path, nextEvent);
         } else if(e.action == "wait") {

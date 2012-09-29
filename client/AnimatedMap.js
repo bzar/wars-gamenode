@@ -599,8 +599,10 @@ define(["Theme", "aja/lib/aja", "pixastic", "sylvester"], function(Theme) {
   };
 
   AnimatedMap.prototype.showAttack = function(unitId, targetId, damage, callback) {
-    if(damage === null)
+    if(damage === null) {
+      callback();
       return;
+    }
 
     var attacker = this.getUnitEntity(unitId);
     var target = this.getUnitEntity(targetId);
