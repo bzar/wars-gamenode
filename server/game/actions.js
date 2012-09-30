@@ -316,6 +316,10 @@ GameActions.prototype.moveAndLoadInto = function(gameId, userId, unitId, carrier
 
     var carrier = result.unit;
     var carrierTile = result.tile;
+
+    if(carrierTile === null) {
+      callback({success: false, reason: "Carrier is inside a carrier!"}); return;
+    }
     checkMove(database, gameId, userId, unitId, {x:carrierTile.x, y:carrierTile.y}, path,
               function(result, game, player, unit, sourceTile, destinationTile, path, gameLogic) {
       if(!result.success) {

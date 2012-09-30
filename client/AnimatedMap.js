@@ -4,6 +4,7 @@ define(["Theme", "aja/lib/aja", "pixastic", "sylvester"], function(Theme) {
     this.autoscale = !scale;
     this.scale = scale;
     this.canvas = new aja.Canvas(canvasId);
+    this.canvas.verbosity = 1;
 
     this.overlay = new Overlay(this);
     this.overlay.z = 100;
@@ -628,7 +629,7 @@ define(["Theme", "aja/lib/aja", "pixastic", "sylvester"], function(Theme) {
 
         var damageParts = [];
         var damageString = "" + damage;
-        var numbers = []
+        var numbers = [];
         for(var i = 0; i < damageString.length; ++i) {
           var n = parseInt(damageString[i]);
           var number = new MapDigit(n, target.x - (damageString.length - i) * this.theme.settings.number.width - 2, target.y, this);
@@ -801,6 +802,7 @@ define(["Theme", "aja/lib/aja", "pixastic", "sylvester"], function(Theme) {
     carrier.unit.carriedUnits.push(u.unit);
     u.unit.moved = true;
     this.canvas.removeEntity(u);
+    this.canvas.removeEntity(u.healthIndicator);
     this.canvas.redrawEntity(carrier);
     if(callback !== undefined)
       callback();
@@ -813,6 +815,8 @@ define(["Theme", "aja/lib/aja", "pixastic", "sylvester"], function(Theme) {
     var unit = carrier.unit.carriedUnits.filter(function(unit) {
       return unit.unitId === unitId;
     })[0];
+
+    if(unit === undefined) throw "ERROR: Unit not inside the carrier!";
 
     carrier.unit.carriedUnits = carrier.unit.carriedUnits.filter(function(unit) {
       return unit.unitId !== unitId;
