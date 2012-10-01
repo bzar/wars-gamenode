@@ -7,10 +7,10 @@ require(["Theme", "Map", "jquery-1.6.2.min.js","gamenode", "base"], function(The
     gameId = gameId[1];
   else
     document.location = "/";
-  
+
   var theme = null;
   var mapPainter = null;
-  
+
   $(document).ready(function() {
     var loginUrl = "login.html?next=" + document.location.pathname + document.location.search;
     session = resumeSessionOrRedirect(client, WARS_CLIENT_SETTINGS.gameServer, loginUrl, function() {
@@ -39,8 +39,8 @@ require(["Theme", "Map", "jquery-1.6.2.min.js","gamenode", "base"], function(The
       });
     });
   });
-  
- 
+
+
   function showGame(game, author) {
     $("#gameName").text(game.name);
     if(author) {
@@ -48,10 +48,10 @@ require(["Theme", "Map", "jquery-1.6.2.min.js","gamenode", "base"], function(The
     } else {
       $("#authorTools").hide();
     }
-    
+
     mapPainter.doPreload(function() {
       showPlayers(game.players, author);
-      
+
       mapPainter.tiles = game.tiles;
       var mapSize = mapPainter.getMapDimensions();
       var width = mapSize.e(1);
@@ -60,36 +60,36 @@ require(["Theme", "Map", "jquery-1.6.2.min.js","gamenode", "base"], function(The
       mapPainter.canvas.height = height;
       mapPainter.refresh();
     });
-    
+
   }
-  
+
   function showPlayers(players, authorMode) {
     players.sort(function(a, b) { return a.playerNumber - b.playerNumber; });
     var playerList = $("#players");
-    
+
     for(var i = 0; i < players.length; ++i) {
       var player = players[i];
       var item = $("<li></li>");
       var number = $("<span></span>");
       var name = $("<span></span>");
-      
+
       item.addClass("playerItem");
       item.attr("playerNumber", player.playerNumber);
-      
+
       number.text(player.playerNumber);
       number.css("background-color", theme.getPlayerColorString(player.playerNumber));
       number.addClass("playerNumber");
-      
+
       name.text(player.playerName !== null ? player.playerName : "");
       name.addClass("playerName");
-      
+
       item.append(number);
       item.append(name);
 
       var joinButton = $("<span></span>");
       joinButton.addClass("joinButton");
       item.append(joinButton);
-      
+
       var hack = function(playerNumber) {
         joinButton.click(function() {
           if($(this).hasClass("notJoined")) {
@@ -103,7 +103,7 @@ require(["Theme", "Map", "jquery-1.6.2.min.js","gamenode", "base"], function(The
               if(!response.success) {
                 alert("Error leaving game!" + response.reason);
               }
-            });              
+            });
           }
         });
       }(player.playerNumber);
@@ -119,11 +119,11 @@ require(["Theme", "Map", "jquery-1.6.2.min.js","gamenode", "base"], function(The
           joinButton.hide();
         }
       }
-      
+
       playerList.append(item);
     }
-    
-    
+
+
     client.skeleton.playerJoined = function(gameId, playerNumber, playerName, isMe) {
       var nameLabel = $('.playerItem[playerNumber="' + playerNumber + '"] .playerName');
       var joinButton = $('.playerItem[playerNumber="' + playerNumber + '"] .joinButton');
@@ -131,12 +131,12 @@ require(["Theme", "Map", "jquery-1.6.2.min.js","gamenode", "base"], function(The
       joinButton.removeClass("notJoined");
       if(isMe || authorMode) {
           joinButton.addClass("joined");
-          joinButton.text("X");        
+          joinButton.text("X");
       } else {
         joinButton.hide();
       }
     }
-    
+
     client.skeleton.playerLeft = function(gameId, playerNumber) {
       var nameLabel = $('.playerItem[playerNumber="' + playerNumber + '"] .playerName');
       var joinButton = $('.playerItem[playerNumber="' + playerNumber + '"] .joinButton');
@@ -146,33 +146,44 @@ require(["Theme", "Map", "jquery-1.6.2.min.js","gamenode", "base"], function(The
       joinButton.text("Click to join!");
       joinButton.show();
     }
-    
+
     client.skeleton.gameStarted = function(gameId) {
       document.location = "game.html?gameId=" + gameId;
     }
   }
-  
-  function initalizeAuthorTools() {
-      $("#startGame").click(function(e) {
-        e.preventDefault();
-        client.stub.startGame(gameId, function(response) {
-          if(response.success) {
-            
-          } else {
-            alert("Error starting game! " + response.reason);
-          }
-        });
-      });
-      $("#deleteGame").click(function(e) {
-        e.preventDefault();
-        client.stub.deleteGame(gameId, function(response) {
-          if(response.success) {
-            document.location = "/home.html";
-          } else {
-            alert("Error deleting game! " + response.reason);
-          }
-        });
-      });
 
+  function initalizeAuthorTools() {
+    $("#startGame").click(function(e) {
+      e.preventDefault();
+      client.stub.startGame(gameId, function(response) {
+        if(response.success) {
+
+        } else {
+          alert("Error starting game! " + response.reason);
+        }
+      });
+    });
+    $("#deleteGame").click(function(e) {
+      e.preventDefault();
+      client.stub.deleteGame(gameId, function(response) {
+        if(response.success) {
+          document.location = "/home.html";
+        } else {
+          alert("Error deleting game! " + response.reason);
+        }
+      });
+    });
+
+    $("#inviteForm").submit(function(e) {
+      e.preventDefault();
+      var username = $("#username").val();
+      if(username.length > 0) {
+        client.stub.addInvite(gameId, username, function(response) {
+          if(!response.success) {
+            alert("Error inviting user! " + response.reason);
+          }
+        });
+      }
+    });
   }
 });

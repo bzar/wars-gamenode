@@ -28,3 +28,9 @@ Skeleton.prototype.gameEvents = function(gameId, events) {
 
 Skeleton.prototype.chatMessage = function(messageInfo) {
 }
+
+Skeleton.prototype.addInvite = function(gameId) {
+}
+
+Skeleton.prototype.removeInvite = function(gameId) {
+}

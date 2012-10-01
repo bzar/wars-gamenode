@@ -11,24 +11,24 @@ exports.GameManagement = GameManagement;
 
 GameManagement.prototype.createGame = function(game, callback) {
   var this_ = this;
-  
+
   if(game.settings.turnLength !== null && game.settings.turnLength < settings.minimumTurnLength) {
     callback({success: false, reason: "Turn length must be at least " + settings.minimumTurnLength + " seconds!"});
   }
-  
+
   this.database.map(game.mapId, function(result) {
     if(!result.success) {
       callback({success: false, reason: result.reason});
       return;
     }
     var map = result.map;
-    
+
     this_.database.mapData(game.mapId, function(result) {
       if(!result.success) {
         callback({success: false, reason: result.reason});
         return;
       }
-      
+
       map.mapData = result.mapData;
       var playerIds = [];
       var players = [];
@@ -36,13 +36,13 @@ GameManagement.prototype.createGame = function(game, callback) {
       for(var i = 0; i < map.mapData.length; ++i) {
         var mapTile = map.mapData[i];
 
-        var tile = new entities.Tile(null, null, mapTile.x, mapTile.y, mapTile.type, 
-                                    mapTile.subtype, mapTile.owner, null, 
+        var tile = new entities.Tile(null, null, mapTile.x, mapTile.y, mapTile.type,
+                                    mapTile.subtype, mapTile.owner, null,
                                     settings.maxCapturePoints, false);
-        
+
         if(mapTile.owner > 0) {
           if(playerIds.indexOf(mapTile.owner) == -1) {
-            var player = new entities.Player(null, null, null, mapTile.owner, null, map.funds, 0, 
+            var player = new entities.Player(null, null, null, mapTile.owner, null, map.funds, 0,
                                             {emailNotifications: true});
             players.push(player);
             playerIds.push(mapTile.owner);
@@ -53,27 +53,27 @@ GameManagement.prototype.createGame = function(game, callback) {
         tile.unit = null;
         if(mapTile.unit !== null) {
           if(mapTile.unit.owner !== 0 && playerIds.indexOf(mapTile.unit.owner) == -1) {
-            var player = new entities.Player(null, null, null, mapTile.unit.owner, null, map.funds, 0, 
+            var player = new entities.Player(null, null, null, mapTile.unit.owner, null, map.funds, 0,
                                             {emailNotifications: true});
             players.push(player);
             playerIds.push(mapTile.unit.owner);
           }
-            
-          tile.unit = new entities.Unit(null, null, mapTile.unit.type, 
-                                        mapTile.unit.owner, null, 100, 
+
+          tile.unit = new entities.Unit(null, null, mapTile.unit.type,
+                                        mapTile.unit.owner, null, 100,
                                         false, false, false);
-          
+
           if(mapTile.unit.owner !== 0) {
             players[playerIds.indexOf(mapTile.unit.owner)].score += parseInt(tile.unit.health * tile.unit.unitType().price / 100)
           }
-          
+
         }
-        
+
         gameData.push(tile);
       }
-      
+
       game.inTurnNumber = 0;
-      
+
       this_.database.createGame(game, gameData, players, function(result) {
         if(result.success) {
           callback({success: true, gameId: result.gameId});
@@ -162,7 +162,7 @@ GameManagement.prototype.leaveGame = function(userId, gameId, playerNumber, call
             players.push(player);
           }
         }
-        
+
         database.updatePlayers(players, function(result) {
           if(!result.success) { callback({success: false, reason: result.reason}); return; }
           callback({success: true});
@@ -172,11 +172,43 @@ GameManagement.prototype.leaveGame = function(userId, gameId, playerNumber, call
   });
 }
 
+GameManagement.prototype.addInvite = function(userId, gameId, toInviteId, callback) {
+  //TODO: persist invites
+  this.database.game(gameId, function(result) {
+    if(!result.success) {
+      callback({success: false, reason: result.reason});
+    } else {
+      var game = result.game;
+      if(game.authorId != userId) {
+        callback({success: false, reason: "Only game author can invite!"});
+      } else {
+        callback({success: true});
+      }
+    }
+  });
+}
+
+GameManagement.prototype.removeInvite = function(userId, gameId, toInviteId, callback) {
+  //TODO: persist invites
+  this.database.game(gameId, function(result) {
+    if(!result.success) {
+      callback({success: false, reason: result.reason});
+    } else {
+      var game = result.game;
+      if(game.author != userId) {
+        callback({success: false, reason: "Only game author can uninvite!"});
+      } else {
+        callback({success: true});
+      }
+    }
+  });
+}
+
 GameManagement.prototype.startGame = function(userId, gameId, callback) {
   var database = this.database;
   var gameInformation = new GameInformation(database);
   var gameProcedures = new GameProcedures(database);
-  
+
   gameInformation.gameData(gameId, function(result) {
     if(!result.success) {
       callback({success: false, reason: result.reason});

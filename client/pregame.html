@@ -13,11 +13,17 @@
       <ul id="authorTools" class="navigation">
         <li><a id="startGame" href="#">Start game</a></li>
         <li><a id="deleteGame" href="#">Delete game</a></li>
+        <li>
+          <form id="inviteForm" class="toolForm">
+            <input type="text" id="username" name="username"/>
+            <input type="submit" value="Invite user"/>
+          </form>
+        </li>
       </ul>
 
       <div id="gameInfo">
         <ul id="players">
-        
+
         </ul>
       </div>
 
@@ -35,7 +41,7 @@
         <a id="showHideChat" href="#">hide</a>
       </div>
       <h2>Pregame - <span id="gameName"></span></h2>
-      
+
       <div id="mapPreview">
         <canvas id="mapCanvas"></canvas>
       </div>

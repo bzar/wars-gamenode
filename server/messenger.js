@@ -14,7 +14,7 @@ Messenger.prototype.sendGameEvents = function(gameId, events) {
       content: events[i].content
     });
   }
-  
+
   this.subscriptions.forSubscribers(function(sub) {
     if(sub.client.stub.gameEvents)
       sub.client.stub.gameEvents(gameId, preparedEvents);
@@ -34,6 +34,20 @@ Messenger.prototype.sendPlayerLeft = function(gameId, playerNumber) {
     if(sub.client.stub.playerLeft)
       sub.client.stub.playerLeft(gameId, playerNumber);
   }, "game-" + gameId);
+}
+
+Messenger.prototype.sendAddInvite = function(userId, gameId, toInviteId) {
+  this.subscriptions.forSubscribers(function(sub) {
+    if(sub.client.stub.addInvite)
+      sub.client.stub.addInvite(gameId);
+  }, "user-" + toInviteId);
+}
+
+Messenger.prototype.sendRemoveInvite = function(userId, gameId, toInviteId) {
+  this.subscriptions.forSubscribers(function(sub) {
+    if(sub.client.stub.removeInvite)
+      sub.client.stub.removeInvite(gameId);
+  }, "user-" + toInviteId);
 }
 
 Messenger.prototype.sendGameStarted = function(gameId) {
