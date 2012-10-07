@@ -24,7 +24,7 @@ exports.implementation = MongoDBDatabase;
 
 
 MongoDBDatabase.prototype.toObjectID = function(id) {
-  if(typeof(id) === "string") 
+  if(typeof(id) === "string")
     return new this.client.bson_serializer.ObjectID(id);
   else
     return id;
@@ -41,7 +41,7 @@ MongoDBDatabase.prototype.game = function(gameId, callback) {
     collection.findOne({_id: gameId}, function(err, game) {
       if(err) { callback({success: false, reason: err}); return; }
       if(game === null) { callback({success: false, reason: "Invalid gameId: " + gameId}); return; }
-      var result = new entities.Game(game._id.toString(), game.authorId, game.name, game.mapId, game.state, 
+      var result = new entities.Game(game._id.toString(), game.authorId, game.name, game.mapId, game.state,
                                      game.turnStart, game.turnNumber, game.roundNumber, game.inTurnNumber,
                                      {public: game.public, turnLength: game.turnLength});
       timer.end();
@@ -54,14 +54,14 @@ MongoDBDatabase.prototype.createGame = function(game, gameData, players, callbac
   var timer = new utils.Timer("MongoDBDatabase.createGame");
   var database = this.database;
   var this_ = this;
-  
+
   database.collection("games", function(err, collection) {
     if(err) { callback({success: false, reason: err}); return; }
     var gameId = collection.pkFactory.createPk();
-    var gameValues = {_id: gameId, authorId: this_.toObjectID(game.authorId), name: game.name, 
-                      mapId: game.mapId, state: game.state, turnStart: game.turnStart, 
-                      turnNumber: game.turnNumber, roundNumber: game.roundNumber, 
-                      inTurnNumber: game.inTurnNumber, public: game.settings.public, 
+    var gameValues = {_id: gameId, authorId: this_.toObjectID(game.authorId), name: game.name,
+                      mapId: game.mapId, state: game.state, turnStart: game.turnStart,
+                      turnNumber: game.turnNumber, roundNumber: game.roundNumber,
+                      inTurnNumber: game.inTurnNumber, public: game.settings.public,
                       turnLength: game.settings.turnLength};
     collection.insert(gameValues, function(err, game) {
       if(err) { callback({success: false, reason: err}); return; }
@@ -71,14 +71,14 @@ MongoDBDatabase.prototype.createGame = function(game, gameData, players, callbac
           var playerObj = players[i];
           var userId = this_.toObjectID(playerObj.userId);
           var player = {gameId: gameId, userId: null, playerNumber: playerObj.playerNumber,
-                        playerName: playerObj.playerName, funds: playerObj.funds, score: playerObj.score, 
+                        playerName: playerObj.playerName, funds: playerObj.funds, score: playerObj.score,
                         settings: playerObj.settings};
           playerValues.push(player);
         }
-        
+
         collection.insertAll(playerValues, function(err, players) {
           if(err) { callback({success: false, reason: err}); return; }
-          
+
           database.collection("tiles", function(err, tileCollection) {
             if(err) { callback({success: false, reason: err}); return; }
             for(var i = 0; i < gameData.length; ++i) {
@@ -86,13 +86,13 @@ MongoDBDatabase.prototype.createGame = function(game, gameData, players, callbac
               tileObj.tileId = tileCollection.pkFactory.createPk();
               tileObj.unitId = null;
             }
-            
+
             database.collection("units", function(err, unitCollection) {
               if(err) { callback({success: false, reason: err}); return; }
-              
+
               var tiles = [];
               var units = [];
-              
+
               for(var i = 0; i < gameData.length; ++i) {
                 var tileObj = gameData[i];
                 tileObj.tileId = tileCollection.pkFactory.createPk();
@@ -101,20 +101,20 @@ MongoDBDatabase.prototype.createGame = function(game, gameData, players, callbac
                   unitObj.unitId = unitCollection.pkFactory.createPk();
                   tileObj.unitId = unitObj.unitId;
                   unitObj.tileId = tileObj.tileId;
-                  var unit = {_id: unitObj.unitId, gameId: gameId, tileId: unitObj.tileId, 
-                              type: unitObj.type, owner: unitObj.owner, carriedBy: unitObj.carriedBy, 
-                              health: unitObj.health, deployed: unitObj.deployed, 
+                  var unit = {_id: unitObj.unitId, gameId: gameId, tileId: unitObj.tileId,
+                              type: unitObj.type, owner: unitObj.owner, carriedBy: unitObj.carriedBy,
+                              health: unitObj.health, deployed: unitObj.deployed,
                               moved: unitObj.moved, capturing: unitObj.capturing}
                   units.push(unit);
                 }
-                
-                var tile = {_id: tileObj.tileId, gameId: gameId, x: tileObj.x, y: tileObj.y, 
-                            type: tileObj.type, subtype: tileObj.subtype, owner: tileObj.owner, 
-                            unitId: tileObj.unitId, capturePoints: tileObj.capturePoints, 
+
+                var tile = {_id: tileObj.tileId, gameId: gameId, x: tileObj.x, y: tileObj.y,
+                            type: tileObj.type, subtype: tileObj.subtype, owner: tileObj.owner,
+                            unitId: tileObj.unitId, capturePoints: tileObj.capturePoints,
                             beingCaptured: tileObj.beingCaptured}
                 tiles.push(tile);
               }
-              
+
               tileCollection.insertAll(tiles, function(err, tiles) {
                 unitCollection.insertAll(units, function(err, units) {
                   if(err) { callback({success: false, reason: err}); return; }
@@ -136,9 +136,9 @@ MongoDBDatabase.prototype.updateGame = function(game, callback) {
   gameId = this.toObjectID(gameId);
   this.database.collection("games", function(err, collection) {
     if(err) { callback({success: false, reason: err}); return; }
-    var values = {$set: {authorId: game.authorId, name: game.name, mapId: game.mapId, 
-                  state: game.state, turnStart: game.turnStart, turnNumber: game.turnNumber, 
-                  roundNumber: game.roundNumber, inTurnNumber: game.inTurnNumber, 
+    var values = {$set: {authorId: game.authorId, name: game.name, mapId: game.mapId,
+                  state: game.state, turnStart: game.turnStart, turnNumber: game.turnNumber,
+                  roundNumber: game.roundNumber, inTurnNumber: game.inTurnNumber,
                   public: game.settings.public, turnLength: game.settings.turnLength} }
     collection.update({_id:gameId}, values, function(err) {
       if(err) { callback({success: false, reason: err}); return; }
@@ -152,7 +152,7 @@ MongoDBDatabase.prototype.deleteGame = function(gameId, callback) {
   var timer = new utils.Timer("MongoDBDatabase.deleteGame");
   var database = this.database;
   gameId = this.toObjectID(gameId);
-  
+
   database.collection("games", function(err, collection) {
     if(err) { callback({success: false, reason: err}); return; }
     collection.remove({_id:gameId}, function(err) {
@@ -183,7 +183,7 @@ function fetchGamesByQuery(database, query, callback) {
       var result = [];
       games.each(function(err, game) {
         if(game !== null) {
-          var gameObj = new entities.Game(game._id.toString(), game.authorId, game.name, game.mapId, game.state, 
+          var gameObj = new entities.Game(game._id.toString(), game.authorId, game.name, game.mapId, game.state,
                                           game.turnStart, game.turnNumber, game.roundNumber, game.inTurnNumber,
                                           {public: game.public, turnLength: game.turnLength});
           gameObj.numPlayers = 0;
@@ -195,7 +195,7 @@ function fetchGamesByQuery(database, query, callback) {
             collection.find({gameId: {$in: gameIds}, userId: {"$ne": null}}, function(err, players) {
               players.toArray(function(err, players) {
                 result.forEach(function(game) {
-                  game.numPlayers = players.filter(function(player){ 
+                  game.numPlayers = players.filter(function(player){
                     return player.gameId == game.gameId;
                   }).length;
                 });
@@ -241,7 +241,7 @@ MongoDBDatabase.prototype.myGames = function(userId, callback) {
   var timer = new utils.Timer("MongoDBDatabase.myGames");
   var database = this.database;
   userId = this.toObjectID(userId);
-  
+
   database.collection("players", function(err, collection) {
     collection.find({userId: userId}, function(err, players) {
       if(err) { callback({success: false, reason: err}); return; }
@@ -259,7 +259,7 @@ MongoDBDatabase.prototype.myGames = function(userId, callback) {
             hiddenIds.push(player.gameId);
           }
         } else {
-          fetchGamesByQuery(database, {$or: [{_id: {$in: gameIds}}, {authorId: userId}], 
+          fetchGamesByQuery(database, {$or: [{_id: {$in: gameIds}}, {authorId: userId}],
                                        _id: {$nin: hiddenIds}}, function(result) {
             if(result.success) {
               result.games.forEach(function(game) {
@@ -286,8 +286,8 @@ MongoDBDatabase.prototype.players = function(gameId, callback) {
       var result = [];
       cursor.each(function(err, player) {
         if(player !== null) {
-          var playerObj = new entities.Player(player._id.toString(), player.gameId, player.userId, 
-                                              player.playerNumber, player.playerName, player.funds, 
+          var playerObj = new entities.Player(player._id.toString(), player.gameId, player.userId,
+                                              player.playerNumber, player.playerName, player.funds,
                                               player.score, player.settings);
           result.push(playerObj);
         } else {
@@ -311,8 +311,8 @@ MongoDBDatabase.prototype.playersWithUsers = function(gameId, callback) {
       var result = [];
       cursor.each(function(err, player) {
         if(player !== null) {
-          var playerObj = new entities.Player(player._id.toString(), player.gameId, player.userId, 
-                                              player.playerNumber, player.playerName, player.funds, 
+          var playerObj = new entities.Player(player._id.toString(), player.gameId, player.userId,
+                                              player.playerNumber, player.playerName, player.funds,
                                               player.score, player.settings);
           result.push(player);
         } else {
@@ -322,12 +322,12 @@ MongoDBDatabase.prototype.playersWithUsers = function(gameId, callback) {
               users.each(function(err, user) {
                 if(user !== null) {
                   result.filter(function(d){ return d.userId == user._id; }).forEach(function(player) {
-                    player.user =  new entities.User(user._id.toString(), user.username, user.password, 
+                    player.user =  new entities.User(user._id.toString(), user.username, user.password,
                                                      user.email, user.settings);
                   });
                 } else {
                   timer.end();
-                  callback({success: true, players: result});                  
+                  callback({success: true, players: result});
                 }
               });
             });
@@ -347,9 +347,9 @@ MongoDBDatabase.prototype.gamePlayer = function(gameId, playerNumber, callback) 
     collection.findOne({gameId: gameId, playerNumber: playerNumber}, function(err, player) {
       if(err) { callback({success: false, reason: err}); return; }
       if(player === null) { callback({success: false, reason: "Player not found!"}); return; }
-      
-      var playerObj = new entities.Player(player._id.toString(), player.gameId, player.userId, 
-                                          player.playerNumber, player.playerName, player.funds, 
+
+      var playerObj = new entities.Player(player._id.toString(), player.gameId, player.userId,
+                                          player.playerNumber, player.playerName, player.funds,
                                           player.score, player.settings);
       timer.end();
       callback({success: true, player: playerObj});
@@ -366,15 +366,15 @@ MongoDBDatabase.prototype.userPlayerInTurn = function(gameId, userId, callback) 
   database.collection("games", function(err, collection) {
     collection.findOne({_id: gameId}, function(err, game) {
       if(game === null)  { callback({success: false, reason: "Game not found!"}); return; }
-      
+
       database.collection("players", function(err, collection) {
         if(err) { callback({success: false, reason: err}); return; }
-        collection.findOne({gameId: gameId, userId: userId, 
+        collection.findOne({gameId: gameId, userId: userId,
                            playerNumber: game.inTurnNumber}, function(err, player) {
           if(err) { callback({success: false, reason: err}); return; }
           if(player === null) { callback({success: false, reason: "Player not found!"}); return; }
-          var playerObj = new entities.Player(player._id.toString(), player.gameId, player.userId, 
-                                              player.playerNumber, player.playerName, player.funds, 
+          var playerObj = new entities.Player(player._id.toString(), player.gameId, player.userId,
+                                              player.playerNumber, player.playerName, player.funds,
                                               player.score, player.settings);
           timer.end();
           callback({success: true, player: playerObj});
@@ -393,9 +393,9 @@ MongoDBDatabase.prototype.player = function(playerId, callback) {
     collection.findOne({_id: playerId}, function(err, player) {
       if(err) { callback({success: false, reason: err}); return; }
       if(player === null) { callback({success: false, reason: "Player not found!"}); return; }
-      
-      var playerObj = new entities.Player(player._id.toString(), player.gameId, player.userId, 
-                                          player.playerNumber, player.playerName, player.funds, 
+
+      var playerObj = new entities.Player(player._id.toString(), player.gameId, player.userId,
+                                          player.playerNumber, player.playerName, player.funds,
                                           player.score, player.settings);
       timer.end();
       callback({success: true, player: playerObj});
@@ -418,7 +418,7 @@ MongoDBDatabase.prototype.updatePlayers = function(players, callback) {
       var gameId = this_.toObjectID(playerObj.gameId);
       var userId = this_.toObjectID(playerObj.userId);
       var player = {$set: {gameId: gameId, userId: userId, playerNumber: playerObj.playerNumber,
-                    playerName: playerObj.playerName, funds: playerObj.funds, score: playerObj.score, 
+                    playerName: playerObj.playerName, funds: playerObj.funds, score: playerObj.score,
                     settings: playerObj.settings} };
       collection.update({_id: playerId}, player);
     });
@@ -559,10 +559,13 @@ MongoDBDatabase.prototype.userByName = function(username, callback) {
     collection.findOne({username:username}, function(err, user) {
       if(err) { callback({success: false, reason: err}); return; }
       if(user !== null) {
-        var result = new entities.User(user._id.toString(), user.username, user.password, 
+        var result = new entities.User(user._id.toString(), user.username, user.password,
                                      user.email, user.settings);
         timer.end();
         callback({success: true, user: result});
+      } else {
+        timer.end();
+        callback({success: false, reason: "No such user!"});
       }
     });
   });
@@ -576,7 +579,7 @@ MongoDBDatabase.prototype.user = function(userId, callback) {
     collection.findOne({_id: userId}, function(err, user) {
       if(err) { callback({success: false, reason: err}); return; }
       if(user === null) { callback({success: false, reason: "No such user!"}); return; }
-      var result = new entities.User(user._id.toString(), user.username, user.password, 
+      var result = new entities.User(user._id.toString(), user.username, user.password,
                                      user.email, user.settings);
       timer.end();
       callback({success: true, user: result});
@@ -589,7 +592,7 @@ MongoDBDatabase.prototype.updateUser = function(user, callback) {
   userId = this.toObjectID(user.userId);
   this.database.collection("users", function(err, collection) {
     if(err) { callback({success: false, reason: err}); return; }
-    var values = {$set: {username: user.username, password: user.password, 
+    var values = {$set: {username: user.username, password: user.password,
                   email: user.email, settings: user.settings} };
     collection.update({_id:userId}, values, function(err) {
       if(err) { callback({success: false, reason: err}); return; }
@@ -603,7 +606,7 @@ MongoDBDatabase.prototype.register = function(newUser, callback) {
   var timer = new utils.Timer("MongoDBDatabase.register");
   this.database.collection("users", function(err, collection) {
     if(err) { callback({success: false, reason: err}); return; }
-    var user = {username: newUser.username, password: newUser.password, 
+    var user = {username: newUser.username, password: newUser.password,
                 email: newUser.email, settings: newUser.settings};
     collection.insert(user, function(err, docs) {
       if(err) { callback({success: false, reason: err}); return; }
@@ -638,11 +641,11 @@ MongoDBDatabase.prototype.unit = function(unitId, callback) {
       if(unit === null) { callback({success: false, reason: "No such unit!"}); return; }
       var gameId = this_.toObjectID(unit.gameId);
       unit = new entities.Unit(unit._id.toString(), unit.tileId, unit.type, unit.owner,
-                               unit.carriedBy, unit.health, unit.deployed, unit.moved, 
+                               unit.carriedBy, unit.health, unit.deployed, unit.moved,
                                unit.capturing);
       unit.tileId = unit.tileId === null ? null : unit.tileId.toString();
       unit.carriedBy = unit.carriedBy === null ? null : unit.carriedBy.toString();
-      
+
       if(unit.unitType().carryNum == 0) {
         timer.end();
         callback({success: true, unit: unit});
@@ -653,11 +656,11 @@ MongoDBDatabase.prototype.unit = function(unitId, callback) {
           carriedUnits.each(function(err, unit) {
             if(unit !== null) {
               unit = new entities.Unit(unit._id.toString(), unit.tileId, unit.type, unit.owner,
-                                      unit.carriedBy, unit.health, unit.deployed, unit.moved, 
+                                      unit.carriedBy, unit.health, unit.deployed, unit.moved,
                                       unit.capturing);
               unit.tileId = unit.tileId === null ? null : unit.tileId.toString();
               unit.carriedBy = unit.carriedBy === null ? null : unit.carriedBy.toString();
-              
+
               if(carriers[unit.carriedBy] === undefined) carriers[unit.carriedBy] = [];
               carriers[unit.carriedBy].push(unit);
             } else {
@@ -678,9 +681,9 @@ MongoDBDatabase.prototype.unitAt = function(gameId, x, y, callback) {
   this.tileAt(gameId, x, y, function(result) {
     if(!result.success) { callback(result); return; }
     var tile = result.tile;
-    if(tile.unitId === null) { 
+    if(tile.unitId === null) {
       timer.end();
-      callback({success: true, unit: null}); 
+      callback({success: true, unit: null});
     } else {
       this_.unit(tile.unitId, function(result) {
         if(!result.success) { callback(result); return; }
@@ -703,7 +706,7 @@ MongoDBDatabase.prototype.units = function(gameId, callback) {
       unitCursor.each(function(err, unit) {
         if(unit !== null) {
           unit = new entities.Unit(unit._id.toString(), unit.tileId, unit.type, unit.owner,
-                               unit.carriedBy, unit.health, unit.deployed, unit.moved, 
+                               unit.carriedBy, unit.health, unit.deployed, unit.moved,
                                unit.capturing);
           unit.tileId = unit.tileId === null ? null : unit.tileId.toString();
           unit.carriedBy = unit.carriedBy === null ? null : unit.carriedBy.toString();
@@ -717,7 +720,7 @@ MongoDBDatabase.prototype.units = function(gameId, callback) {
             getCarriedUnits(unit, carriers);
           });
           timer.end();
-          callback({success: true, units: units});          
+          callback({success: true, units: units});
         }
       });
     });
@@ -736,7 +739,7 @@ MongoDBDatabase.prototype.playerUnits = function(gameId, playerNumber, callback)
       unitCursor.each(function(err, unit) {
         if(unit !== null) {
           unit = new entities.Unit(unit._id.toString(), unit.tileId, unit.type, unit.owner,
-                               unit.carriedBy, unit.health, unit.deployed, unit.moved, 
+                               unit.carriedBy, unit.health, unit.deployed, unit.moved,
                                unit.capturing);
           unit.tileId = unit.tileId === null ? null : unit.tileId.toString();
           unit.carriedBy = unit.carriedBy === null ? null : unit.carriedBy.toString();
@@ -750,7 +753,7 @@ MongoDBDatabase.prototype.playerUnits = function(gameId, playerNumber, callback)
             getCarriedUnits(unit, carriers);
           });
           timer.end();
-          callback({success: true, units: units});          
+          callback({success: true, units: units});
         }
       });
     });
@@ -765,9 +768,9 @@ MongoDBDatabase.prototype.createUnit = function(gameId, newUnit, callback) {
     gameId = this_.toObjectID(gameId);
     var tileId = this_.toObjectID(newUnit.tileId);
     var carriedBy = this_.toObjectID(newUnit.carriedBy);
-    var unit = {gameId: gameId, tileId: tileId, 
-                type: newUnit.type, owner: newUnit.owner, carriedBy: carriedBy, 
-                health: newUnit.health, deployed: newUnit.deployed, 
+    var unit = {gameId: gameId, tileId: tileId,
+                type: newUnit.type, owner: newUnit.owner, carriedBy: carriedBy,
+                health: newUnit.health, deployed: newUnit.deployed,
                 moved: newUnit.moved, capturing: newUnit.capturing};
     collection.insert(unit, function(err, savedUnits) {
       if(err) { callback({success: false, reason: err}); return; }
@@ -791,8 +794,8 @@ MongoDBDatabase.prototype.updateUnits = function(units, callback) {
       var unitId = this_.toObjectID(unitObj.unitId);
       var tileId = this_.toObjectID(unitObj.tileId);
       var carriedBy = this_.toObjectID(unitObj.carriedBy);
-      var unit = {$set: {tileId: tileId, carriedBy: carriedBy, 
-                  health: unitObj.health, deployed: unitObj.deployed, 
+      var unit = {$set: {tileId: tileId, carriedBy: carriedBy,
+                  health: unitObj.health, deployed: unitObj.deployed,
                   moved: unitObj.moved, capturing: unitObj.capturing} };
       collection.update({_id: unitId}, unit);
     });
@@ -847,7 +850,7 @@ MongoDBDatabase.prototype.tile = function(tileId, callback) {
     collection.findOne({_id: tileId}, function(err, tile) {
       if(err) { callback({success: false, reason: err}); return; }
       if(tile === null) { callback({success: false, reason: "No such tile!"}); return; }
-      tile = new entities.Tile(tile._id.toString(), tile.gameId.toString(), tile.x, tile.y, 
+      tile = new entities.Tile(tile._id.toString(), tile.gameId.toString(), tile.x, tile.y,
                                tile.type, tile.subtype, tile.owner, tile.unitId,
                                tile.capturePoints, tile.beingCaptured)
       tile.unitId = tile.unitId === null ? null : tile.unitId.toString();
@@ -865,7 +868,7 @@ MongoDBDatabase.prototype.tileAt = function(gameId, x, y, callback) {
     collection.findOne({gameId: gameId, x: x, y: y}, function(err, tile) {
       if(err) { callback({success: false, reason: err}); return; }
       if(tile === null) { callback({success: false, reason: "No such tile!"}); return; }
-      tile = new entities.Tile(tile._id.toString(), tile.gameId.toString(), tile.x, tile.y, 
+      tile = new entities.Tile(tile._id.toString(), tile.gameId.toString(), tile.x, tile.y,
                                tile.type, tile.subtype, tile.owner, tile.unitId,
                                tile.capturePoints, tile.beingCaptured)
       tile.unitId = tile.unitId === null ? null : tile.unitId.toString();
@@ -886,7 +889,7 @@ MongoDBDatabase.prototype.tiles = function(gameId, callback) {
       var tiles = [];
       tileCursor.each(function(err, tile) {
         if(tile !== null) {
-          tile = new entities.Tile(tile._id.toString(), tile.gameId.toString(), tile.x, tile.y, 
+          tile = new entities.Tile(tile._id.toString(), tile.gameId.toString(), tile.x, tile.y,
                                   tile.type, tile.subtype, tile.owner, tile.unitId,
                                   tile.capturePoints, tile.beingCaptured)
           tile.unitId = tile.unitId === null ? null : tile.unitId.toString();
@@ -910,7 +913,7 @@ MongoDBDatabase.prototype.playerTiles = function(gameId, playerNumber, callback)
       var tiles = [];
       tileCursor.each(function(err, tile) {
         if(tile !== null) {
-          tile = new entities.Tile(tile._id.toString(), tile.gameId.toString(), tile.x, tile.y, 
+          tile = new entities.Tile(tile._id.toString(), tile.gameId.toString(), tile.x, tile.y,
                                   tile.type, tile.subtype, tile.owner, tile.unitId,
                                   tile.capturePoints, tile.beingCaptured)
           tile.unitId = tile.unitId === null ? null : tile.unitId.toString();
@@ -938,9 +941,9 @@ MongoDBDatabase.prototype.updateTiles = function(tiles, callback) {
       var unitId = this_.toObjectID(tileObj.unitId);
       var gameId = this_.toObjectID(tileObj.gameId);
       var tileId = this_.toObjectID(tileObj.tileId);
-      var tile = {$set: {gameId: gameId, x: tileObj.x, y: tileObj.y, 
-                  type: tileObj.type, subtype: tileObj.subtype, owner: tileObj.owner, 
-                  unitId: unitId, capturePoints: tileObj.capturePoints, 
+      var tile = {$set: {gameId: gameId, x: tileObj.x, y: tileObj.y,
+                  type: tileObj.type, subtype: tileObj.subtype, owner: tileObj.owner,
+                  unitId: unitId, capturePoints: tileObj.capturePoints,
                   beingCaptured: tileObj.beingCaptured} }
       collection.update({_id: tileId}, tile);
     });
@@ -959,7 +962,7 @@ MongoDBDatabase.prototype.createChatMessage = function(newChatMessage, callback)
     if(err) { callback({success: false, reason: err}); return; }
     var gameId = this_.toObjectID(newChatMessage.gameId);
     var userId = this_.toObjectID(newChatMessage.userId);
-    var message = {gameId: gameId, userId: userId, time: newChatMessage.time, 
+    var message = {gameId: gameId, userId: userId, time: newChatMessage.time,
                    content: newChatMessage.content}
     collection.insert(message, function(err, savedMessages) {
       if(err) { callback({success: false, reason: err}); return; }
@@ -986,10 +989,10 @@ MongoDBDatabase.prototype.chatMessages = function(gameId, callback) {
             messagesByUserId[message.userId.toString()] = [];
             userIds.push(message.userId);
           }
-          message = new entities.ChatMessage(message._id.toString(), message.gameId.toString(), 
+          message = new entities.ChatMessage(message._id.toString(), message.gameId.toString(),
                                              message.userId.toString(), message.time, message.content);
           messagesByUserId[message.userId.toString()].push(message);
-          
+
           messages.push(message);
         } else {
           this_.database.collection("users", function(err, collection) {
@@ -1052,7 +1055,7 @@ MongoDBDatabase.prototype.gameEvents = function(gameId, first, count, callback) 
       var events = [];
       eventCursor.sort({time:-1}).skip(first).limit(count ? count : undefined).each(function(err, event) {
         if(event !== null) {
-          event = new entities.GameEvent(event._id.toString(), event.gameId.toString(), 
+          event = new entities.GameEvent(event._id.toString(), event.gameId.toString(),
                                          event.time, event.content);
           events.push(event);
         } else {
@@ -1079,8 +1082,8 @@ MongoDBDatabase.prototype.createGameStatistics = function(newGameStatistics, cal
     var statistics = [];
     newGameStatistics.forEach(function(statistic) {
       var gameId = this_.toObjectID(statistic.gameId);
-      statistic = {gameId: gameId, turnNumber: statistic.turnNumber, 
-                   roundNumber: statistic.roundNumber, inTurnNumber: statistic.inTurnNumber, 
+      statistic = {gameId: gameId, turnNumber: statistic.turnNumber,
+                   roundNumber: statistic.roundNumber, inTurnNumber: statistic.inTurnNumber,
                    content: statistic.content}
       statistics.push(statistic);
     });
@@ -1103,7 +1106,7 @@ MongoDBDatabase.prototype.gameStatistics = function(gameId, callback) {
       var statistics = [];
       statisticCursor.each(function(err, statistic) {
         if(statistic !== null) {
-          statistic = new entities.GameStatistic(statistic._id.toString(), statistic.gameId.toString(), 
+          statistic = new entities.GameStatistic(statistic._id.toString(), statistic.gameId.toString(),
                                                  statistic.turnNumber, statistic.roundNumber,
                                                  statistic.inTurnNumber, statistic.content);
           statistics.push(statistic);
@@ -1126,8 +1129,8 @@ MongoDBDatabase.prototype.gameLatestStatistic = function(gameId, callback) {
       if(err) { callback({success: false, reason: err}); return; }
       statistic.nextObject(function(err, statistic) {
         if(statistic === null) { timer.end(); callback({success: true, latestStatistic: null}); return; }
-        
-        statistic = new entities.GameStatistic(statistic._id.toString(), statistic.gameId.toString(), 
+
+        statistic = new entities.GameStatistic(statistic._id.toString(), statistic.gameId.toString(),
                                                 statistic.turnNumber, statistic.roundNumber,
                                                 statistic.inTurnNumber, statistic.content);
         timer.end();
