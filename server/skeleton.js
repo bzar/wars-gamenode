@@ -99,6 +99,10 @@ Skeleton.prototype.leaveGame = function(gameId, playerNumber) {
   });
 }
 
+Skeleton.prototype.botNames = function() {
+  return this.server.settings.botNames;
+}
+
 Skeleton.prototype.addInvite = function(gameId, username) {
   if(!requireArgs([gameId, username])) return {success: false, reason: "Missing method arguments!"};
   if(this.sessionId === null)

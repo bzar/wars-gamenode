@@ -185,5 +185,19 @@ require(["Theme", "Map", "jquery-1.6.2.min.js","gamenode", "base"], function(The
         });
       }
     });
+
+    client.stub.botNames(function(names) {
+      if(names === null || names === undefined || names.length === 0)  {
+        $("#inviteForm").hide();
+      } else {
+        for(var i = 0; i < names.length; ++i) {
+          var name = names[i];
+          var item = $("<option></option>");
+          item.attr("value", name);
+          item.text(name);
+          $("#username").append(item);
+        }
+      }
+    });
   }
 });

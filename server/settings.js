@@ -7,6 +7,7 @@ exports.settings = {
   defaultRepairRate: 20,
   defaultFundsPerProperty: 100,
   gameElements: gameElements,
-  minimumTurnLength: 120
+  minimumTurnLength: 120,
+  botNames: []
 }
 
