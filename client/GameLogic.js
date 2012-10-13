@@ -14,8 +14,8 @@ if(typeof(define) !== "undefined") {
 }
 
 GameLogic.prototype.getNeighborTiles = function(mapArray, x, y) {
-    var adjacent = [{x: x - 1, y: y}, {x: x, y: y - 1}, 
-                    {x: x + 1, y: y}, {x: x, y: y + 1}, 
+    var adjacent = [{x: x - 1, y: y}, {x: x, y: y - 1},
+                    {x: x + 1, y: y}, {x: x, y: y + 1},
                     {x: x + 1, y: y - 1}, {x: x - 1, y: y + 1}];
     var neighbors = [];
     for(var i = 0; i < adjacent.length; ++i) {
@@ -38,8 +38,8 @@ GameLogic.prototype.getDistance = function(x1, y1, x2, y2) {
     x2 += diagonal;
     y2 -= diagonal;
     distance += diagonal;
-  } 
-  
+  }
+
   distance += Math.abs(x2 - x1)
   distance += Math.abs(y2 - y1);
 
@@ -119,30 +119,30 @@ GameLogic.prototype.unitCanMovePath = function(x, y, dx, dy, path) {
     console.log("no unit at (" + x + ", " + y + ")");
     return false;
   }
-  
+
   var unitType = this.rules.units[unit.type];
-  
+
   if(unit.deployed && (x != dx || y != dy)) {
     return false;
   }
-  
+
   var unitMovementType = this.rules.movementTypes[unitType.movementType];
-  
+
   var left = unitType.movement;
-  
+
   for(var i = 1; i < path.length; ++i) {
     var node = path[i];
     var tile = mapArray[node.y][node.x];
-    
+
     // Reject if does not exist
     if(tile === undefined)
       return false;
-    
+
     // Reject if tile has an enemy unit
     if(tile.unit !== null && tile.unit.owner != unit.owner) {
       return false;
     }
-    
+
     // Determine cost
     var cost = 1;
     if(tile.type in unitMovementType.effectMap) {
@@ -153,10 +153,10 @@ GameLogic.prototype.unitCanMovePath = function(x, y, dx, dy, path) {
     if(cost == null || cost > left) {
       return false;
     }
-    
+
     left -= cost;
   }
-  
+
   return true;
 }
 GameLogic.prototype.unitCanMoveTo = function(x, y, dx, dy) {
@@ -167,19 +167,19 @@ GameLogic.prototype.unitCanMoveTo = function(x, y, dx, dy) {
     console.log("no unit at (" + x + ", " + y + ")");
     return null;
   }
-  
+
   var unitType = this.rules.units[unit.type];
-  
+
   if(unit.deployed && (x != dx || y != dy)) {
     return false;
   }
-  
+
   var unitMovementType = this.rules.movementTypes[unitType.movementType];
-  
+
   var from = {};
   var next = {tile: mapArray[y][x], left: unitType.movement, next: null, from: null,
               distance: this.getDistance(x, y, dx, dy)};
-  
+
   function addNode(node) {
     function isBefore(a, b) {
       if(a.left > b.left) {
@@ -190,7 +190,7 @@ GameLogic.prototype.unitCanMoveTo = function(x, y, dx, dy) {
         return false;
       }
     }
-    
+
     if(next === null || isBefore(node, next)) {
       node.next = next;
       next = node;
@@ -203,7 +203,7 @@ GameLogic.prototype.unitCanMoveTo = function(x, y, dx, dy) {
       pos.next = node;
     }
   }
-  
+
   while(next !== null) {
     // Take the next best node from list
     var current = next;
@@ -213,7 +213,7 @@ GameLogic.prototype.unitCanMoveTo = function(x, y, dx, dy) {
     if(from[current.tile.y] === undefined)
       from[current.tile.y] = {}
     from[current.tile.y][current.tile.x] = current.from;
-    
+
     // Check end condition
     if(current.tile.x == dx && current.tile.y == dy) {
       var path = [];
@@ -223,7 +223,7 @@ GameLogic.prototype.unitCanMoveTo = function(x, y, dx, dy) {
       }
       return path.reverse();
     }
-    
+
     // Process neighbors
     var neighbors = this.getNeighborTiles(mapArray, current.tile.x, current.tile.y);
     for(var i = 0; i < neighbors.length; ++i) {
@@ -233,17 +233,17 @@ GameLogic.prototype.unitCanMoveTo = function(x, y, dx, dy) {
       if(tile === undefined) {
         continue;
       }
-      
+
       // Reject if visited
       if(from[tile.y] !== undefined && from[tile.y][tile.x] !== undefined) {
         continue;
       }
-      
+
       // Reject if tile has an enemy unit
       if(tile.unit !== null && tile.unit.owner != unit.owner) {
         continue;
       }
-      
+
       // Determine cost
       var cost = 1;
       if(tile.type in unitMovementType.effectMap) {
@@ -254,7 +254,7 @@ GameLogic.prototype.unitCanMoveTo = function(x, y, dx, dy) {
       if(cost == null || cost > current.left) {
           continue;
       }
-      
+
       // Search list for existing node for same tile
       var previous = null;
       var existing = next;
@@ -262,16 +262,16 @@ GameLogic.prototype.unitCanMoveTo = function(x, y, dx, dy) {
         previous = existing;
         existing = existing.next;
       }
-      
+
       // Create node
       var node = {
-        tile: tile, 
-        left: current.left - cost, 
-        next: null, 
-        from: current, 
+        tile: tile,
+        left: current.left - cost,
+        next: null,
+        from: current,
         distance: this.getDistance(tile.x, tile.y, dx, dy)
       }
-      
+
       if(existing === null) {
         // If node points to a new tile, add node to the list
         addNode(node);
@@ -289,7 +289,127 @@ GameLogic.prototype.unitCanMoveTo = function(x, y, dx, dy) {
       }
     }
   }
-  
+
+  return false;
+}
+
+GameLogic.prototype.getPath = function(movementTypeId, playerNumber, x, y, dx, dy, maxCostPerNode, maxCost, acceptNextTo) {
+  var mapArray = this.map.getMapArray();
+  var unitMovementType = this.rules.movementTypes[movementTypeId];
+
+  var from = {};
+  var next = {tile: mapArray[y][x], cost: 0, next: null, from: null,
+              distance: this.getDistance(x, y, dx, dy)};
+
+  function addNode(node) {
+    function isBefore(a, b) {
+      if(a.cost < b.cost) {
+        return true
+      } else if(a.cost == b.cost && a.distance < b.distance) {
+        return true
+      } else {
+        return false;
+      }
+    }
+
+    if(next === null || isBefore(node, next)) {
+      node.next = next;
+      next = node;
+    } else {
+      var pos = next;
+      while(pos.next !== null && isBefore(pos.next, node)) {
+        pos = pos.next;
+      }
+      node.next = pos.next;
+      pos.next = node;
+    }
+  }
+
+  while(next !== null) {
+    // Take the next best node from list
+    var current = next;
+    next = current.next;
+
+    // Add node as visited
+    if(from[current.tile.y] === undefined)
+      from[current.tile.y] = {}
+    from[current.tile.y][current.tile.x] = current.from;
+
+    // Check end condition
+    if(this.getDistance(current.tile.x, current.tile.y, dx, dy) <= acceptNextTo ? 1 : 0) {
+      var path = [];
+      while(current !== null) {
+        path.push({x: current.tile.x, y: current.tile.y, cost: current.cost});
+        current = from[current.tile.y][current.tile.x];
+      }
+      return path.reverse();
+    }
+
+    // Process neighbors
+    var neighbors = this.getNeighborTiles(mapArray, current.tile.x, current.tile.y);
+    for(var i = 0; i < neighbors.length; ++i) {
+      var tile = mapArray[neighbors[i].y][neighbors[i].x];
+
+      // Reject if does not exist
+      if(tile === undefined) {
+        continue;
+      }
+
+      // Reject if visited
+      if(from[tile.y] !== undefined && from[tile.y][tile.x] !== undefined) {
+        continue;
+      }
+
+      // Reject if tile has an enemy unit
+      if(tile.unit !== null && tile.unit.owner != playerNumber) {
+        continue;
+      }
+
+      // Determine cost
+      var cost = 1;
+      if(tile.type in unitMovementType.effectMap) {
+        cost = unitMovementType.effectMap[tile.type];
+      }
+
+      if(cost === null || (maxCostPerNode !== undefined && maxCostPerNode < cost) || (maxCost !== undefined && maxCost < cost + current.cost)) {
+        continue;
+      }
+
+      // Search list for existing node for same tile
+      var previous = null;
+      var existing = next;
+      while(existing !== null && (existing.tile.x != tile.x || existing.tile.y != tile.y)) {
+        previous = existing;
+        existing = existing.next;
+      }
+
+      // Create node
+      var node = {
+        tile: tile,
+        cost: current.cost + cost,
+        next: null,
+        from: current,
+        distance: this.getDistance(tile.x, tile.y, dx, dy)
+      }
+
+      if(existing === null) {
+        // If node points to a new tile, add node to the list
+        addNode(node);
+      } else {
+        // Otherwise if new route is cheaper, remove the old node and add the new one
+        if(existing.cost > node.cost) {
+          if(previous === null) {
+            next = existing.next;
+          } else {
+            previous.next = existing.next;
+          }
+          existing.next = null;
+          addNode(node);
+        }
+      }
+    }
+  }
+
   return false;
 }
 
@@ -311,7 +431,7 @@ GameLogic.prototype.unitMovementOptions = function(x, y) {
 
     var movementOptions = [];
     var destinationOptions = [];
-    
+
     var bfsQueue = [{pos:{x:x, y:y}, prev:null, n:unitType.movement}];
 
     while(bfsQueue.length != 0) {
@@ -358,14 +478,14 @@ GameLogic.prototype.unitMovementOptions = function(x, y) {
                     break;
                 }
             }
-            
+
             if(destinationIndex === undefined) {
                 destinationOptions.push(node);
             } else {
                 destinationOptions[i] = node;
             }
         }
-        
+
         if(nodeIndex === undefined) {
             movementOptions.push(node);
         } else {
@@ -488,7 +608,7 @@ GameLogic.prototype.unitAttackOptions = function(x1, y1, x2, y2) {
 
     var unitType = this.rules.units[unit.type];
     var mapArray = this.map.getMapArray();
-    
+
     for(var ty in mapArray) {
       for(var tx in mapArray[ty]) {
         var targetTile = mapArray[ty][tx]
@@ -642,7 +762,7 @@ GameLogic.prototype.unitCanUnload = function(x1, y1, x2, y2) {
             var neighbor = neighbors[i];
             var toTile = mapArray[neighbor.y][neighbor.x];
 
-            // cannot unload to tile with unit, unless the tile is the carrier unit's origin tile 
+            // cannot unload to tile with unit, unless the tile is the carrier unit's origin tile
             // and the carrier moves away from that tile on the same turn
             if(toTile.unit != null && !((x1 != x2 || y1 != y2) && (neighbor.x == x1 && neighbor.y == y1))) {
                 continue;
@@ -687,7 +807,7 @@ GameLogic.prototype.unitUnloadOptions = function(x1, y1, x2, y2) {
             var neighbor = neighbors[i];
             var toTile = mapArray[neighbor.y][neighbor.x];
 
-            // cannot unload to tile with unit, unless the tile is the carrier unit's origin tile 
+            // cannot unload to tile with unit, unless the tile is the carrier unit's origin tile
             // and the carrier moves away from that tile on the same turn
             if(toTile.unit != null && !((x1 != x2 || y1 != y2) && (neighbor.x == x1 && neighbor.y == y1))) {
                 continue;
@@ -745,7 +865,7 @@ GameLogic.prototype.unitUnloadTargetOptions = function(x1, y1, x2, y2, unitId) {
         var neighbor = neighbors[i];
         var toTile = mapArray[neighbor.y][neighbor.x];
 
-        // cannot unload to tile with unit, unless the tile is the carrier unit's origin tile 
+        // cannot unload to tile with unit, unless the tile is the carrier unit's origin tile
         // and the carrier moves away from that tile on the same turn
         if(toTile.unit != null && !((x1 != x2 || y1 != y2) && (neighbor.x == x1 && neighbor.y == y1))) {
             continue;
