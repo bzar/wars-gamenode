@@ -75,6 +75,10 @@ DummyDatabase.prototype.updateMap = function(map, callback) {
   callback({success: true});
 }
 
+DummyDatabase.prototype.deleteMap = function(mapId, callback) {
+  callback({success: true});
+}
+
 DummyDatabase.prototype.map = function(mapId, callback) {
   callback({success: true, map: null});
 }

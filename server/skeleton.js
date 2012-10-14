@@ -327,6 +327,33 @@ Skeleton.prototype.updateMap = function(mapId, name, initialFunds, mapData) {
   });
 }
 
+Skeleton.prototype.deleteMap = function(mapId) {
+  if(!requireArgs([mapId])) return {success: false, reason: "Missing method arguments!"};
+  var timer = new utils.Timer("Skeleton.deleteMap");
+  if(this.sessionId === null)
+    return {success: false, reason: "Not logged in"}
+
+  var requestId = this.client.requestId;
+  var this_ = this;
+
+  this.server.database.map(mapId, function(result) {
+    if(!result.success) {
+      this_.client.sendResponse(requestId, {success: false, reason: result.reason});
+    } else if(result.map.authorId !== this_.session.userId) {
+      this_.client.sendResponse(requestId, {success: false, reason: "Not map author!"});
+    } else {
+      this_.server.database.deleteMap(mapId, function(result) {
+        if(result.success) {
+          this_.client.sendResponse(requestId, {success: true});
+          timer.end();
+        } else {
+          this_.client.sendResponse(requestId, {success: false, reason: result.reason});
+        }
+      });
+    }
+  });
+}
+
 Skeleton.prototype.mapData = function(mapId) {
   if(!requireArgs([mapId])) return {success: false, reason: "Missing method arguments!"};
   var timer = new utils.Timer("Skeleton.mapData");

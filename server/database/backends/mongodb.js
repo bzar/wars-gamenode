@@ -461,6 +461,20 @@ MongoDBDatabase.prototype.updateMap = function(map, callback) {
   });
 }
 
+MongoDBDatabase.prototype.deleteMap = function(mapId, callback) {
+  var timer = new utils.Timer("MongoDBDatabase.deleteMap");
+  var this_ = this;
+  mapId = this.toObjectID(mapId);
+  this.database.collection("maps", function(err, collection) {
+    if(err) { callback({success: false, reason: err}); return; }
+    collection.remove({_id:mapId}, function(err) {
+      if(err) { callback({success: false, reason: err}); return; }
+      timer.end();
+      callback({success: true});
+    });
+  });
+}
+
 MongoDBDatabase.prototype.map = function(mapId, callback) {
   var timer = new utils.Timer("MongoDBDatabase.map");
   mapId = this.toObjectID(mapId);
@@ -469,7 +483,7 @@ MongoDBDatabase.prototype.map = function(mapId, callback) {
     collection.findOne({_id: mapId}, function(err, map) {
       if(err) { callback({success: false, reason: err}); return; }
       if(map === null) { callback({success: false, reason: "Invalid mapId: " + mapId}); return; }
-      var result = new entities.Map(map._id.toString(), map.authorId, map.name, map.funds, map.mapData);
+      var result = new entities.Map(map._id.toString(), map.authorId.toString(), map.name, map.funds, map.mapData);
       result.mapData = undefined;
       timer.end();
       callback({success: true, map: result});

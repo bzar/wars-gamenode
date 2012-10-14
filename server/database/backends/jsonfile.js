@@ -101,14 +101,14 @@ JSONFileDatabase.prototype.loadDatabase = function(callback) {
       } else {
 	this_.database = new Database();
 	var databaseContent = JSON.parse(data);
-        
+
         this_.database.userIdCounter = databaseContent.userIdCounter;
 	for(var i = 0; i < databaseContent.users.length; ++i) {
           var item = databaseContent.users[i];
 	  var user = new entities.User(item.userId, item.username, item.password, item.email, item.settings);
           this_.database.users.push(user);
 	}
-	
+
 	this_.database.mapIdCounter = databaseContent.mapIdCounter;
 	for(var i = 0; i < databaseContent.maps.length; ++i) {
           var item = databaseContent.maps[i];
@@ -116,63 +116,63 @@ JSONFileDatabase.prototype.loadDatabase = function(callback) {
           map.mapData = item.mapData;
           this_.database.maps.push(map);
         }
-        
+
         this_.database.tileIdCounter = databaseContent.tileIdCounter;
         for(var i = 0; i < databaseContent.tiles.length; ++i) {
           var item = databaseContent.tiles[i];
-          var tile = new entities.Tile(item.tileId, item.gameId, item.x, item.y, item.type, 
-                                      item.subtype, item.owner, item.unitId, item.capturePoints, 
+          var tile = new entities.Tile(item.tileId, item.gameId, item.x, item.y, item.type,
+                                      item.subtype, item.owner, item.unitId, item.capturePoints,
                                       item.beingCaptured);
           this_.database.tiles.push(tile);
         }
-        
+
         this_.database.unitIdCounter = databaseContent.unitIdCounter;
         for(var i = 0; i < databaseContent.units.length; ++i) {
           var item = databaseContent.units[i];
-          var unit = new entities.Unit(item.unitId, item.tileId, item.type, item.owner, item.carriedBy, 
+          var unit = new entities.Unit(item.unitId, item.tileId, item.type, item.owner, item.carriedBy,
                                        item.health, item.deployed, item.moved, item.capturing);
           this_.database.units.push(unit);
         }
-        
+
         this_.database.playerIdCounter = databaseContent.playerIdCounter;
         for(var i = 0; i < databaseContent.players.length; ++i) {
           var item = databaseContent.players[i];
-          var player = new entities.Player(item.playerId, item.gameId, item.userId, item.playerNumber, item.playerName, item.funds, item.score, 
+          var player = new entities.Player(item.playerId, item.gameId, item.userId, item.playerNumber, item.playerName, item.funds, item.score,
                      {emailNotifications: item.settings.emailNotifications});
           this_.database.players.push(player);
         }
-        
+
         this_.database.gameIdCounter = databaseContent.gameIdCounter;
         for(var i = 0; i < databaseContent.games.length; ++i) {
           var item = databaseContent.games[i];
-          var game = new entities.Game(item.gameId, item.authorId, item.name, item.mapId, item.state, item.turnStart, 
-                   item.turnNumber, item.roundNumber, item.inTurnNumber, 
+          var game = new entities.Game(item.gameId, item.authorId, item.name, item.mapId, item.state, item.turnStart,
+                   item.turnNumber, item.roundNumber, item.inTurnNumber,
                    {public: item.settings.public, turnLength: item.settings.turnLength});
           this_.database.games.push(game);
         }
-        
+
         this_.database.chatMessageIdCounter = databaseContent.chatMessageIdCounter;
         for(var i = 0; i < databaseContent.chatMessages.length; ++i) {
           var item = databaseContent.chatMessages[i];
           var chatMessage = new entities.ChatMessage(item.chatMessageId, item.gameId, item.userId, item.time, item.content);
           this_.database.chatMessages.push(chatMessage);
         }
-        
+
         this_.database.gameEventIdCounter = databaseContent.gameEventIdCounter;
         for(var i = 0; i < databaseContent.gameEvents.length; ++i) {
           var item = databaseContent.gameEvents[i];
           var gameEvent = new entities.GameEvent(item.gameEventId, item.gameId, item.time, item.content);
           this_.database.gameEvents.push(gameEvent);
         }
-        
+
         this_.database.gameStatisticIdCounter = databaseContent.gameStatisticIdCounter;
         for(var i = 0; i < databaseContent.gameStatistics.length; ++i) {
           var item = databaseContent.gameStatistics[i];
-          var gameStatistic = new entities.GameStatistic(item.gameStatisticId, item.gameId, item.turnNumber, 
+          var gameStatistic = new entities.GameStatistic(item.gameStatisticId, item.gameId, item.turnNumber,
                                                          item.roundNumber, item.inTurnNumber, item.content);
           this_.database.gameStatistics.push(gameStatistic);
         }
-        
+
         callback(this_.database);
       }
     });
@@ -218,14 +218,14 @@ JSONFileDatabase.prototype.createGame = function(game, gameData, players, callba
     newGame.gameId = database.gameIdCounter;
     database.gameIdCounter += 1;
     database.games.push(newGame);
-    
+
     for(var i = 0; i < gameData.length; ++i) {
       var tile = gameData[i].clone();
       var unit = gameData[i].unit !== null ? gameData[i].unit.clone() : null;
       tile.gameId = newGame.gameId;
       tile.tileId = database.tileIdCounter;
       database.tileIdCounter += 1;
-      
+
       if(unit !== null) {
         unit.unitId = database.unitIdCounter;
         database.unitIdCounter += 1;
@@ -233,18 +233,18 @@ JSONFileDatabase.prototype.createGame = function(game, gameData, players, callba
         unit.tileId = tile.tileId;
         database.units.push(unit);
       }
-      
+
       database.tiles.push(tile);
     }
-    
+
     for(var i = 0; i < players.length; ++i) {
       var player = players[i].clone();
-      player.playerId = database.playerIdCounter; 
+      player.playerId = database.playerIdCounter;
       database.playerIdCounter += 1;
       player.gameId = newGame.gameId;
       database.players.push(player);
     }
-    
+
     this_.saveDatabase(function() {
       timer.end();
       callback({success: true, gameId: newGame.gameId});
@@ -262,11 +262,11 @@ JSONFileDatabase.prototype.updateGame = function(game, callback) {
       return;
     }
     existingGame.cloneFrom(game);
-    
+
     this_.saveDatabase(function() {
       timer.end();
       callback({success: true});
-    });    
+    });
   });
 }
 JSONFileDatabase.prototype.deleteGame = function(gameId, callback) {
@@ -278,14 +278,14 @@ JSONFileDatabase.prototype.deleteGame = function(gameId, callback) {
       callback({success: false, reason: "Game does not exist!"});
       return;
     }
-    
+
     for(var i = 0; i < database.games.length; ++i) {
       if(database.games[i].gameId == gameId) {
         database.games.splice(i, 1);
         break;
       }
     }
-    
+
     var start = null;
     for(var i = 0; i < database.players.length; ++i) {
       if(database.players[i].gameId == gameId) {
@@ -301,7 +301,7 @@ JSONFileDatabase.prototype.deleteGame = function(gameId, callback) {
       database.players.splice(start);
       start = null;
     }
-    
+
     var unitIds = [];
     for(var i = 0; i < database.tiles.length; ++i) {
       if(database.tiles[i].gameId == gameId) {
@@ -320,13 +320,13 @@ JSONFileDatabase.prototype.deleteGame = function(gameId, callback) {
       database.tiles.splice(start);
       start = null;
     }
-    
+
     for(var i = 0; i < database.units.length; ++i) {
       if(unitIds.indexOf(database.units[i].carriedBy) != -1) {
         unitIds.push(database.units[i].unitId);
       }
     }
-    
+
     for(var i = 0; i < database.units.length; ++i) {
       if(unitIds.indexOf(database.units[i].unitId) != -1) {
         if(start === null)
@@ -341,7 +341,7 @@ JSONFileDatabase.prototype.deleteGame = function(gameId, callback) {
       database.units.splice(start);
       start = null;
     }
-    
+
     this_.saveDatabase(function() {
       timer.end();
       callback({success: true});
@@ -366,7 +366,7 @@ JSONFileDatabase.prototype.openGames = function(callback) {
             }
           }
         }
-        
+
         var map = database.map(game.mapId);
         if(numPlayers < map.players) {
           var openGame = game.clone();
@@ -377,7 +377,7 @@ JSONFileDatabase.prototype.openGames = function(callback) {
         }
       }
     }
-    
+
     timer.end();
     callback({success: true, games: openGames});
   });
@@ -409,7 +409,7 @@ JSONFileDatabase.prototype.publicGames = function(callback) {
         publicGames.push(publicGame);
       }
     }
-    
+
     timer.end();
     callback({success: true, games: publicGames});
   });
@@ -420,7 +420,7 @@ JSONFileDatabase.prototype.myGames = function(userId, callback) {
   var this_ = this;
   this.loadDatabase(function(database) {
     var myGames = [];
-    
+
     for(var i = 0; i < database.games.length; ++i) {
       var game = database.games[i];
       var isMyGame = game.authorId == userId;
@@ -440,7 +440,7 @@ JSONFileDatabase.prototype.myGames = function(userId, callback) {
           }
         }
       }
-      
+
       if(isMyGame) {
         var map = database.map(game.mapId);
         var myGame = game.clone();
@@ -451,7 +451,7 @@ JSONFileDatabase.prototype.myGames = function(userId, callback) {
         myGames.push(myGame);
       }
     }
-    
+
     timer.end();
     callback({success: true, games: myGames});
   });
@@ -468,7 +468,7 @@ JSONFileDatabase.prototype.players = function(gameId, callback) {
         players.push(player.clone());
       }
     }
-    
+
     if(players.length != 0) {
       timer.end();
       callback({success: true, players: players});
@@ -495,7 +495,7 @@ JSONFileDatabase.prototype.playersWithUsers = function(gameId, callback) {
         players.push(player);
       }
     }
-    
+
     if(players.length != 0) {
       timer.end();
       callback({success: true, players: players});
@@ -530,7 +530,7 @@ JSONFileDatabase.prototype.userPlayerInTurn = function(gameId, userId, callback)
       callback({success: false, reason: "No such game!"});
       return;
     }
-    
+
     for(var i = 0; i < database.players.length; ++i) {
       var player = database.players[i];
       if(player.gameId == gameId && player.userId == userId && player.playerNumber == game.inTurnNumber) {
@@ -577,7 +577,7 @@ JSONFileDatabase.prototype.updatePlayers = function(players, callback) {
     this_.saveDatabase(function() {
       timer.end();
       callback({success: true});
-    });    
+    });
   });
 }
 
@@ -608,11 +608,29 @@ JSONFileDatabase.prototype.updateMap = function(map, callback) {
       return;
     }
     existingMap.cloneFrom(map);
-    
+
     this_.saveDatabase(function() {
       timer.end();
       callback({success: true});
-    });    
+    });
+  });
+}
+
+JSONFileDatabase.prototype.deleteMap = function(mapId, callback) {
+  var timer = new utils.Timer("JSONFileDatabase.deleteMap");
+  var this_ = this;
+  this.loadDatabase(function(database) {
+    for(var i = 0; i < database.maps.length; ++i) {
+      if(database.maps[i].mapId == mapId) {
+        database.maps.splice(i, 1);
+        break;
+      }
+    }
+
+    this_.saveDatabase(function() {
+      timer.end();
+      callback({success: true});
+    });
   });
 }
 
@@ -659,7 +677,7 @@ JSONFileDatabase.prototype.maps = function(callback) {
       map.authorName = user.username;
       maps.push(map);
     }
-    
+
     timer.end();
     callback({success: true, maps: maps});
   });
@@ -677,7 +695,7 @@ JSONFileDatabase.prototype.myMaps = function(userId, callback) {
         maps.push(map);
       }
     }
-    
+
     timer.end();
     callback({success: true, maps: maps});
   });
@@ -697,7 +715,7 @@ JSONFileDatabase.prototype.userByName = function(username, callback) {
         return;
       }
     }
-    
+
     callback({success: false, reason: "No such user!"});
   });
 }
@@ -725,7 +743,7 @@ JSONFileDatabase.prototype.updateUser = function(user, callback) {
       callback({success: false, reason: "User does not exist!"});
       return;
     }
-    
+
     for(var i = 0; i < database.users.length; ++i) {
       if(database.users[i].userId != user.userId && database.users[i].username == user.username) {
         callback({success: false, reason: "Username already exists!"});
@@ -733,11 +751,11 @@ JSONFileDatabase.prototype.updateUser = function(user, callback) {
       }
     }
     existingUser.cloneFrom(user);
-    
+
     this_.saveDatabase(function() {
       timer.end();
       callback({success: true});
-    });    
+    });
   });
 }
 
@@ -752,12 +770,12 @@ JSONFileDatabase.prototype.register = function(newUser, callback) {
         return;
       }
     }
-    
+
     var user = newUser.clone();
     user.userId = database.userIdCounter;
     database.userIdCounter += 1;
     database.users.push(user);
-    
+
     this_.saveDatabase(function() {
       timer.end();
       callback({success: true, userId: user.userId});
@@ -834,7 +852,7 @@ JSONFileDatabase.prototype.units = function(gameId, callback) {
         units.push(unit);
       }
     }
-    
+
     timer.end();
     callback({success: true, units: units});
   });
@@ -856,7 +874,7 @@ JSONFileDatabase.prototype.playerUnits = function(gameId, playerNumber, callback
         }
       }
     }
-    
+
     timer.end();
     callback({success: true, units: units});
   });
@@ -893,7 +911,7 @@ JSONFileDatabase.prototype.updateUnits = function(units, callback) {
         return;
       }
       existingUnit.cloneFrom(unit);
-    
+
       if(unit.carriedUnits !== undefined) {
         for(var j = 0; j < unit.carriedUnits.length; ++j) {
           var carriedUnit = database.unit(unit.carriedUnits[j].unitId);
@@ -908,7 +926,7 @@ JSONFileDatabase.prototype.updateUnits = function(units, callback) {
     this_.saveDatabase(function() {
       timer.end();
       callback({success: true});
-    });    
+    });
   });
 }
 
@@ -923,7 +941,7 @@ JSONFileDatabase.prototype.deleteUnits = function(units, callback) {
     function d(unitId, ids) {
       if(ids === undefined)
         ids = [];
-      
+
       for(var i = 0; i < database.units.length; ++i) {
         if(database.units[i].unitId == unitId) {
           ids.push(database.units[i].unitId)
@@ -933,14 +951,14 @@ JSONFileDatabase.prototype.deleteUnits = function(units, callback) {
       }
       return ids;
     }
-    
+
     for(var k = 0; k < units.length; ++k) {
       var ids = d(units[k].unitId);
-      
+
       if(ids.length == 0) {
         callback({success: false, reason: "No such unit!"}); return;
-      } 
-      
+      }
+
       for(var i = 0; i < ids.length; ++i) {
         for(var j = 0; j < database.units.length; ++j) {
           if(ids[i] == database.units[j].unitId) {
@@ -948,14 +966,14 @@ JSONFileDatabase.prototype.deleteUnits = function(units, callback) {
               var tile = database.tile(database.units[j].tileId);
               tile.unitId = null;
             }
-            
+
             database.units.splice(j, 1);
             j -= 1;
           }
         }
       }
     }
-    
+
     this_.saveDatabase(function() {
       timer.end();
       callback({success: true});
@@ -1003,7 +1021,7 @@ JSONFileDatabase.prototype.tiles = function(gameId, callback) {
         tiles.push(tile.clone());
       }
     }
-    
+
     timer.end();
     callback({success: true, tiles: tiles});
   });
@@ -1020,7 +1038,7 @@ JSONFileDatabase.prototype.playerTiles = function(gameId, playerNumber, callback
         tiles.push(tile.clone());
       }
     }
-    
+
     timer.end();
     callback({success: true, tiles: tiles});
   });
@@ -1043,11 +1061,11 @@ JSONFileDatabase.prototype.updateTiles = function(tiles, callback) {
       }
       existingTile.cloneFrom(tile);
     }
-    
+
     this_.saveDatabase(function() {
       timer.end();
       callback({success: true});
-    });    
+    });
   });
 }
 
@@ -1081,7 +1099,7 @@ JSONFileDatabase.prototype.chatMessages = function(gameId, callback) {
         chatMessages.push(chatMessage);
       }
     }
-    
+
     timer.end();
     callback({success: true, chatMessages: chatMessages});
   });
@@ -1125,7 +1143,7 @@ JSONFileDatabase.prototype.gameEvents = function(gameId, first, count, callback)
         n = n + 1;
       }
     }
-    
+
     timer.end();
     callback({success: true, gameEvents: gameEvents});
   });
@@ -1165,7 +1183,7 @@ JSONFileDatabase.prototype.gameStatistics = function(gameId, callback) {
         gameStatistics.push(gameStatistic.clone());
       }
     }
-    
+
     timer.end();
     callback({success: true, gameStatistics: gameStatistics});
   });
@@ -1182,7 +1200,7 @@ JSONFileDatabase.prototype.gameLatestStatistic = function(gameId, callback) {
         latestStatistic = gameStatistic.clone();
       }
     }
-    
+
     timer.end();
     callback({success: true, latestStatistic: latestStatistic});
   });

@@ -92,7 +92,7 @@
               </li>
               <li>
                 <span id="mapSavedMessage" style="display:none" class="left">Map saved!</span>
-                <input name="" type="submit" value="Save map" class="right"/>
+                <input name="saveMap" type="submit" value="Save map" class="right"/>
               </li>
             </ul>
           </form>
@@ -100,6 +100,11 @@
             <ul>
               <li><textarea id="importExportData" rows="10" cols="18"></textarea></li>
               <li><span id="import" class="button">Import</span><span id="export" class="button">Export</span></li>
+            </ul>
+          </form>
+          <form id="mapDeleteForm" class="toolForm">
+            <ul>
+                <input name="deleteMap" type="submit" value="Delete map" />
             </ul>
           </form>
         </div>

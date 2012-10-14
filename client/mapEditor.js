@@ -5,7 +5,7 @@ require(["Theme", "Map", "jquery-1.6.2.min.js","gamenode", "base"], function(The
   var mapId = /[?&]mapId=([0-9a-f]+)/.exec(window.location.search);
   if(mapId !== null)
     mapId = mapId[1];
-  
+
   var theme = null;
   var mapPainter = null;
 
@@ -26,7 +26,7 @@ require(["Theme", "Map", "jquery-1.6.2.min.js","gamenode", "base"], function(The
       });
     });
   });
-  
+
   function updatePalette() {
     var playerSelection = $("#playerSelection");
     var terrainSelection = $("#terrainSelection");
@@ -36,13 +36,13 @@ require(["Theme", "Map", "jquery-1.6.2.min.js","gamenode", "base"], function(The
     var playerItems = $(".playerSelection");
     playerItems.removeClass("enabled");
     playerItems.removeClass("disabled");
-    
+
     if(terrainSelection.hasClass("selected")) {
       unitPalette.hide();
       terrainPalette.show();
       var terrainType = $("#terrainTypePalette .sprite.selected").attr("type");
       var terrainSubtypePalette = $("#terrainSubtypePalette");
-      
+
       playerItems.each(function(ii, el) {
         var option = $(el);
         var owner = option.attr("value");
@@ -53,19 +53,19 @@ require(["Theme", "Map", "jquery-1.6.2.min.js","gamenode", "base"], function(The
           option.addClass("enabled");
         }
       });
-      
+
       if($(".selected.enabled", playerSelection).length == 0) {
         if($(".enabled", playerSelection).length != 0) {
           playerItems.removeClass("selected");
           $($(".playerSelection.enabled")[0]).addClass("selected");
         }
       }
-      
+
       var selectedOwner = $(".playerSelection.selected").attr("value");
 
       $(".sprite", terrainSubtypePalette).hide();
       $('.sprite[type="' + terrainType + '"][owner="' + selectedOwner + '"]', terrainSubtypePalette).show();
-      
+
       if($(".sprite.selected:visible", terrainSubtypePalette).length == 0) {
         $(".sprite", terrainSubtypePalette).removeClass("selected");
         $($(".sprite:visible", terrainSubtypePalette)[0]).addClass("selected");
@@ -74,7 +74,7 @@ require(["Theme", "Map", "jquery-1.6.2.min.js","gamenode", "base"], function(The
       terrainPalette.hide();
       unitPalette.show();
       var unitPalette = $("#unitPalette");
-      
+
       playerItems.each(function(ii, el) {
         var option = $(el);
         var owner = option.attr("value");
@@ -85,35 +85,35 @@ require(["Theme", "Map", "jquery-1.6.2.min.js","gamenode", "base"], function(The
           option.addClass("enabled");
         }
       });
-      
+
       if($(".selected.enabled", playerSelection).length == 0) {
         if($(".enabled", playerSelection).length != 0) {
           playerItems.removeClass("selected");
           $($(".playerSelection.enabled")[0]).addClass("selected");
         }
       }
-      
+
       var selectedOwner = $(".playerSelection.selected").attr("value");
-      
+
       $(".sprite", unitPalette).hide();
       $('.sprite[owner="' + selectedOwner + '"]', unitPalette).show();
-      
+
       $('[type="null"]', unitPalette).show();
 
       if($(".selected:visible", unitPalette).length == 0) {
         $(".sprite", unitPalette).removeClass("selected");
         $($(":visible", unitPalette)[0]).addClass("selected");
       }
-      
+
     }
   }
-  
+
   function selectedBrush() {
     var terrainSelection = $("#terrainSelection");
-    
+
     if(terrainSelection.hasClass("selected")) {
       var selected = $($("#terrainSubtypePalette .sprite.selected")[0]);
-      return {type: parseInt(selected.attr("type")), subtype: parseInt(selected.attr("subtype")), 
+      return {type: parseInt(selected.attr("type")), subtype: parseInt(selected.attr("subtype")),
               owner: parseInt(selected.attr("owner"))}
     } else {
       var selected = $($("#unitPalette .selected")[0]);
@@ -123,29 +123,29 @@ require(["Theme", "Map", "jquery-1.6.2.min.js","gamenode", "base"], function(The
       return {unit: {type: parseInt(selected.attr("type")), owner: parseInt(selected.attr("owner"))}}
     }
   }
-  
+
   function paintTile(x, y, brush) {
     var tile = mapPainter.getTile(x, y);
     if(!tile)
       return;
-      
+
     if(brush.type !== undefined) {
       tile.type = brush.type;
     }
-    
+
     if(brush.subtype !== undefined) {
       tile.subtype = brush.subtype;
     }
-    
+
     if(brush.owner !== undefined) {
       tile.owner = brush.owner;
     }
-    
+
     if(brush.unit !== undefined) {
       tile.unit = brush.unit;
     }
   }
-  
+
   function resizeMap(width, height) {
     var mapSize = mapPainter.getMapLimits().max;
     var w = mapSize.e(1) + 1;
@@ -181,7 +181,7 @@ require(["Theme", "Map", "jquery-1.6.2.min.js","gamenode", "base"], function(The
       }
     }
   }
-  
+
   function shiftMapUp() {
     var limits = mapPainter.getMapLimits();
     for(var i = 0; i < mapPainter.tiles.length; ++i) {
@@ -194,7 +194,7 @@ require(["Theme", "Map", "jquery-1.6.2.min.js","gamenode", "base"], function(The
     }
     mapPainter.refresh();
   }
-  
+
   function shiftMapDown() {
     var limits = mapPainter.getMapLimits();
     for(var i = 0; i < mapPainter.tiles.length; ++i) {
@@ -207,7 +207,7 @@ require(["Theme", "Map", "jquery-1.6.2.min.js","gamenode", "base"], function(The
     }
     mapPainter.refresh();
   }
-  
+
   function shiftMapLeft() {
     var limits = mapPainter.getMapLimits();
     for(var i = 0; i < mapPainter.tiles.length; ++i) {
@@ -220,11 +220,11 @@ require(["Theme", "Map", "jquery-1.6.2.min.js","gamenode", "base"], function(The
         if(tile.x % 2) {
           tile.y += 1;
         }
-      }      
+      }
     }
     mapPainter.refresh();
   }
-  
+
   function shiftMapRight() {
     var limits = mapPainter.getMapLimits();
     for(var i = 0; i < mapPainter.tiles.length; ++i) {
@@ -241,7 +241,7 @@ require(["Theme", "Map", "jquery-1.6.2.min.js","gamenode", "base"], function(The
     }
     mapPainter.refresh();
   }
-  
+
   function saveMap(name, funds) {
     var mapData = mapPainter.tiles;
     if(mapId === null) {
@@ -249,6 +249,7 @@ require(["Theme", "Map", "jquery-1.6.2.min.js","gamenode", "base"], function(The
         if(response.success) {
           mapId = response.mapId;
           history.pushState(undefined, undefined, document.location.pathname + "?mapId=" + mapId);
+          $("#mapDeleteForm").show();
           var message = $("#mapSavedMessage")
           message.show();
           message.fadeOut(2000);
@@ -268,7 +269,7 @@ require(["Theme", "Map", "jquery-1.6.2.min.js","gamenode", "base"], function(The
       });
     }
   }
-  
+
   function importMap() {
     var info = JSON.parse($("#importExportData").val());
     if(info) {
@@ -281,25 +282,25 @@ require(["Theme", "Map", "jquery-1.6.2.min.js","gamenode", "base"], function(The
       alert("Invalid map data!");
     }
   }
-  
+
   function exportMap() {
     var info = {name: $("#mapName").val(), funds: $("#mapFunds").val(), data: mapPainter.tiles};
     $("#importExportData").val(JSON.stringify(info));
   }
-  
+
   function handleMouseDown(event) {
     mouseDown = true;
     handleMouseMove(event);
     return false;
   }
-  
+
   function handleMouseUp(event) {
     mouseDown = false;
     lastX = null;
     lastY = null;
     return false;
   }
-  
+
   function handleMouseMove(event) {
     if(mouseDown) {
       var x = mapPainter.eventToTileX(event);
@@ -314,11 +315,11 @@ require(["Theme", "Map", "jquery-1.6.2.min.js","gamenode", "base"], function(The
     }
     return false;
   }
-  
+
   function handleMouseEnter(event) {
     mouseDown = false;
   }
-  
+
   function setCanvasSize(canvas) {
     var mapSize = mapPainter.getMapDimensions();
     var width = mapSize.e(1);
@@ -326,7 +327,7 @@ require(["Theme", "Map", "jquery-1.6.2.min.js","gamenode", "base"], function(The
     canvas.attr("width", width);
     canvas.attr("height", height);
   }
-  
+
   function initializeMap(canvas, mapData) {
     mapPainter.canvas = canvas[0];
     mapPainter.tiles = mapData;
@@ -352,6 +353,7 @@ require(["Theme", "Map", "jquery-1.6.2.min.js","gamenode", "base"], function(The
           initializeMap(canvas, mapData);
         });
       } else {
+        $("#mapDeleteForm").hide();
         var mapData = [];
         for(var y = 0; y < 15; ++y) {
           for(var x = 0; x < 15; ++x) {
@@ -362,29 +364,29 @@ require(["Theme", "Map", "jquery-1.6.2.min.js","gamenode", "base"], function(The
         initializeMap(canvas, mapData);
       }
     });
-    
+
     // MAIN MENU / EDITOR TOOLS
     $("#showMapEditorTools").click(function(e) {
       e.preventDefault();
       $("#mapEditorTools").show();
       $("#mainMenu").hide();
     });
-    
+
     $("#showMainMenu").click(function(e) {
       e.preventDefault();
       $("#mapEditorTools").hide();
       $("#mainMenu").show();
     });
-    
+
     $("#showMapEditorTools").click();
-    
+
     // TOOL SELECTION
-    
+
     var toolSelection = $("#toolSelection");
     var palette = $("#palette");
     var mapSize = $("#mapSize");
     var mapProperties = $("#mapProperties");
-    
+
     $("a", toolSelection).click(function(e) {
       e.preventDefault();
       palette.hide();
@@ -392,21 +394,21 @@ require(["Theme", "Map", "jquery-1.6.2.min.js","gamenode", "base"], function(The
       mapProperties.hide();
       $($(this).attr("value")).show();
     });
-    
+
     $("#showPalette").click();
-    
+
     // PALETTE
-    
+
     var terrainPalette = $("#terrainPalette");
     var unitPalette = $("#unitPalette");
     var terrainSelection = $("#terrainSelection");
     var unitSelection = $("#unitSelection");
     var playerSelection = $("#playerSelection");
-    
+
     $(".playerSelection").each(function() {
       $(this).css("background-color", theme.getPlayerColorString(parseInt($(this).attr("value"))));
     });
-    
+
     $(".playerSelection").click(function(e) {
       e.preventDefault();
       if($(this).hasClass("disabled"))
@@ -415,26 +417,26 @@ require(["Theme", "Map", "jquery-1.6.2.min.js","gamenode", "base"], function(The
       $(this).addClass("selected");
       updatePalette();
     });
-    
+
     $(".playerSelection:first-child").click();
-    
+
     terrainSelection.click(function() {
       unitSelection.removeClass("selected");
       terrainSelection.addClass("selected");
       updatePalette();
     });
-    
+
     unitSelection.click(function() {
       terrainSelection.removeClass("selected");
       unitSelection.addClass("selected");
       updatePalette();
     });
-    
+
     terrainSelection.click();
-    
+
     var terrainTypePalette = $("#terrainTypePalette");
     var terrainSubtypePalette = $("#terrainSubtypePalette");
-    
+
     for(var terrainType = 0; terrainType < theme.getNumberOfTileTypes(); ++terrainType) {
       var terrainTypeItem = $("<span></span>");
       terrainTypeItem.css("background-image", "url('" + theme.getSpriteSheetUrl() + "')");
@@ -444,7 +446,7 @@ require(["Theme", "Map", "jquery-1.6.2.min.js","gamenode", "base"], function(The
       var pos = theme.getTileCoordinates(terrainType, 0, 0);
       terrainTypeItem.css("background-position", -pos.x + "px " + (-pos.y + (theme.settings.image.height - theme.settings.hex.height - theme.settings.hex.thickness))+ "px")
       terrainTypeItem.attr("type", terrainType);
-      
+
       var propPos = theme.getTilePropCoordinates(terrainType, 0, 0);
       if(propPos) {
         var terrainProp = $("<span></span>");
@@ -457,7 +459,7 @@ require(["Theme", "Map", "jquery-1.6.2.min.js","gamenode", "base"], function(The
       }
 
       terrainTypePalette.append(terrainTypeItem);
-            
+
       for(var terrainSubtype = 0; terrainSubtype < theme.getNumberOfTileSubtypes(terrainType); ++terrainSubtype) {
         for(var terrainOwner = 0; terrainOwner < theme.getNumberOfTileOwners(terrainType, terrainSubtype); ++terrainOwner) {
           var terrainSubtypeItem = $("<span></span>");
@@ -470,7 +472,7 @@ require(["Theme", "Map", "jquery-1.6.2.min.js","gamenode", "base"], function(The
           terrainSubtypeItem.attr("type", terrainType);
           terrainSubtypeItem.attr("subtype", terrainSubtype);
           terrainSubtypeItem.attr("owner", terrainOwner);
-          
+
           var propPos = theme.getTilePropCoordinates(terrainType, terrainSubtype, terrainOwner);
           if(propPos) {
             var terrainProp = $("<span></span>");
@@ -481,14 +483,14 @@ require(["Theme", "Map", "jquery-1.6.2.min.js","gamenode", "base"], function(The
             terrainProp.css("background-position", -propPos.x + "px " + (-propPos.y - theme.settings.hex.thickness) + "px")
             terrainSubtypeItem.append(terrainProp);
           }
-          
+
           terrainSubtypePalette.append(terrainSubtypeItem);
-          
-          
+
+
         }
       }
     }
-    
+
     $("#terrainTypePalette .sprite").click(function() {
       $("#terrainTypePalette .sprite.selected").removeClass("selected");
       $(this).addClass("selected");
@@ -500,14 +502,14 @@ require(["Theme", "Map", "jquery-1.6.2.min.js","gamenode", "base"], function(The
       $(this).addClass("selected");
       updatePalette();
     });
-    
+
     var unitEraserItem = $("<span></span>");
     unitEraserItem.attr("type", "null");
     unitEraserItem.attr("owner", "null");
     unitEraserItem.css("background-image", "url(" + theme.getEraserIconUrl() + ")");
     unitEraserItem.addClass('sprite');
     unitPalette.append(unitEraserItem);
-    
+
     for(var unitType = 0; unitType < theme.getNumberOfUnitTypes(); ++unitType) {
       for(var unitOwner = 0; unitOwner < theme.getNumberOfUnitOwners(unitType); ++unitOwner) {
         var unitItem = $("<span></span>");
@@ -524,44 +526,57 @@ require(["Theme", "Map", "jquery-1.6.2.min.js","gamenode", "base"], function(The
         unitPalette.append(unitItem);
       }
     }
-    
+
     $("#unitPalette .sprite").click(function() {
       $("#unitPalette .sprite.selected").removeClass("selected");
       $(this).addClass("selected");
       updatePalette();
     });
-    
+
     $(":first-child", terrainTypePalette).addClass("selected");
     $(":first-child", terrainSubtypePalette).addClass("selected");
     $(":first-child", unitPalette).addClass("selected");
-    
+
     updatePalette();
-    
+
     // MAP SIZE
-    
+
     mapSize.submit(function(e) {
       e.preventDefault();
       resizeMap(parseInt($("#mapWidth").val()), parseInt($("#mapHeight").val()));
       setCanvasSize(canvas);
       mapPainter.refresh();
     });
-    
+
     $("#shiftMapUp").click(shiftMapUp);
     $("#shiftMapDown").click(shiftMapDown);
     $("#shiftMapLeft").click(shiftMapLeft);
     $("#shiftMapRight").click(shiftMapRight);
-    
+
     // MAP PROPERTIES
-    
+
     $("#mapSaveForm").submit(function(e) {
       e.preventDefault();
       saveMap($("#mapName").val(), parseInt($("#mapFunds").val()));
     });
-    
+
     $("#import").click(importMap);
     $("#export").click(exportMap);
     $("#mapImportExportForm").submit(function(e) {
       e.preventDefault();
+    });
+
+    $("#mapDeleteForm").submit(function(e) {
+      e.preventDefault();
+      if(window.confirm("Are you sure you want to delete this map?")) {
+        client.stub.deleteMap(mapId, function(response) {
+          if(response.success) {
+            window.location = "/myMaps.html";
+          } else {
+            alert("Error deleting map! " + response.reason);
+          }
+        });
+      }
     });
   }
 });
