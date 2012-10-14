@@ -2,7 +2,7 @@ require(["Theme", "jquery-1.6.2.min.js","gamenode", "base"], function(Theme) {
   var client = new GameNodeClient(Skeleton);
   var session = null;
   var theme = null;
-  
+
   $(document).ready(function() {
     var loginUrl = "login.html?next=" + document.location.pathname + document.location.search;
     session = resumeSessionOrRedirect(client, WARS_CLIENT_SETTINGS.gameServer, loginUrl, function() {
@@ -17,12 +17,12 @@ require(["Theme", "jquery-1.6.2.min.js","gamenode", "base"], function(Theme) {
       });
     });
   });
-  
+
   function populateInfo(rules) {
     populateArmorNames(rules);
     populateTerrainNames(rules);
     populateRangeNumbers(rules);
-    
+
     populateUnits(rules);
     populateWeapons(rules);
     populateRanges(rules);
@@ -38,11 +38,11 @@ require(["Theme", "jquery-1.6.2.min.js","gamenode", "base"], function(Theme) {
         var item = $("<th></th>");
         item.text(armor.name);
         $(this).append(item);
-      }); 
+      });
     });
     $(".numArmors").attr("colspan", numArmors);
   }
-  
+
   function populateTerrainNames(rules) {
     var numTerrains = 0;
     forEachProperty(rules.terrains, function(terrain) {
@@ -52,25 +52,37 @@ require(["Theme", "jquery-1.6.2.min.js","gamenode", "base"], function(Theme) {
         item.text(terrain.name);
         $(this).append(item);
       });
-      
+
       $(".terrainImages").each(function() {
         var item = $("<td></td>");
-        var image = $("<span></span>");
-        
-        image.css("background-image", "url('" + theme.getSpriteSheetUrl() + "')");
-        image.addClass("sprite");
+        var terrainTypeItem = $("<span></span>");
+        terrainTypeItem.css("background-image", "url('" + theme.getSpriteSheetUrl() + "')");
+        terrainTypeItem.addClass("sprite");
+        terrainTypeItem.css("width", theme.settings.image.width);
+        terrainTypeItem.css("height", theme.settings.image.height);
         var pos = theme.getTileCoordinates(terrain.id, 0, 0);
-        var imageX = pos.x * 48;
-        var imageY = pos.y * 48;
-        image.css("background-position", -imageX + "px " + -imageY + "px")
-        item.append(image);
+        terrainTypeItem.css("background-position", -pos.x + "px " + (-pos.y + (theme.settings.image.height - theme.settings.hex.height - theme.settings.hex.thickness))+ "px")
+        terrainTypeItem.attr("type", terrain.id);
+
+        var propPos = theme.getTilePropCoordinates(terrain.id, 0, 0);
+        if(propPos) {
+          var terrainProp = $("<span></span>");
+          terrainProp.css("background-image", "url('" + theme.getSpriteSheetUrl() + "')");
+          terrainProp.css("width", theme.settings.image.width);
+          terrainProp.css("height", theme.settings.image.height - theme.settings.hex.thickness);
+          terrainProp.css("display", "block");
+          terrainProp.css("background-position", -propPos.x + "px " + (-propPos.y - theme.settings.hex.thickness) + "px")
+          terrainTypeItem.append(terrainProp);
+        }
+
+        item.append(terrainTypeItem);
         $(this).append(item);
       });
-      
+
     });
     $(".numTerrains").attr("colspan", numTerrains);
   }
-  
+
   function maxRange(rules) {
     var result = 0;
     forEachProperty(rules.weapons, function(weapon) {
@@ -81,7 +93,7 @@ require(["Theme", "jquery-1.6.2.min.js","gamenode", "base"], function(Theme) {
     });
     return result;
   }
-  
+
   function populateRangeNumbers(rules) {
     var max = maxRange(rules);
     $(".rangeNumbers").each(function() {
@@ -93,7 +105,7 @@ require(["Theme", "jquery-1.6.2.min.js","gamenode", "base"], function(Theme) {
     });
     $(".numRanges").attr("colspan", max);
   }
-  
+
   function populateUnits(rules) {
     var units = $("#units tbody");
     forEachProperty(rules.units, function(unit) {
@@ -110,12 +122,15 @@ require(["Theme", "jquery-1.6.2.min.js","gamenode", "base"], function(Theme) {
       var carry = $("<td></td>");
       var flags = $("<td></td>");
 
-      image.css("background-image", "url('" + theme.getSpriteSheetUrl() + "')");
-      image.addClass("sprite");
+      var image = $("<span></span>");
       var pos = theme.getUnitCoordinates(unit.id, 1);
-      var imageX = pos.x * 48;
-      var imageY = pos.y * 48;
-      image.css("background-position", -imageX + "px " + -imageY + "px")
+      image.attr("type", unit.id);
+      image.attr("owner", 1);
+      image.css("background-image", "url('" + theme.getSpriteSheetUrl() + "')");
+      image.addClass('sprite');
+      image.css("width", theme.settings.image.width);
+      image.css("height", theme.settings.image.width);
+      image.css("background-position", -pos.x + "px " + -pos.y + "px")
 
       name.text(unit.name);
       name.addClass("name");
@@ -129,7 +144,7 @@ require(["Theme", "jquery-1.6.2.min.js","gamenode", "base"], function(Theme) {
       var carryClasses = unit.carryClasses.map(function(classId) {return rules.unitClasses[classId].name; }).join(", ");
       carry.text(unit.carryNum > 0 ? unit.carryNum + "x " + carryClasses : "-");
       flags.text(unit.flags.map(function(flagId) {return rules.unitFlags[flagId].name; }).join(", "));
-      
+
       item.append(image);
       item.append(name);
       item.append(className);
@@ -141,20 +156,20 @@ require(["Theme", "jquery-1.6.2.min.js","gamenode", "base"], function(Theme) {
       item.append(movementTypeName);
       item.append(carry);
       item.append(flags);
-      
+
       units.append(item);
     });
   }
-  
+
   function populateWeapons(rules) {
     var weapons = $("#weapons tbody");
     forEachProperty(rules.weapons, function(weapon) {
       var item = $("<tr></tr>");
       var name = $("<td></td>");
-      
+
       name.text(weapon.name);
       item.append(name);
-      
+
       forEachProperty(rules.armors, function(armor) {
         var power = weapon.powerMap[armor.id];
         var powerItem = $("<td></td>");
@@ -164,19 +179,19 @@ require(["Theme", "jquery-1.6.2.min.js","gamenode", "base"], function(Theme) {
       weapons.append(item);
     });
   }
-  
+
   function populateRanges(rules) {
     var ranges = $("#ranges tbody");
     forEachProperty(rules.weapons, function(weapon) {
       var item = $("<tr></tr>");
       var name = $("<td></td>");
       var requireDeployed = $("<td></td>");
-      
+
       name.text(weapon.name);
       requireDeployed.text(weapon.requireDeployed ? "x" : "");
-      
+
       item.append(name);
-      
+
       var max = maxRange(rules);
       for(var range = 1; range <= max; ++range) {
         var efficiency = weapon.rangeMap[range];
@@ -184,13 +199,13 @@ require(["Theme", "jquery-1.6.2.min.js","gamenode", "base"], function(Theme) {
         efficiencyItem.text(efficiency ? efficiency : "-");
         item.append(efficiencyItem);
       }
-      
+
       item.append(requireDeployed);
-      
+
       ranges.append(item);
     });
   }
-  
+
   function populateDefenses(rules) {
     var defenses = $("#defenses tbody");
     forEachProperty(rules.units, function(unit) {
@@ -198,19 +213,21 @@ require(["Theme", "jquery-1.6.2.min.js","gamenode", "base"], function(Theme) {
       var item = $("<tr></tr>");
       var name = $("<td></td>");
       var image = $("<td></td>");
-      
-      image.css("background-image", "url('" + theme.getSpriteSheetUrl() + "')");
-      image.addClass("sprite");
+
       var pos = theme.getUnitCoordinates(unit.id, 1);
-      var imageX = pos.x * 48;
-      var imageY = pos.y * 48;
-      image.css("background-position", -imageX + "px " + -imageY + "px")
-      
+      image.attr("type", unit.id);
+      image.attr("owner", 1);
+      image.css("background-image", "url('" + theme.getSpriteSheetUrl() + "')");
+      image.addClass('sprite');
+      image.css("width", theme.settings.image.width);
+      image.css("height", theme.settings.image.width);
+      image.css("background-position", -pos.x + "px " + -pos.y + "px")
+
       name.text(unit.name);
-      
+
       item.append(image);
       item.append(name);
-      
+
       forEachProperty(rules.terrains, function(terrain) {
         var canTraverse = movementType.effectMap[terrain.id] !== null;
         var defense = unit.defenseMap[terrain.id];
@@ -222,20 +239,20 @@ require(["Theme", "jquery-1.6.2.min.js","gamenode", "base"], function(Theme) {
         }
         item.append(defenseItem);
       });
-      
+
       defenses.append(item);
     });
   }
-  
+
   function populateMovement(rules) {
     var movements = $("#movement tbody");
     forEachProperty(rules.movementTypes, function(movementType) {
       var item = $("<tr></tr>");
       var name = $("<td></td>");
-      
+
       name.text(movementType.name);
       item.append(name);
-      
+
       forEachProperty(rules.terrains, function(terrain) {
         var cost = movementType.effectMap[terrain.id];
         cost = cost !== undefined ? cost : 1;
@@ -243,9 +260,9 @@ require(["Theme", "jquery-1.6.2.min.js","gamenode", "base"], function(Theme) {
         movementItem.text(cost !== null ? cost : "-");
         item.append(movementItem);
       });
-      
+
       movements.append(item);
     });
   }
-  
+
 });
