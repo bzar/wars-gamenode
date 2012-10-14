@@ -8,6 +8,7 @@ exports.settings = {
   defaultFundsPerProperty: 100,
   gameElements: gameElements,
   minimumTurnLength: 120,
-  botNames: []
+  botNames: ["bott"],
+  botOnlyGamesAllowed: false
 }
 

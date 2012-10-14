@@ -155,17 +155,30 @@ GameManagement.prototype.leaveGame = function(userId, gameId, playerNumber, call
       database.players(gameId, function(result) {
         if(!result.success) { callback({success: false, reason: result.reason}); return; }
         var players = [];
+        var playersRemaining = false;
         for(var i = 0; i < result.players.length; ++i) {
           var player = result.players[i];
           if(player.userId == userId) {
             player.settings.hidden = true;
             players.push(player);
+          } else if(!player.settings.hidden) {
+            playersRemaining = true;
           }
         }
 
         database.updatePlayers(players, function(result) {
           if(!result.success) { callback({success: false, reason: result.reason}); return; }
-          callback({success: true});
+          if(!playersRemaining) {
+            this_.database.deleteGame(gameId, function(result) {
+              if(result.success) {
+                callback({success: true});
+              } else {
+                callback({success: false, reason: result.reason});
+              }
+            });
+          } else {
+            callback({success: true});
+          }
         });
       });
     }
@@ -225,16 +238,22 @@ GameManagement.prototype.startGame = function(userId, gameId, callback) {
           var players = result.players;
           var numPlayers = 0;
           var playersWithoutUsers = [];
+          var hasNonBotPlayers = false;
           for(var i = 0; i < players.length; ++i) {
             var player = players[i];
             if(player.userId !== null) {
               numPlayers += 1;
+              if(!hasNonBotPlayers && !settings.botNames.some(function(name) { return name == player.playerName; })) {
+                hasNonBotPlayers = true;
+              }
             } else {
               playersWithoutUsers.push(player);
             }
           }
           if(numPlayers < 2) {
             callback({success: false, reason: "Need at least two players to start!"});
+          } else if(!hasNonBotPlayers && !settings.botOnlyGamesAllowed) {
+            callback({success: false, reason: "Bot only games not allowed!"});
           } else {
             gameProcedures.surrenderPlayers(game, playersWithoutUsers, function(response) {
               game.state = game.STATE_IN_PROGRESS;
