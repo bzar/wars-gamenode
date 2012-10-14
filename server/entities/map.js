@@ -5,7 +5,7 @@ function Map(mapId, authorId, name, funds, mapData) {
   this.funds = funds;
   this.players = null;
   this.mapData = mapData;
-  
+
   if(mapData !== undefined)
     this.parseInfo(mapData);
 };
@@ -29,7 +29,7 @@ Map.prototype.cloneFrom = function(other) {
 
 Map.prototype.parseInfo = function(mapData) {
   var players = [];
-  
+
   function addPlayer(playerNumber) {
     for(var i = 0; i < players.length; ++i) {
       if(players[i] == playerNumber) {
@@ -38,16 +38,16 @@ Map.prototype.parseInfo = function(mapData) {
     }
     players.push(playerNumber);
   }
-  
+
   for(var i = 0; i < mapData.length; ++i) {
     var tile = mapData[i];
     if(tile.owner != 0) {
       addPlayer(tile.owner);
     }
-    if(tile.unit != null) {
+    if(tile.unit !== null && tile.unit.owner !== 0) {
       addPlayer(tile.unit.owner);
     }
   }
-  
+
   this.players = players.length;
 }
