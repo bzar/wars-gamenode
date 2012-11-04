@@ -238,7 +238,7 @@ GameActions.prototype.moveAndCapture = function(gameId, userId, unitId, destinat
     
     database.updateUnit(unit, function(result) {
       database.updateTiles([sourceTile, destinationTile], function(result) {
-        if(wasCaptured && destinationTile.terrainType().isHQ()) {
+        if(wasCaptured && previousOwner !== 0 && destinationTile.terrainType().isHQ()) {
           gameInformation.playerHasHQ(gameId, previousOwner, function(result) {
             if(!result.value) {
               gameProcedures.surrenderPlayer(gameId, previousOwner, function() {
