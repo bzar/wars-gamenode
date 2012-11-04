@@ -122,3 +122,21 @@ GameInformation.prototype.unitWithTile = function(unitId, callback) {
     }
   });
 }
+
+GameInformation.prototype.playerHasHQ = function(gameId, playerNumber, callback) {
+  var database = this.database;
+  database.playerTiles(gameId, playerNumber, function(result) {
+    if(!result.success) {
+      callback({success: false, reason: result.reason}); return;
+    }
+
+    for(var i = 0; i < result.tiles.length; ++i) {
+      var tile = result.tiles[i];
+      if(tile.terrainType().isHQ()) {
+        callback({success: true, value: true}); return;
+      }
+    }
+    
+    callback({success: true, value: false});
+  });
+}

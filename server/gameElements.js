@@ -156,6 +156,10 @@ TerrainType.prototype.producesFunds = function() {
   return this.flags.indexOf(terrainFlagsByName['Funds'].id) != -1;
 };
 
+TerrainType.prototype.isHQ = function() {
+  return this.flags.indexOf(terrainFlagsByName['HQ'].id) != -1;
+};
+
 TerrainType.prototype.canBuild = function(unitTypeId) {
   return this.buildTypes.indexOf(unitTypes[unitTypeId].unitClass) != -1;
 };
@@ -393,7 +397,8 @@ var weapons = makeObj("id", weaponList);
 
 var terrainFlagList = [
   new TerrainFlag(0, 'Capturable'),
-  new TerrainFlag(1, 'Funds')
+  new TerrainFlag(1, 'Funds'),
+  new TerrainFlag(2, 'HQ'),
 ];
 var terrainFlagsByName = makeObj("name", terrainFlagList);
 var terrainFlags = makeObj("id", terrainFlagList);
@@ -456,7 +461,11 @@ var terrainList = [
   new TerrainType(11, 'Bridge', 0,
               [],
               [],
-              [])
+              []),
+  new TerrainType(12, 'Base', 60,
+              [],
+              ['Infantry', 'Vehicle'],
+              ['Capturable', 'HQ']),
 ];
 var terrainByName = makeObj("name", terrainList);
 var terrain = makeObj("id", terrainList);

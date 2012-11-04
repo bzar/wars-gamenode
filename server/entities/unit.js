@@ -65,6 +65,7 @@ Unit.prototype.heal = function(amount) {
 }
 
 Unit.prototype.capture = function(tile) {
+  var wasCaptured = false;
   tile.capturePoints -= this.health;
   if(tile.capturePoints > 0) {
     tile.beingCaptured = true;
@@ -74,8 +75,10 @@ Unit.prototype.capture = function(tile) {
     tile.capturePoints = 1;
     tile.beingCaptured = false;
     this.capturing = false;
+    wasCaptured = true;
   }
   this.moved = true;
+  return wasCaptured;
 }
 
 Unit.prototype.deploy = function(amount) {

@@ -255,7 +255,8 @@ GameManagement.prototype.startGame = function(userId, gameId, callback) {
           } else if(!hasNonBotPlayers && !settings.botOnlyGamesAllowed) {
             callback({success: false, reason: "Bot only games not allowed!"});
           } else {
-            gameProcedures.surrenderPlayers(game, playersWithoutUsers, function(response) {
+            var playerNumbers = playersWithoutUsers.map(function(x){ return x.playerNumber; })
+            gameProcedures.surrenderPlayers(game.gameId, playerNumbers, function(response) {
               game.state = game.STATE_IN_PROGRESS;
               database.updateGame(game, function(result) {
                 if(result.success) {

@@ -808,7 +808,7 @@ MongoDBDatabase.prototype.updateUnits = function(units, callback) {
       var unitId = this_.toObjectID(unitObj.unitId);
       var tileId = this_.toObjectID(unitObj.tileId);
       var carriedBy = this_.toObjectID(unitObj.carriedBy);
-      var unit = {$set: {tileId: tileId, carriedBy: carriedBy,
+      var unit = {$set: {tileId: tileId, carriedBy: carriedBy, owner: unitObj.owner,
                   health: unitObj.health, deployed: unitObj.deployed,
                   moved: unitObj.moved, capturing: unitObj.capturing} };
       collection.update({_id: unitId}, unit);

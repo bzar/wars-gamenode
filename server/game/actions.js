@@ -196,6 +196,9 @@ GameActions.prototype.moveAndWait = function(gameId, userId, unitId, destination
 
 GameActions.prototype.moveAndCapture = function(gameId, userId, unitId, destination, path, callback) {
   var database = this.database;
+  var gameProcedures = this.gameProcedures;
+  var gameInformation = this.gameInformation;
+  
   checkMove(database, gameId, userId, unitId, destination, path,
             function(result, game, player, unit, sourceTile, destinationTile, path, gameLogic) {
     if(!result.success) {
@@ -218,19 +221,39 @@ GameActions.prototype.moveAndCapture = function(gameId, userId, unitId, destinat
     events.move(unit, destinationTile, path);
     sourceTile.setUnit(null);
     destinationTile.setUnit(unit);
-    unit.capture(destinationTile);
+    var previousOwner = destinationTile.owner;
+    var wasCaptured = unit.capture(destinationTile);
 
-    if(destinationTile.owner != unit.owner) {
-      events.capture(unit, destinationTile, destinationTile.capturePoints);
-    } else {
+    if(wasCaptured) {
       events.captured(unit, destinationTile);
+    } else {
+      events.capture(unit, destinationTile, destinationTile.capturePoints);
     }
 
+    function cb() {
+      database.createGameEvents(events.objects, function(result) {
+        callback({success: true, events: events.objects});
+      });
+    }
+    
     database.updateUnit(unit, function(result) {
       database.updateTiles([sourceTile, destinationTile], function(result) {
-        database.createGameEvents(events.objects, function(result) {
-          callback({success: true, events: events.objects});
-        });
+        if(wasCaptured && destinationTile.terrainType().isHQ()) {
+          gameInformation.playerHasHQ(gameId, previousOwner, function(result) {
+            if(!result.value) {
+              gameProcedures.surrenderPlayer(gameId, previousOwner, function() {
+                database.gamePlayer(gameId, previousOwner, function(result) {
+                  events.surrender(result.player);
+                  cb();
+                });
+              });
+            } else {
+              cb();
+            }
+          });
+        } else {
+          cb();
+        }
       });
     });
   });
@@ -729,7 +752,7 @@ GameActions.prototype.surrender = function(gameId, userId, callback) {
       }
       var player = result.player;
 
-      this_.gameProcedures.surrenderPlayer(game, player, function(result) {
+      this_.gameProcedures.surrenderPlayer(game.gameId, player.playerNumber, function(result) {
         if(!result.success) {
           callback({success: false, reason: result.reason}); return;
         }

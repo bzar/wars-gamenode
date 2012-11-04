@@ -6,26 +6,24 @@ function GameProcedures(database) {
 
 exports.GameProcedures = GameProcedures;
 
-GameProcedures.prototype.surrenderPlayers = function(game, players, callback) {
+GameProcedures.prototype.surrenderPlayers = function(gameId, playerNumbers, callback) {
   var database = this.database;
-  database.tiles(game.gameId, function(result) {
+  database.tiles(gameId, function(result) {
     if(!result.success) {
       callback({success: false, reason: result.reason}); return;
     }
     
     var tiles = result.tiles;
     
-    database.units(game.gameId, function(result) {
+    database.units(gameId, function(result) {
       if(!result.success) {
         callback({success: false, reason: result.reason}); return;
       }
       
       var changedTiles = [];
-      var deletedUnits = [];
+      var changedUnits = [];
       
       var units = result.units;
-      
-      var playerNumbers = players.map(function(x){ return x.playerNumber; });
       
       for(var i = 0; i < tiles.length; ++i) {
         if(playerNumbers.indexOf(tiles[i].owner) != -1) {
@@ -36,11 +34,12 @@ GameProcedures.prototype.surrenderPlayers = function(game, players, callback) {
       
       for(var i = 0; i < units.length; ++i) {
         if(playerNumbers.indexOf(units[i].owner) != -1) {
-          deletedUnits.push(units[i]);
+          units[i].owner = 0;
+          changedUnits.push(units[i]);
         }
       }
       database.updateTiles(changedTiles, function(result) {
-        database.deleteUnits(deletedUnits, function(result) {
+        database.updateUnits(changedUnits, function(result) {
           callback({success: true});
         });
       });
@@ -48,16 +47,16 @@ GameProcedures.prototype.surrenderPlayers = function(game, players, callback) {
   });
 }
 
-GameProcedures.prototype.surrenderPlayer = function(game, player, callback) {
+GameProcedures.prototype.surrenderPlayer = function(gameId, playerNumber, callback) {
   var database = this.database;
-  database.playerTiles(game.gameId, player.playerNumber, function(result) {
+  database.playerTiles(gameId, playerNumber, function(result) {
     if(!result.success) {
       callback({success: false, reason: result.reason}); return;
     }
     
     var tiles = result.tiles;
     
-    database.playerUnits(game.gameId, player.playerNumber, function(result) {
+    database.playerUnits(gameId, playerNumber, function(result) {
       if(!result.success) {
         callback({success: false, reason: result.reason}); return;
       }
@@ -68,8 +67,12 @@ GameProcedures.prototype.surrenderPlayer = function(game, player, callback) {
         tiles[i].owner = 0;
       }
       
+      for(var i = 0; i < units.length; ++i) {
+        units[i].owner = 0;
+      }
+      
       database.updateTiles(tiles, function(result) {
-        database.deleteUnits(units, function(result) {
+        database.updateUnits(units, function(result) {
           callback({success: true});
         });
       });

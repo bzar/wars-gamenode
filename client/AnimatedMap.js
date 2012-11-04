@@ -969,8 +969,22 @@ define(["Theme", "aja/lib/aja", "pixastic", "sylvester"], function(Theme) {
   };
 
   AnimatedMap.prototype.surrender = function(player, callback) {
-    if(callback !== undefined)
+    var that = this;
+    
+    this.tiles.forEach(function(tile){
+      if(tile.owner === player) {
+        tile.owner = 0;
+      }
+      if(tile.unit !== null && tile.unit.owner === player) {
+        tile.unit.owner = 0;
+      }
+    });
+    
+    this.refresh();
+    
+    if(callback !== undefined) {
       callback();
+    }
   };
 
   AnimatedMap.PHASE_SELECT = 1;

@@ -182,6 +182,19 @@
       [{"hex": "water", "prop": "bridge-tl-br", "offset": 8}],
       [{"hex": "water", "prop": "bridge-bl-tr", "offset": 8}],
       [{"hex": "water", "prop": "bridge-t-b", "offset": 8}]
+    ],
+    [
+      [
+        {"hex": "concrete", "prop": "base", "offset": 0},
+        {"hex": "concrete", "prop": "base_1", "offset": 0},
+        {"hex": "concrete", "prop": "base_2", "offset": 0},
+        {"hex": "concrete", "prop": "base_3", "offset": 0},
+        {"hex": "concrete", "prop": "base_4", "offset": 0},
+        {"hex": "concrete", "prop": "base_5", "offset": 0},
+        {"hex": "concrete", "prop": "base_6", "offset": 0},
+        {"hex": "concrete", "prop": "base_7", "offset": 0},
+        {"hex": "concrete", "prop": "base_8", "offset": 0}
+      ]
     ]
   ],
 
