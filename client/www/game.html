@@ -1,78 +1,95 @@
+<!DOCTYPE html>
 <html>
   <head>
-    <script data-main="game" src="require.js"></script>
-    <link rel="stylesheet" href="wars.css" type="text/css"/>
-    <title>Wars - Game</title>
+    <link rel="stylesheet" type="text/css" href="common.css">
+    <link rel="stylesheet" type="text/css" href="lib/font-awesome/css/font-awesome.css">
+    
+    <script src="lib/jquery-1.8.3.min.js" type="text/javascript"></script>
+    <script src="common.js" type="text/javascript"></script>
+    
+    
+<link rel="stylesheet" type="text/css" href="game.css">
+<script data-main="game" src="require.js"></script>
+
   </head>
-
   <body>
-    <div id="sidebar">
-      <h1>Wars</h1>
-      <ul id="menuNavigation" class="menuNavigationButtons">
-          <li><a id="showGameMenu" href="#" style="display:none">Back to game menu</a></li>
-          <li><a id="showMainMenu" href="#">Show main menu</a></li>
-      </ul>
+    <div id="menubar">
+      <span class="dropdown-menu">
+        <span class="label menu-icon icon-list"></span>
+        <ul class="content">
+          <li class="menuitem"><a href="mygames.html"><i class="icon-home"></i>My games</a></li>
+          <li class="menuitem"><a href="publicgames.html"><i class="icon-group"></i>Public games</a></li>
+          <li class="menuitem"><a href="mymaps.html"><i class="icon-edit"></i>Map editor</a></li>
+          <li class="menuitem"><a href="#"><i class="icon-question-sign"></i>Manual</a></li>
+          <li class="menuitem"><a href="#"><i class="icon-table"></i>Info</a></li>
+          <li class="menuitem"><a href="#"><i class="icon-wrench"></i>Profile</a></li>
+          <hr/>
+          <li class="menuitem"><a href="#"><i class="icon-signout"></i>Log out</a></li>
+        </ul>
+      </span>
+      
+<span class="dropdown-menu">
+  <span class="label menu-icon icon-user"></span>
+  <div class="content">
+    <ul id="players"></ul>
+    <hr/>
+    <div id="gameStatistic"></div>
+    <div class="menuitem"><a href="#"><i class="icon-bar-chart"></i> Game statistics</a></div>
+  </div>
+</span>
 
-      <ul id="navigation" class="navigation" style="display:none"></ul>
+<span class="dropdown-menu">
+  <span class="label menu-icon icon-comment"></span>
+  <div class="content">
+    <div id="chat-messages"></div>
+    <form id="chat-form">
+      <input id="chat-input" type="text" /><input id="chat-submit" type="submit" value=">" />
+    </form>
+  </div>
+</span>
 
-      <div id="gameMenu">
-        <ul id="players"></ul>
-        <ul id="gameInfo" class="sidebarInfo">
-          <li id="turnTimeItem">Time left: <span id="turnTime"></span></li>
-          <li>Funds: <span id="funds"></span></li>
-          <li>Round: <span id="round"></span></li>
-        </ul>
-        <ul id="gameTools" class="actionButtons">
-          <li><a id="sendNotifications" href="#">Turn notifications <span id="sendNotificationsStatus">on</span></a></li>
-          <li><a id="showChat" href="#"><span id="showChatStatus">Show</span> chat</a></li>
-          <li><a id="showMessageTicker" href="#"><span id="showMessageTickerStatus">Show</span> events</a></li>
-        </ul>
-        <!--<ul id="mapControls" class="actionButtons">
-          <li><a id="showGrid" href="#"><span id="showGridStatus">Show</span> grid</a></li>
-          <li><a id="showBorders" href="#"><span id="showBordersStatus">Show</span> borders</a></li>
-          <li><a id="showPowerMap" href="#"><span id="showPowerMapStatus">Show</span> power map</a></li>
-        </ul>-->
-        <ul id="turnActions" class="actionButtons">
-          <li><a id="endTurn" href="#">End turn</a></li>
-          <li><a id="surrender" href="#">Surrender</a></li>
-        </ul>
-        <ul id="gameActions" class="actionButtons">
-          <li><a id="leaveGame" href="#">Leave game</a></li>
-        </ul>
-        <div id="animationSpeed">
-          <span id="animationSpeedText">Animation speed</span>
-          <span id="animationSpeedMinus" class="animationSpeed">-</span><span id="animationSpeedLabel" class="animationSpeed">1x</span><span id="animationSpeedPlus" class="animationSpeed">+</span>
-        </div>
-        <div id="gameStatistic"></div>
-        <ul id="statisticsNavigation" class="navigation small">
-          <li><a id="gameStatistics" href="#">Game statistics</a></li>
-        </ul>
-        <ul id="authorTools" class="actionButtons">
-        </ul>
+<span class="dropdown-menu">
+  <span class="label menu-icon icon-caret-down"></span>
+  <ul class="content">
+    <li class="menuitem"><a href="#"><i class="icon-ok"></i>End turn</a></li>
+    <li class="menuitem"><a href="#"><i class="icon-flag"></i>Surrender</a></li>
+    <hr/>
+    <li class="menuitem"><a href="#"><i class="icon-check"></i>Send notifications</a></li>
+    <hr/>
+    <li>
+      <div><i class="icon-film"></i>Animation speed</div>
+      <div id="animation-speed-container">
+        <a  id="animation-speed-minus" href="#"><i class="icon-minus-sign"></i></a>
+        <span id="animation-speed">3x</span>
+        <a id="animation-speed-plus" href="#"><i class="icon-plus-sign"></i></a>
       </div>
+    </li>
+  </ul>
+</span>
 
-      </div>
+<span class="menu-text-container">
+  <span class="row"><i class="icon-money"></i> <span id="funds"></span></span>
+  <span class="row"><i class="icon-repeat"></i> <span id="round"></span></span>
+</span>
+
+<span class="menu-text-container" id="turnTimeItem">
+  <span class="row"><i class="icon-time"></i> <span id="turnTime"></span></span>
+</span>
+
 
     </div>
-  
-    <div id="chat" class="gameChat">
-      <ul id="chatMessages"><li>Welcome to game chat!</li></ul>
-      <form id="chatForm">
-        <input id="chatInput" type="text" value=""/>
-        <input id="chatSend" type="submit" value="send"/>
-      </form>
-      <a id="showHideChat" href="#">-</a>
-    </div>
+    
     <div id="content">
-      <canvas id="mapCanvas"></canvas>
-      <div id="buildMenu"></div>
-      <div id="actionMenu"></div>
-      <div id="unloadMenu"></div>
+      
+<canvas id="mapCanvas"></canvas>
+<div id="buildMenu"></div>
+<div id="actionMenu"></div>
+<div id="unloadMenu"></div>
+
+
+
+
     </div>
-    <div id="messageTickerContainer">
-      <a id="showHideMessageTicker" href="#">-</a>
-      <ul id="messageTicker"></ul>
-    </div>
-    <img id="spinner" src="/img/spinner.gif">
   </body>
 </html>
+

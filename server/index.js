@@ -25,8 +25,8 @@ server.io.configure(null, function(){
 var fileServer = undefined;
 if(configuration.enableFileServer) {
   fileServer = new FileServer(
-    ["jquery-1.6.2.min.js", "require.js", "gamenode.js", "skeleton.js", "base.js", "wars.css",
-    "login.html", "login.js", "register.html", "register.js", 
+    ["jquery-1.6.2.min.js", "require.js", "gamenode.js", "skeleton.js", "base.js", "game.css",
+    "common.css", "common.js", "login.html", "login.js", "register.html", "register.js", 
     "home.html", "home.js", "myMaps.html", "myMaps.js",
     "mapEditor.html", "mapEditor.js", "Map.js", "image_map.js",
     "createGame.html", "createGame.js", "pregame.html", "pregame.js",

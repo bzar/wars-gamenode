@@ -215,27 +215,27 @@ require(["Theme", "AnimatedMap", "GameLogic", "jquery-1.6.2.min.js","gamenode", 
 
     var speeds = [{x:"1",t:"1x"},{x:"1.5",t:"1.5x"},{x:"2",t:"2x"},{x:"3",t:"3x"},{x:"4",t:"4x"},{x:"5",t:"5x"},{x:"0",t:"off"}];
 
-    $("#animationSpeedPlus").click(function(e) {
-      var current = $("#animationSpeedLabel").text();
+    $("#animation-speed-plus").click(function(e) {
+      var current = $("#animation-speed").text();
       for(var i = 0; i < speeds.length; ++i) {
         if(speeds[i].t === current) {
           if(i < speeds.length - 1) {
             map.animationSpeed = speeds[i + 1].x;
             map.animate = map.animationSpeed != 0;
-            $("#animationSpeedLabel").text(speeds[i + 1].t);
+            $("#animation-speed").text(speeds[i + 1].t);
           }
         }
       }
     });
 
-    $("#animationSpeedMinus").click(function(e) {
-      var current = $("#animationSpeedLabel").text();
+    $("#animation-speed-minus").click(function(e) {
+      var current = $("#animation-speed").text();
       for(var i = 0; i < speeds.length; ++i) {
         if(speeds[i].t === current) {
           if(i > 0) {
             map.animationSpeed = speeds[i - 1].x;
             map.animate = map.animationSpeed != 0;
-            $("#animationSpeedLabel").text(speeds[i - 1].t);
+            $("#animation-speed").text(speeds[i - 1].t);
           }
         }
       }
@@ -548,8 +548,8 @@ require(["Theme", "AnimatedMap", "GameLogic", "jquery-1.6.2.min.js","gamenode", 
     var buildMenu = $("#buildMenu");
     var canvas = $("#mapCanvas");
     var content = $("#content");
-    var canvasPosition = {x: e.offsetX !== undefined ? e.offsetX : e.layerX,
-                          y: e.offsetY !== undefined ? e.offsetY : e.layerY};
+    var canvasPosition = {x: e.pageX - e.currentTarget.offsetLeft,
+                          y: e.pageY - e.currentTarget.offsetTop};
     var windowPosition = {x: e.pageX, y: e.pageY};
     var hexCoords = map.coordToTile(canvasPosition.x, canvasPosition.y);
     var tilePosition = {x: hexCoords.e(1), y: hexCoords.e(2)};
@@ -1019,12 +1019,12 @@ require(["Theme", "AnimatedMap", "GameLogic", "jquery-1.6.2.min.js","gamenode", 
 
       var data = latestStatistic.content.sort(function(a, b){return a.playerNumber - b.playerNumber;});
 
-      function addChart(container, data, property, label) {
+      function addChart(container, data, property, icon) {
         var chart = container.append("div").attr("class", "statisticBarChart").attr("chartProperty", property);
-        chart.append("div").text(label).attr("class", "label");
+        chart.append("div").attr("class", "label").append("i").attr("class", "icon-" + icon);
 
         // Needed to have all the chart elements laid out correctly before adding content
-        setTimeout(function() {
+        //setTimeout(function() {
           var width = $(".statisticBarChart[chartProperty=\"" + property + "\"]").innerWidth() - 10;
           var height = 8;
           var totalValue = d3.sum(data, function(d){ return d[property]; });
@@ -1035,17 +1035,20 @@ require(["Theme", "AnimatedMap", "GameLogic", "jquery-1.6.2.min.js","gamenode", 
           chart.selectAll(".bar")
             .data(data)
             .enter().append("div")
-              .style("width", function(d) { return scale(d[property]); })
-              .style("height", height)
+              .style("width", function(d) { 
+                var foo = scale(d[property]); 
+                return foo;
+              })
+              .style("height", height + "px")
               .style("background-color", function(d) { return theme.getPlayerColorString(d.playerNumber); })
               .attr("class", function(d) { return "bar"})
               .attr("title", function(d){ return Math.round(100*d[property]/totalValue) + "%" });
-        }, 0);
+        //}, 0);
       }
 
-      addChart(container, data, "score", "Score");
-      addChart(container, data, "power", "Power");
-      addChart(container, data, "property", "Property");
+      addChart(container, data, "score", "trophy");
+      addChart(container, data, "power", "chevron-up");
+      addChart(container, data, "property", "globe");
     });
   }
 

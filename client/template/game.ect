@@ -1,41 +1,21 @@
 <% extend 'base.ect' %>
-<img src="img/layout_proto_canvas.png" />
+<canvas id="mapCanvas"></canvas>
+<div id="buildMenu"></div>
+<div id="actionMenu"></div>
+<div id="unloadMenu"></div>
+
+<% block 'head' : %>
+<link rel="stylesheet" type="text/css" href="game.css">
+<script data-main="game" src="require.js"></script>
+<% end %>
 
 <% block 'menubar' : %>
 <span class="dropdown-menu">
   <span class="label menu-icon icon-user"></span>
   <div class="content">
-    <ul id="players">
-      <li class="playerItem" playernumber="1">
-        <span style="background-color: rgb(214, 61, 56); " class="playerNumber">1</span>
-        <span class="playerName">badger</span>
-      </li>
-      <li class="playerItem" playernumber="2">
-        <span style="background-color: rgb(56, 67, 214); " class="playerNumber">2</span>
-        <span class="playerName">zarr</span>
-      </li>
-      <li class="playerItem isMe" playernumber="3">
-        <span style="background-color: rgb(217, 213, 43); " class="playerNumber">3</span>
-        <span class="playerName">bzar</span>
-        <span class="selfIndicator"><i class="icon-star"></i></span>
-      </li>
-      <li class="playerItem inTurn" playernumber="4">
-        <span style="background-color: rgb(99, 173, 208); " class="playerNumber">4</span>
-        <span class="playerName">kungas</span>
-      </li>
-    </ul>
+    <ul id="players"></ul>
     <hr/>
-    <div id="gameStatistic">
-      <div class="statisticBarChart" chartproperty="score">
-        <div class="label"><i class="icon-trophy"></i></div><div style="width: 17.845155402322163px; height: 8px; background-color: rgb(214, 61, 56); " class="bar" title="13%"></div><div style="width: 41.38315672058003px; height: 8px; background-color: rgb(56, 67, 214); " class="bar" title="30%"></div><div style="width: 41.73807230137403px; height: 8px; background-color: rgb(217, 213, 43); " class="bar" title="30%"></div><div style="width: 39.03361557572378px; height: 8px; background-color: rgb(99, 173, 208); " class="bar" title="28%"></div>
-      </div>
-      <div class="statisticBarChart" chartproperty="power">
-        <div class="label"><i class="icon-chevron-up"></i></div><div style="width: 2.2234085146136398px; height: 8px; background-color: rgb(214, 61, 56); " class="bar" title="2%"></div><div style="width: 52.3201654877886px; height: 8px; background-color: rgb(56, 67, 214); " class="bar" title="37%"></div><div style="width: 47.415587882023225px; height: 8px; background-color: rgb(217, 213, 43); " class="bar" title="34%"></div><div style="width: 38.04083811557454px; height: 8px; background-color: rgb(99, 173, 208); " class="bar" title="27%"></div>
-      </div>
-      <div class="statisticBarChart" chartproperty="property">
-        <div class="label"><i class="icon-globe"></i></div><div style="width: 8.4668884185062px; height: 8px; background-color: rgb(214, 61, 56); " class="bar" title="6%"></div><div style="width: 45.8905352283036px; height: 8px; background-color: rgb(56, 67, 214); " class="bar" title="33%"></div><div style="width: 41.85465174881564px; height: 8px; background-color: rgb(217, 213, 43); " class="bar" title="30%"></div><div style="width: 43.78792460437456px; height: 8px; background-color: rgb(99, 173, 208); " class="bar" title="31%"></div>
-      </div>
-    </div>
+    <div id="gameStatistic"></div>
     <div class="menuitem"><a href="#"><i class="icon-bar-chart"></i> Game statistics</a></div>
   </div>
 </span>
@@ -70,12 +50,12 @@
 </span>
 
 <span class="menu-text-container">
-  <span class="row"><i class="icon-money"></i> <span>48300</span></span>
-  <span class="row"><i class="icon-repeat"></i> <span>15</span></span>
+  <span class="row"><i class="icon-money"></i> <span id="funds"></span></span>
+  <span class="row"><i class="icon-repeat"></i> <span id="round"></span></span>
 </span>
 
-<span class="menu-text-container">
-  <span class="row"><i class="icon-time"></i> <span>13:37</span></span>
+<span class="menu-text-container" id="turnTimeItem">
+  <span class="row"><i class="icon-time"></i> <span id="turnTime"></span></span>
 </span>
 
 <% end %>

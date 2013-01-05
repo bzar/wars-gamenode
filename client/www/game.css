@@ -1,0 +1,183 @@
+#chat-messages {
+  height: 128px;
+  background-color: #eee;
+}
+#chat-input {
+  border: 1px solid #777;
+}
+#chat-submit {
+  border: 1px solid #777;
+}
+#animation-speed-container {
+  margin-top: 4px;
+  text-align: center;
+}
+#animation-speed-plus,
+#animation-speed-minus,
+#animation-speed {
+  display: inline-block;
+  margin: 0 8px;
+}
+#animation-speed-plus,
+#animation-speed-minus {
+  width: 24px;
+  color: inherit;
+  text-decoration: none;
+  border-radius: 8px;
+  text-align: center;
+  vertical-align: middle;
+}
+#animation-speed-plus:hover,
+#animation-speed-minus:hover {
+  background-color: #ddd;
+}
+#animation-speed-plus:visited,
+#animation-speed-minus:visited {
+  color: inherit;
+}
+#players {
+  list-style: none;
+  margin: 0;
+  padding: 8px 0;
+  font: 12px sans-serif;
+  color: #333;
+}
+#players li {
+  padding: 8px 8px 4px 8px;
+  margin: 4px 0 4px 0;
+  vertical-align: middle;
+  display: block;
+  height: 16px;
+  border: 0;
+}
+#players li.inTurn {
+  font-weight: bold;
+  text-shadow: #fff 0 0 4px;
+  color: #444;
+}
+.playerNumber {
+  border: 2px solid #444;
+  color: #eee;
+  margin-right: 8px;
+  padding: 4px;
+  font-weight: bold;
+  text-shadow: #111 0 0 5px;
+}
+.selfIndicator {
+  color: yellow;
+  position: absolute;
+  right: 8px;
+}
+.playerItem {
+  position: relative;
+}
+#gameStatistic {
+  padding: 5px;
+  width: 166px;
+  margin: 0 auto;
+}
+.statisticBarChart {
+  width: 150px;
+  display: block;
+  white-space: nowrap;
+}
+.statisticBarChart .bar {
+  display: inline-block;
+}
+.statisticBarChart .label {
+  display: inline-block;
+  width: 16px;
+  height: 16px;
+  font-size: 16px;
+  color: #111;
+}
+#buildMenu,
+#actionMenu,
+#unloadMenu {
+  background-color: transparent;
+  position: absolute;
+  display: none;
+  overflow: auto;
+  z-index: 10;
+  opacity: 0.9;
+}
+.buildItem,
+.actionItem {
+  display: inline-block;
+  margin: 0;
+  text-align: center;
+  vertical-align: middle;
+}
+.buildItem {
+  width: 130px;
+  height: 130px;
+  border: 4px solid #555;
+  background-color: #222;
+}
+.actionItem {
+  width: 44px;
+  height: 44px;
+}
+.actionItem,
+.unloadItem {
+  border: 2px solid #555;
+  background-color: #eee;
+}
+.sprite {
+  width: 48px;
+  height: 48px;
+  display: inline-block;
+}
+.buildItem.disabled {
+  background-color: #111;
+  border: 4px solid #444;
+}
+.buildItem:hover {
+  background-color: #444;
+  border: 4px solid #777;
+  cursor: pointer;
+}
+.actionItem:hover,
+.unloadItem:hover {
+  background-color: #fff;
+  border: 2px solid #999;
+  cursor: pointer;
+}
+.buildItem.disabled:hover {
+  background-color: #111;
+  border: 4px solid #444;
+  cursor: default;
+}
+.buildItem .sprite {
+  margin: auto;
+}
+.buildItem span {
+  display: block;
+  color: #ddd;
+  margin: auto;
+  vertical-align: middle;
+}
+.buildItem.disabled span {
+  color: #888;
+}
+.buildItem .name {
+  font: 18px sans-serif;
+}
+.buildItem .price {
+  font: 20px sans-serif;
+  height: 22px;
+}
+.buildItem.disabled .price {
+  color: #f88;
+}
+#spinner {
+  position: absolute;
+  top: 0;
+  left: 190px;
+  z-index: 10;
+  opacity: 0.5;
+  background-color: #eee;
+  border-radius: 0 0 5px 0;
+  display: none;
+  padding: 3px;
+}

@@ -1,10 +1,10 @@
 ECTC=nodejs bin/ectc
-LESSC=nodejs node_modules/less/bin/lessc
+LESSC=nodejs lib/less/bin/lessc
 COFFEEC=coffee
 
-PAGES=www/game.html www/mymaps.html www/publicgames.html www/mygames.html www/opengames.html
-STYLES=www/styles.css
-SOURCES=www/base.js
+PAGES=www/game.html
+STYLES=www/common.css www/game.css
+SOURCES=www/common.js
 
 all: pages styles sources
 	
