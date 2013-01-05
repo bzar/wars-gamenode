@@ -10,3 +10,9 @@
 [submodule "client/www/lib/aja"]
 	path = client/www/lib/aja
 	url = git://github.com/bzar/aja.git
+[submodule "client/lib/ect"]
+	path = client/lib/ect
+	url = https://github.com/baryshev/ect
+[submodule "client/lib/less"]
+	path = client/lib/less
+	url = https://github.com/cloudhead/less.js

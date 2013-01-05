@@ -1,6 +1,6 @@
 var fs = require('fs');
 var path = require('path');
-var ECT = require('ect');
+var ECT = require('../lib/ect');
 
 var inFile = process.argv[2];
 var templatePath = path.dirname(inFile);
