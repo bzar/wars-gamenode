@@ -1,0 +1,69 @@
+<html>
+  <head>
+    <script data-main="info" src="require.js"></script>
+    <link rel="stylesheet" href="wars.css" type="text/css"/>
+    <title>Wars - Info</title>
+  </head>
+
+  <body>
+    <div id="sidebar">
+      <h1>Wars</h1>
+      <ul id="navigation" class="navigation"></ul>
+    </div>
+
+    <div id="content">
+      <h2>Game info</h2>
+      <h3>Units</h3>
+      <table class="infoTable" id="units">
+        <thead><tr><th></th><th>Name</th><th>Class</th><th>Price</th><th>Armor</th><th>Primary weapon</th><th>Secondary weapon</th><th>Movement</th><th>Movement type</th><th>Carries</th><th>Other</th></tr></thead>
+        <tbody></tbody>
+      </table>
+
+      <h3>Weapons</h3>
+      <table class="infoTable" id="weapons">
+        <thead>
+          <tr>
+            <th rowspan="2">Name</th>
+            <th class="numArmors" colspan="1">Power% against armor</th>
+          </tr>
+          <tr class="armorNames"></tr>
+        </thead>
+        <tbody></tbody>
+      </table>
+
+      <h3>Weapon ranges and efficiencies</h3>
+      <table class="infoTable" id="ranges">
+        <thead>
+          <tr>
+              <th rowspan="2">Name</th>
+              <th class="numRanges" colspan="1">Efficiency% at range</th>
+              <th rowspan="2">Requires<br/>deployment</th>
+          </tr>
+          <tr class="rangeNumbers"></tr>
+        </thead>
+        <tbody></tbody>
+      </table>
+
+      <h3>Defense bonuses</h3>
+      <table class="infoTable" id="defenses">
+        <thead>
+          <tr><th rowspan="3"></th><th rowspan="3">Name</th><th class="numTerrains" colspan="1">Defense bonus% in terrain</th></tr>
+          <tr class="terrainImages"></tr>
+          <tr class="terrainNames"></tr>
+        </thead>
+        <tbody></tbody>
+      </table>
+
+      <h3>Movement cost</h3>
+      <table class="infoTable" id="movement">
+        <thead>
+          <tr><th rowspan="3">Name</th><th class="numTerrains" colspan="1">Movement cost on terrain</th></tr>
+          <tr class="terrainImages"></tr>
+          <tr class="terrainNames"></tr>
+        </thead>
+        <tbody></tbody>
+      </table>
+
+    </div>
+  </body>
+</html>

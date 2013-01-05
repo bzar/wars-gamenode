@@ -1,12 +1,12 @@
 [submodule "lib/gamenode"]
 	path = lib/gamenode
 	url = git://github.com/bzar/gamenode.git
-[submodule "client/d3"]
-	path = client/d3
-	url = git://github.com/mbostock/d3.git
 [submodule "server/lib/node-mongodb-native"]
 	path = server/lib/node-mongodb-native
 	url = https://github.com/christkv/node-mongodb-native.git
-[submodule "client/aja"]
-	path = client/aja
+[submodule "client/www/lib/d3"]
+	path = client/www/lib/d3
+	url = git://github.com/mbostock/d3.git
+[submodule "client/www/lib/aja"]
+	path = client/www/lib/aja
 	url = git://github.com/bzar/aja.git

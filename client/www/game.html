@@ -1,0 +1,78 @@
+<html>
+  <head>
+    <script data-main="game" src="require.js"></script>
+    <link rel="stylesheet" href="wars.css" type="text/css"/>
+    <title>Wars - Game</title>
+  </head>
+
+  <body>
+    <div id="sidebar">
+      <h1>Wars</h1>
+      <ul id="menuNavigation" class="menuNavigationButtons">
+          <li><a id="showGameMenu" href="#" style="display:none">Back to game menu</a></li>
+          <li><a id="showMainMenu" href="#">Show main menu</a></li>
+      </ul>
+
+      <ul id="navigation" class="navigation" style="display:none"></ul>
+
+      <div id="gameMenu">
+        <ul id="players"></ul>
+        <ul id="gameInfo" class="sidebarInfo">
+          <li id="turnTimeItem">Time left: <span id="turnTime"></span></li>
+          <li>Funds: <span id="funds"></span></li>
+          <li>Round: <span id="round"></span></li>
+        </ul>
+        <ul id="gameTools" class="actionButtons">
+          <li><a id="sendNotifications" href="#">Turn notifications <span id="sendNotificationsStatus">on</span></a></li>
+          <li><a id="showChat" href="#"><span id="showChatStatus">Show</span> chat</a></li>
+          <li><a id="showMessageTicker" href="#"><span id="showMessageTickerStatus">Show</span> events</a></li>
+        </ul>
+        <!--<ul id="mapControls" class="actionButtons">
+          <li><a id="showGrid" href="#"><span id="showGridStatus">Show</span> grid</a></li>
+          <li><a id="showBorders" href="#"><span id="showBordersStatus">Show</span> borders</a></li>
+          <li><a id="showPowerMap" href="#"><span id="showPowerMapStatus">Show</span> power map</a></li>
+        </ul>-->
+        <ul id="turnActions" class="actionButtons">
+          <li><a id="endTurn" href="#">End turn</a></li>
+          <li><a id="surrender" href="#">Surrender</a></li>
+        </ul>
+        <ul id="gameActions" class="actionButtons">
+          <li><a id="leaveGame" href="#">Leave game</a></li>
+        </ul>
+        <div id="animationSpeed">
+          <span id="animationSpeedText">Animation speed</span>
+          <span id="animationSpeedMinus" class="animationSpeed">-</span><span id="animationSpeedLabel" class="animationSpeed">1x</span><span id="animationSpeedPlus" class="animationSpeed">+</span>
+        </div>
+        <div id="gameStatistic"></div>
+        <ul id="statisticsNavigation" class="navigation small">
+          <li><a id="gameStatistics" href="#">Game statistics</a></li>
+        </ul>
+        <ul id="authorTools" class="actionButtons">
+        </ul>
+      </div>
+
+      </div>
+
+    </div>
+  
+    <div id="chat" class="gameChat">
+      <ul id="chatMessages"><li>Welcome to game chat!</li></ul>
+      <form id="chatForm">
+        <input id="chatInput" type="text" value=""/>
+        <input id="chatSend" type="submit" value="send"/>
+      </form>
+      <a id="showHideChat" href="#">-</a>
+    </div>
+    <div id="content">
+      <canvas id="mapCanvas"></canvas>
+      <div id="buildMenu"></div>
+      <div id="actionMenu"></div>
+      <div id="unloadMenu"></div>
+    </div>
+    <div id="messageTickerContainer">
+      <a id="showHideMessageTicker" href="#">-</a>
+      <ul id="messageTicker"></ul>
+    </div>
+    <img id="spinner" src="/img/spinner.gif">
+  </body>
+</html>

@@ -1,0 +1,120 @@
+<html>
+  <head>
+    <script data-main="mapEditor" src="require.js"></script>
+    <link rel="stylesheet" href="wars.css" type="text/css"/>
+    <title>Wars - Map editor</title>
+  </head>
+
+  <body>
+    <div id="sidebar">
+      <h1>Wars</h1>
+      <div id="mainMenu" style="display:none">
+        <ul id="mapEditorNavigation" class="menuNavigationButtons">
+          <li><a id="showMapEditorTools" href="#">Back to editor</a></li>
+        </ul>
+        <ul id="navigation" class="navigation"></ul>
+      </div>
+      <div id="mapEditorTools">
+        <ul id="mapEditorNavigation" class="menuNavigationButtons">
+          <li><a id="showMainMenu" href="#">Show main menu</a></li>
+        </ul>
+        <ul id="toolSelection" class="actionButtons">
+          <li><a id="showPalette" href="#" value="#palette">Palette</a></li>
+          <li><a id="showMapSize" href="#" value="#mapSize">Size</a></li>
+          <li><a id="showMapProperties" href="#" value="#mapProperties">Save</a></li>
+        </ul>
+        <div id="palette" style="display:none">
+          <div id="playerSelection">
+            <span value="0" class="playerSelection">Neutral</span>
+            <span value="1" class="playerSelection">1</span>
+            <span value="2" class="playerSelection">2</span>
+            <span value="3" class="playerSelection">3</span>
+            <span value="4" class="playerSelection">4</span>
+            <span value="5" class="playerSelection">5</span>
+            <span value="6" class="playerSelection">6</span>
+            <span value="7" class="playerSelection">7</span>
+            <span value="8" class="playerSelection">8</span>
+          </div>
+          <div id="paletteSelection">
+            <span id="terrainSelection" class="paletteSelection">Terrain</span>
+            <span id="unitSelection" class="paletteSelection">Unit</span>
+          </div>
+          <div id="terrainPalette">
+            <div id="terrainTypePalette"></div>
+            <div id="terrainSubtypePalette"></div>
+          </div>
+          <div id="unitPalette"></div>
+        </div>
+        <div id="mapSize" style="display:none">
+          <form id="mapSizeForm" class="toolForm">
+            <ul>
+              <li>
+                <input type="text" id="mapWidth" class="smallInput" />
+                <span>x</span>
+                <input type="text" id="mapHeight" class="smallInput" />
+              </li>
+              <li><input type="submit" value="Set map size" /></li>
+            </ul>
+          </form>
+          <form id="mapShiftForm" class="toolForm">
+            <span>Shift map</span>
+            <table id="mapShiftControls" class="buttonTable">
+              <tbody>
+                <tr>
+                  <td></td>
+                  <td><span id="shiftMapUp" class="button">&uarr;</span></td>
+                  <td></td>
+                </tr>
+                <tr>
+                  <td><span id="shiftMapLeft" class="button">&larr;</span></td>
+                  <td></td>
+                  <td><span id="shiftMapRight" class="button">&rarr;</span></td>
+                </tr>
+                <tr>
+                  <td></td>
+                  <td><span id="shiftMapDown" class="button">&darr;</span></td>
+                  <td></td>
+                </tr>
+              </tbody>
+            </table>
+          </form>
+        </div>
+        <div id="mapProperties" style="display:none">
+          <form id="mapSaveForm" class="toolForm">
+            <ul>
+              <li>
+                <label for="mapName" class="left">Map name</label>
+                <input id= "mapName" class="right" name="mapName" type="text" value="my awesome map"/>
+              </li>
+              <li>
+                <label for="mapFunds" class="left">Map funds</label>
+                <input id="mapFunds" class="right" name="mapFunds" type="text" value="0"/>
+              </li>
+              <li>
+                <span id="mapSavedMessage" style="display:none" class="left">Map saved!</span>
+                <input name="saveMap" type="submit" value="Save map" class="right"/>
+              </li>
+            </ul>
+          </form>
+          <form id="mapImportExportForm" class="toolForm">
+            <ul>
+              <li><textarea id="importExportData" rows="10" cols="18"></textarea></li>
+              <li><span id="import" class="button">Import</span><span id="export" class="button">Export</span></li>
+            </ul>
+          </form>
+          <form id="mapDeleteForm" class="toolForm">
+            <ul>
+                <input name="deleteMap" type="submit" value="Delete map" />
+            </ul>
+          </form>
+        </div>
+      </div>
+    </div>
+
+    <div id="content">
+      <canvas id="mapEditorView">Map editor canvas</canvas>
+    </div>
+
+
+  </body>
+</html>

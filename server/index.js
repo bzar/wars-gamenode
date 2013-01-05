@@ -37,12 +37,11 @@ if(configuration.enableFileServer) {
     "AnimatedMap.js", "vec2d.js", "pixastic.js", "sylvester.js"
     ], 
     { 
-      gamenode: "../lib/gamenode/web", 
+      gamenode: "../../lib/gamenode/web", 
       img: "img",
-      d3: "d3",
-      aja: "aja"
+      lib: "lib"
     }, 
-    __dirname + "/../client", "login.html");
+    __dirname + "/../client/www", "login.html");
   fileServer.attachTo(server);
 }
 

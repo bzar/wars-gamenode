@@ -1,0 +1,86 @@
+<html>
+  <head>
+    <script data-main="createGame" src="require.js"></script>
+    <link rel="stylesheet" href="wars.css" type="text/css"/>
+    <title>Wars - Create a game</title>
+  </head>
+
+  <body>
+    <div id="sidebar">
+      <h1>Wars</h1>
+      <ul id="navigation" class="navigation"></ul>
+
+      <div id="selectMapControls">
+        <form id="mapFilterForm" class="toolForm">
+          <ul>
+            <li><label for="minPlayers" class="left">Minimum players</label> <select name="minPlayers" id="minPlayers" class="right"></select></li>
+            <li><label for="maxPlayers" class="left">Maximum players</label> <select name="maxPlayers" id="maxPlayers" class="right"></select></li>
+            <li><label for="mapAuthor" class="left">Map author</label> <select id="mapAuthor" id="mapAuthor" class="right"></select></li>
+            <li><label for="mapName" class="left">Map name</label> <input type="text" id="mapName" name="mapName" class="right"/></li>
+            <li><input type="submit" value="Filter maps" class="right" /></li>
+          </ul>
+        </form>
+      </div>
+      
+      <div id="mapPreviewControls">
+        <ul class="navigation">
+          <li><a id="toGameSettings" href="#">Continue</a></li>
+          <li><a id="backToMaps" href="#">Back</a></li>
+        </ul>
+        <ul id="mapInfo" class="sidebarInfo"></ul>
+        <ul id="mapTiles" class="sidebarInfo"></ul>
+      </div>
+      <div id="createGameControls">
+        <ul class="navigation">
+          <li><a id="createGame" href="#">Create game</a></li>
+          <li><a id="backToMapPreview" href="#">Back</a></li>
+        </ul>
+      </div>
+    </div>
+
+    <div id="content">
+      <div id="mapSelection" style="display:none">
+        <h2>Create a game - select map</h2>
+        <div id="maps"></div>
+        <div id="pageControls">
+          <a class="pageControl" id="firstPage">&lt;&lt;</a>
+          <a class="pageControl" id="prevPage">&lt;</a>
+          <span id="pages"></span>
+          <a class="pageControl" id="nextPage">&gt;</a>
+          <a class="pageControl" id="lastPage">&gt;&gt;</a>
+        </div>
+      </div>
+      <div id="mapFullPreview" style="display:none">
+        <h2>Create a game - map preview</h2>
+        <canvas id="mapCanvas"></canvas>
+      </div>
+      <div id="gameSettings" style="display:none">
+        <h2>Create a game - game settings</h2>
+        <form class="columnForm">
+          <ul>
+            <li>
+              <label for="gameName">Game name</label>
+              <input id="gameName" name="gameName" type="text" value="My awesome game"/>
+            </li>
+            <li>
+              <label for="publicGame">Public game</label>
+              <input id="publicGame" name="publicGame" type="checkbox" checked />
+            </li>
+            <li>
+              <label for="turnTimeLimit">Limit turn time</label>
+              <input id="turnTimeLimit" name="turnTimeLimit" type="checkbox" />
+            </li>
+            <li id="timeLimitInput" class="alignRight">
+              <input id="hourLimit" name="hourLimit" type="text" value="" class="tinyInput"/>
+              <span>hours</span>
+              <input id="minuteLimit" name="minuteLimit" type="text" value="" class="tinyInput"/>
+              <span>minutes</span>
+              <input id="secondLimit" name="secondLimit" type="text" value="" class="tinyInput"/>
+              <span>seconds</span>
+            </li>
+          </ul>
+        </form>
+      </div>
+    </div>
+  </body>
+</html>

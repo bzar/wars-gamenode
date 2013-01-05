@@ -1,0 +1,70 @@
+<html>
+  <head>
+    <script data-main="profile" src="require.js"></script>
+    <link rel="stylesheet" href="wars.css" type="text/css"/>
+    <title>Wars - Home</title>
+  </head>
+
+  <body>
+    <div id="sidebar">
+      <h1>Wars</h1>
+      <ul id="navigation" class="navigation">
+
+      </ul>
+    </div>
+
+    <div id="content">
+      <h2>My profile</h2>
+      <form id="profileForm" class="columnForm">
+        <ul>
+          <li>
+            <label for="username">Username</label>
+            <input id="username" name="username" type="text" />
+          </li>
+          <li>
+            <label for="password">Password</label>
+            <input id="password" name="password" type="password" />
+          </li>
+          <li>
+            <label for="password2">Password again</label>
+            <input id="password2" name="password2" type="password" />
+          </li>
+          <li>
+            <label for="email">Email</label>
+            <input id="email" name="email" type="text" />
+          </li>
+          <li>
+            <label for="theme">Theme</label>
+            <select id="theme" name="theme">
+              <option>pixel</option>
+              <option>pixel-hq2x</option>
+              <option>monkfish</option>
+            </select>
+          </li>
+          <li>
+            <label for="animationSpeed">Animation speed</label>
+            <select id="animationSpeed" name="animationSpeed">
+              <option value="1">1x</option>
+              <option value="1.5">1.5x</option>
+              <option value="2">2x</option>
+              <option value="3">3x</option>
+              <option value="4">4x</option>
+              <option value="5">5x</option>
+              <option value="0">off</option>
+            </select>
+          </li>
+          <li>
+            <label for="emailNotifications">Email notifications</label>
+            <input id="emailNotifications" name="emailNotifications" type="checkbox" />
+          </li>
+          <li class="alignRight">
+            <input type="submit" value="Save changes"/>
+          </li>
+          <li class="alignRight">
+            <span id="profileSavedMessage" style="display:none">Profile saved successfully!</span>
+          </li>
+        </ul>
+      </form>
+    </div>
+  </body>
+</html>

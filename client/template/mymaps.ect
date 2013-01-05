@@ -1,0 +1,38 @@
+<% extend 'base.ect' %>
+<h2>My maps</h2>
+<form id="mapFilterForm">
+  <span class="filterInput">
+    <label for="minPlayers">Players</label>
+    <select name="minPlayers" id="minPlayers">
+      <option value="2">2</option>
+      <option value="3">3</option>
+      <option value="4">4</option>
+      <option value="5">5</option>
+      <option value="6">6</option>
+      <option value="7">7</option>
+      <option value="8">8</option>
+    </select>
+    <span>-</span>
+    <select name="maxPlayers" id="maxPlayers">
+      <option value="2">2</option>
+      <option value="3">3</option>
+      <option value="4">4</option>
+      <option value="5">5</option>
+      <option value="6">6</option>
+      <option value="7">7</option>
+      <option value="8">8</option>
+    </select>
+  </span>
+  <span class="filterInput">
+    <label for="mapName">Map name</label>
+    <input type="text" id="mapName" name="mapName" />
+  </span>
+  <input type="submit" value="Filter maps" />
+</form>
+
+<% block 'menubar' : %>
+<span class="button">
+  <span class="label menu-icon icon-plus"></span>
+</span>
+
+<% end %>
