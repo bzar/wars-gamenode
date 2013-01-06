@@ -1,4 +1,4 @@
-require(["Theme", "Map", "jquery-1.6.2.min.js","gamenode", "base"], function(Theme, Map) {
+require(["Theme", "Map","gamenode", "base"], function(Theme, Map) {
   var client = new GameNodeClient(Skeleton);
   var session = null;
 
@@ -507,7 +507,11 @@ require(["Theme", "Map", "jquery-1.6.2.min.js","gamenode", "base"], function(The
     unitEraserItem.attr("type", "null");
     unitEraserItem.attr("owner", "null");
     unitEraserItem.css("background-image", "url(" + theme.getEraserIconUrl() + ")");
+    unitEraserItem.css("background-repeat", "no-repeat");
+    unitEraserItem.css("background-position", "center");
     unitEraserItem.addClass('sprite');
+    unitEraserItem.css("width", theme.settings.image.width);
+    unitEraserItem.css("height", theme.settings.image.width);
     unitPalette.append(unitEraserItem);
 
     for(var unitType = 0; unitType < theme.getNumberOfUnitTypes(); ++unitType) {
@@ -533,11 +537,11 @@ require(["Theme", "Map", "jquery-1.6.2.min.js","gamenode", "base"], function(The
       updatePalette();
     });
 
-    $(":first-child", terrainTypePalette).addClass("selected");
-    $(":first-child", terrainSubtypePalette).addClass("selected");
-    $(":first-child", unitPalette).addClass("selected");
-
+    terrainTypePalette.children().first().addClass("selected");
     updatePalette();
+
+    unitPalette.children().first().addClass("selected");
+    terrainSubtypePalette.children().first().addClass("selected");
 
     // MAP SIZE
 

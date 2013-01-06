@@ -39,7 +39,7 @@ body {
 
 
 
-#menubar .button, .dropdown-menu {
+#menubar > .button, .dropdown-menu {
   display: inline-block;
   height: 48px;
   width: 48px;
@@ -76,8 +76,18 @@ body {
   padding: 0 0 8px 0;
   margin: 0;
   cursor: auto;
+  max-width: 360px;
+  white-space: normal;
 }
 
+@media (max-width: 480px) {
+  .dropdown-menu .content {
+    left: 0;
+    right: 0;
+    bottom: 0;
+    overflow: auto;
+  }
+}
 .dropdown-menu .content .menuitem {
   padding: 4px;
   white-space: nowrap;
