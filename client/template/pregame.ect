@@ -1,0 +1,37 @@
+<% extend 'base.ect' %>
+
+<% block 'head' : %>
+<link rel="stylesheet" type="text/css" href="pregame.css">
+<script data-main="pregame" src="require.js"></script>
+<% end %>
+
+<% block 'menubar' : %>
+<% end %>
+
+<h2>Pregame - <span id="gameName"></span></h2>
+
+<div id="authorTools" class="navigation">
+  <a id="startGame" class="actionButton" href="#">Start game</a>
+  <a id="deleteGame" class="actionButton" href="#">Delete game</a>
+  <form id="inviteForm" class="toolForm">
+    <select id="username" name="username"/>
+    <input type="submit" value="Invite bot"/>
+  </form>
+</div>
+
+<div id="gameInfo">
+  <ul id="players"></ul>
+</div>
+
+<div id="chat">
+  <ul id="chatMessages"><li>Welcome to pregame chat!</li></ul>
+  <form id="chatForm">
+    <input id="chatInput" type="text" value=""/>
+    <input id="chatSend" type="submit" value="send"/>
+  </form>
+  <a id="showHideChat" href="#">hide</a>
+</div>
+
+<div id="mapPreview">
+  <canvas id="mapCanvas"></canvas>
+</div>

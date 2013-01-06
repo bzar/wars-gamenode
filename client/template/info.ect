@@ -1,44 +1,12 @@
-<!DOCTYPE html>
-<html>
-  <head>
-    <link rel="stylesheet" type="text/css" href="common.css">
-    <link rel="stylesheet" type="text/css" href="lib/font-awesome/css/font-awesome.css">
-    
-    <script src="lib/jquery-1.8.3.min.js" type="text/javascript"></script>
-    <script src="common.js" type="text/javascript"></script>
-    
-    
+<% extend 'base.ect' %>
+
+<% block 'head' : %>
 <link rel="stylesheet" type="text/css" href="info.css">
 <script data-main="info" src="require.js"></script>
+<% end %>
 
-  </head>
-  <body>
-    <div id="menubar">
-      
-        <span id="mainMenu" class="dropdown-menu">
-          <span class="label menu-icon icon-list"></span>
-          <ul class="content">
-            <li class="menuitem"><a href="mygames.html"><i class="icon-home"></i>My games</a></li>
-            <li class="menuitem"><a href="publicgames.html"><i class="icon-group"></i>Public games</a></li>
-            <li class="menuitem"><a href="mymaps.html"><i class="icon-edit"></i>Map editor</a></li>
-            <li class="menuitem"><a href="manual.html"><i class="icon-question-sign"></i>Manual</a></li>
-            <li class="menuitem"><a href="info.html"><i class="icon-table"></i>Info</a></li>
-            <li class="menuitem"><a href="profile.html"><i class="icon-wrench"></i>Profile</a></li>
-            <hr/>
-            <li class="menuitem"><a id="logout" href="#"><i class="icon-signout"></i>Log out</a></li>
-          </ul>
-        </span>
-      
-      
-
-    </div>
-    
-    <div id="content">
-      
-
-
-
-
+<% block 'menubar' : %>
+<% end %>
 
 <h2>Game info</h2>
 <h3>Units</h3>
@@ -91,7 +59,3 @@
   </thead>
   <tbody></tbody>
 </table>
-    </div>
-  </body>
-</html>
-

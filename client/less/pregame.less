@@ -1,0 +1,106 @@
+#players {
+  list-style: none;
+  color: #eee;
+  margin: 0;
+  padding: 8px 0;
+  font: 16px sans-serif;
+}
+
+#players li {
+  padding: 8px 0 4px 8px;
+  margin: 4px 0 4px 0;
+  vertical-align: middle;
+  display: block;
+  height: 24px;
+  border: 0;
+}
+
+.playerNumber {
+  border: 2px solid #444;
+  margin-right: 8px;
+  padding: 4px;
+  font-weight: bold;
+  text-shadow: #111 0 0 5px;
+}
+
+.playerName {
+  color: #111;
+  margin-right: 24px;
+}
+
+.playerItem {
+}
+
+.joinButton {
+  font: 14px sans-serif;
+  padding: 2px;
+  display: inline-block;
+  text-align: center;
+  vertical-align: middle;
+  cursor: pointer;
+  border: 2px solid #ddd;
+  border-radius: 4px;
+  font-weight: bold;
+  margin: auto;
+}
+
+.joinButton.notJoined {
+  background-color: #6a6;
+  width: 128px;
+}
+
+.joinButton.notJoined:hover {
+  background-color: #7b7;
+}
+
+.joinButton.joined {
+  border-radius: 4px;
+  background-color: #a66;
+}
+
+.joinButton.joined:hover {
+  border-radius: 4px;
+  background-color: #b77;
+}
+
+#chatMessages {
+  height: 128px;
+  background-color: #fdfdfd;
+  overflow-y: scroll;
+  list-style: none;
+  margin: 4px;
+  padding: 0px;
+}
+
+#chatMessages li {
+  border-bottom: 1px solid #bbb;
+}
+
+#chatMessages .messageTime {
+  font-size: 8pt;
+  display: block;
+}
+
+#chatMessages .messageSender {
+  font-size: 10pt;
+  margin-right: 8px;
+}
+
+#chatMessages .messageContent {
+  font-size: 10pt;
+}
+
+#chatForm {
+  margin: 0 4px;
+}
+
+#chatInput {
+  border: 1px solid #777;
+}
+
+#chatSubmit {
+  border-style: solid; 
+  border-color: #777;
+  border-width: 1px 1px 1px 0;
+  border-radius: 0 4px 4px 0;
+}

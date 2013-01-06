@@ -1,0 +1,100 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <link rel="stylesheet" type="text/css" href="common.css">
+    <link rel="stylesheet" type="text/css" href="lib/font-awesome/css/font-awesome.css">
+    
+    <script src="lib/jquery-1.8.3.min.js" type="text/javascript"></script>
+    <script src="common.js" type="text/javascript"></script>
+    
+    
+<link rel="stylesheet" type="text/css" href="maplist.css">
+<link rel="stylesheet" type="text/css" href="creategame.css">
+<script data-main="creategame" src="require.js"></script>
+
+  </head>
+  <body>
+    <div id="menubar">
+      
+        <span id="mainMenu" class="dropdown-menu">
+          <span class="label menu-icon icon-list"></span>
+          <ul class="content">
+            <li class="menuitem"><a href="mygames.html"><i class="icon-home"></i>My games</a></li>
+            <li class="menuitem"><a href="publicgames.html"><i class="icon-group"></i>Public games</a></li>
+            <li class="menuitem"><a href="mymaps.html"><i class="icon-edit"></i>Map editor</a></li>
+            <li class="menuitem"><a href="manual.html"><i class="icon-question-sign"></i>Manual</a></li>
+            <li class="menuitem"><a href="info.html"><i class="icon-table"></i>Info</a></li>
+            <li class="menuitem"><a href="profile.html"><i class="icon-wrench"></i>Profile</a></li>
+            <hr/>
+            <li class="menuitem"><a id="logout" href="#"><i class="icon-signout"></i>Log out</a></li>
+          </ul>
+        </span>
+      
+      
+
+    </div>
+    
+    <div id="content">
+      
+
+
+
+
+
+<div id="mapSelection" style="display:none">
+  <h2>Create a game - select map</h2>
+  <div id="maps"></div>
+  <div id="pageControls">
+    <a class="pageControl" id="firstPage">&lt;&lt;</a>
+    <a class="pageControl" id="prevPage">&lt;</a>
+    <span id="pages"></span>
+    <a class="pageControl" id="nextPage">&gt;</a>
+    <a class="pageControl" id="lastPage">&gt;&gt;</a>
+  </div>
+</div>
+<div id="mapFullPreview" style="display:none">
+  <h2>Create a game - map preview</h2>
+  <div id="mapPreviewControls">
+    <a id="backToMaps" class="actionButton" href="#"><i class="icon-chevron-left"></i> Back</a>
+    <a id="toGameSettings" class="actionButton" href="#">Continue <i class="icon-chevron-right"></i></a>
+  </div>
+  <ul id="mapInfo"></ul>
+  <ul id="mapTiles"></ul>
+  <canvas id="mapCanvas"></canvas>
+</div>
+<div id="gameSettings" style="display:none">
+  <h2>Create a game - game settings</h2>
+  <form>
+    <ul class="inputFieldList">
+      <li>
+        <label for="gameName">Game name</label>
+        <input id="gameName" name="gameName" type="text" value="My awesome game"/>
+      </li>
+      <li>
+        <label for="publicGame">Public game</label>
+        <input id="publicGame" name="publicGame" type="checkbox" checked />
+      </li>
+      <li>
+        <label for="turnTimeLimit">Limit turn time</label>
+        <input id="turnTimeLimit" name="turnTimeLimit" type="checkbox" />
+      </li>
+      <li id="timeLimitInput" class="alignRight">
+        <input id="hourLimit" name="hourLimit" type="text" value="" class="tinyInput"/>
+        <span>hours</span>
+        <input id="minuteLimit" name="minuteLimit" type="text" value="" class="tinyInput"/>
+        <span>minutes</span>
+        <input id="secondLimit" name="secondLimit" type="text" value="" class="tinyInput"/>
+        <span>seconds</span>
+      </li>
+    </ul>
+  </form>
+  <div id="createGameControls">
+    <a id="backToMapPreview" class="actionButton" href="#"><i class="icon-chevron-left"></i> Back</a>
+    <a id="createGame" class="actionButton" href="#"><i class="icon-ok"></i> Create game</a>
+  </div>
+</div>
+
+    </div>
+  </body>
+</html>
+

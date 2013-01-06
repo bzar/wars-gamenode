@@ -1,4 +1,4 @@
-require(["Theme", "Map", "jquery-1.6.2.min.js","gamenode", "base"], function(Theme, Map) {
+require(["Theme", "Map", "gamenode", "base"], function(Theme, Map) {
   var client = new GameNodeClient(Skeleton);
   var session = null;
 
@@ -91,7 +91,7 @@ require(["Theme", "Map", "jquery-1.6.2.min.js","gamenode", "base"], function(The
           container.append(players);
           
           container.addClass("mapContainer");
-          container.attr("href", "mapEditor.html?mapId=" + map.mapId);
+          container.attr("href", "mapeditor.html?mapId=" + map.mapId);
           myMaps.append(container);
           
           client.stub.mapData(map.mapId, function(response) {

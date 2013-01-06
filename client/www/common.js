@@ -11,8 +11,17 @@
     $(".dropdown-menu > .content a:not(.dontCloseMenu)").click(function() {
       return $(this).parents(".content").hide();
     });
-    return $(".dropdown-menu").mouseleave(function() {
+    $(".dropdown-menu").mouseleave(function() {
       return $(".content", this).hide();
+    });
+    $(".actionButton").mousedown(function() {
+      return $(this).addClass("pressed");
+    });
+    $(".actionButton").mouseup(function() {
+      return $(this).removeClass("pressed");
+    });
+    return $(".actionButton").mouseleave(function() {
+      return $(this).removeClass("pressed");
     });
   });
 

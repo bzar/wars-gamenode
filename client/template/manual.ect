@@ -1,43 +1,11 @@
-<!DOCTYPE html>
-<html>
-  <head>
-    <link rel="stylesheet" type="text/css" href="common.css">
-    <link rel="stylesheet" type="text/css" href="lib/font-awesome/css/font-awesome.css">
-    
-    <script src="lib/jquery-1.8.3.min.js" type="text/javascript"></script>
-    <script src="common.js" type="text/javascript"></script>
-    
-    
+<% extend 'base.ect' %>
+
+<% block 'head' : %>
 <script data-main="manual" src="require.js"></script>
+<% end %>
 
-  </head>
-  <body>
-    <div id="menubar">
-      
-        <span id="mainMenu" class="dropdown-menu">
-          <span class="label menu-icon icon-list"></span>
-          <ul class="content">
-            <li class="menuitem"><a href="mygames.html"><i class="icon-home"></i>My games</a></li>
-            <li class="menuitem"><a href="publicgames.html"><i class="icon-group"></i>Public games</a></li>
-            <li class="menuitem"><a href="mymaps.html"><i class="icon-edit"></i>Map editor</a></li>
-            <li class="menuitem"><a href="manual.html"><i class="icon-question-sign"></i>Manual</a></li>
-            <li class="menuitem"><a href="info.html"><i class="icon-table"></i>Info</a></li>
-            <li class="menuitem"><a href="profile.html"><i class="icon-wrench"></i>Profile</a></li>
-            <hr/>
-            <li class="menuitem"><a id="logout" href="#"><i class="icon-signout"></i>Log out</a></li>
-          </ul>
-        </span>
-      
-      
-
-    </div>
-    
-    <div id="content">
-      
-
-
-
-
+<% block 'menubar' : %>
+<% end %>
 
 <h2>Manual</h2>
 <h4>General</h4>
@@ -95,7 +63,3 @@ first the attacking unit attacks the defender and then the defender retaliates b
 
 <h5>Example 3</h5>
 <p>A scout vehicle attacks an infantry unit stationed in a city. The infantry has full health. With the previous formulas we can calculate that the infantry receives 38% damage (<span class="formula">Damage = 100% * 70% * 100% * (100% - 100% * 45%) = 38%</span>) and counterattacks. Suppose the infantry unit was already down to 50% health. Now the attack damage is <span class="formula">Damage = 100% * 70% * 100% * (100% - 50% * 45%) = 54%</span>, which destroys the infantry unit.</p>
-    </div>
-  </body>
-</html>
-

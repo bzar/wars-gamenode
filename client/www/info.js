@@ -122,7 +122,7 @@ require(["Theme", "jquery-1.6.2.min.js","gamenode", "base"], function(Theme) {
       var carry = $("<td></td>");
       var flags = $("<td></td>");
 
-      var image = $("<span></span>");
+      var image = $("<td></td>");
       var pos = theme.getUnitCoordinates(unit.id, 1);
       image.attr("type", unit.id);
       image.attr("owner", 1);

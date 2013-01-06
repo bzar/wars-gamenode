@@ -1,50 +1,74 @@
+<!DOCTYPE html>
 <html>
   <head>
-    <script data-main="pregame" src="require.js"></script>
-    <link rel="stylesheet" href="wars.css" type="text/css"/>
-    <title>Wars - Pregame</title>
+    <link rel="stylesheet" type="text/css" href="common.css">
+    <link rel="stylesheet" type="text/css" href="lib/font-awesome/css/font-awesome.css">
+    
+    <script src="lib/jquery-1.8.3.min.js" type="text/javascript"></script>
+    <script src="common.js" type="text/javascript"></script>
+    
+    
+<link rel="stylesheet" type="text/css" href="pregame.css">
+<script data-main="pregame" src="require.js"></script>
+
   </head>
-
   <body>
-    <div id="sidebar">
-      <h1>Wars</h1>
-      <ul id="navigation" class="navigation"></ul>
-
-      <ul id="authorTools" class="navigation">
-        <li><a id="startGame" href="#">Start game</a></li>
-        <li><a id="deleteGame" href="#">Delete game</a></li>
-        <li>
-          <form id="inviteForm" class="toolForm">
-            <select id="username" name="username"/>
-            <input type="submit" value="Invite bot"/>
-          </form>
-        </li>
-      </ul>
-
-      <div id="gameInfo">
-        <ul id="players">
-
-        </ul>
-      </div>
-
-      </div>
+    <div id="menubar">
+      
+        <span id="mainMenu" class="dropdown-menu">
+          <span class="label menu-icon icon-list"></span>
+          <ul class="content">
+            <li class="menuitem"><a href="mygames.html"><i class="icon-home"></i>My games</a></li>
+            <li class="menuitem"><a href="publicgames.html"><i class="icon-group"></i>Public games</a></li>
+            <li class="menuitem"><a href="mymaps.html"><i class="icon-edit"></i>Map editor</a></li>
+            <li class="menuitem"><a href="manual.html"><i class="icon-question-sign"></i>Manual</a></li>
+            <li class="menuitem"><a href="info.html"><i class="icon-table"></i>Info</a></li>
+            <li class="menuitem"><a href="profile.html"><i class="icon-wrench"></i>Profile</a></li>
+            <hr/>
+            <li class="menuitem"><a id="logout" href="#"><i class="icon-signout"></i>Log out</a></li>
+          </ul>
+        </span>
+      
+      
 
     </div>
-
+    
     <div id="content">
-      <div id="chat">
-        <ul id="chatMessages"><li>Welcome to pregame chat!</li></ul>
-        <form id="chatForm">
-          <input id="chatInput" type="text" value=""/>
-          <input id="chatSend" type="submit" value="send"/>
-        </form>
-        <a id="showHideChat" href="#">hide</a>
-      </div>
-      <h2>Pregame - <span id="gameName"></span></h2>
+      
 
-      <div id="mapPreview">
-        <canvas id="mapCanvas"></canvas>
-      </div>
+
+
+
+
+<h2>Pregame - <span id="gameName"></span></h2>
+
+<div id="authorTools" class="navigation">
+  <a id="startGame" class="actionButton" href="#">Start game</a>
+  <a id="deleteGame" class="actionButton" href="#">Delete game</a>
+  <form id="inviteForm" class="toolForm">
+    <select id="username" name="username"/>
+    <input type="submit" value="Invite bot"/>
+  </form>
+</div>
+
+<div id="gameInfo">
+  <ul id="players"></ul>
+</div>
+
+<div id="chat">
+  <ul id="chatMessages"><li>Welcome to pregame chat!</li></ul>
+  <form id="chatForm">
+    <input id="chatInput" type="text" value=""/>
+    <input id="chatSend" type="submit" value="send"/>
+  </form>
+  <a id="showHideChat" href="#">hide</a>
+</div>
+
+<div id="mapPreview">
+  <canvas id="mapCanvas"></canvas>
+</div>
+
     </div>
   </body>
 </html>
+
