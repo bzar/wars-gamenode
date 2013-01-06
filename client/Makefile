@@ -4,7 +4,7 @@ COFFEEC=coffee
 
 PAGES=www/game.html
 STYLES=www/common.css www/game.css
-SOURCES=www/common.js
+SOURCES=www/common.js www/Color.js
 
 all: pages styles sources
 	

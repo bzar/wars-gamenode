@@ -8,6 +8,9 @@
     $(".dropdown-menu > .content").click(function(event) {
       return event.stopPropagation();
     });
+    $(".dropdown-menu > .content a:not(.dontCloseMenu)").click(function() {
+      return $(this).parents(".content").hide();
+    });
     return $(".dropdown-menu").mouseleave(function() {
       return $(".content", this).hide();
     });

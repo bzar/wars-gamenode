@@ -16,16 +16,16 @@
     <ul id="players"></ul>
     <hr/>
     <div id="gameStatistic"></div>
-    <div class="menuitem"><a href="#"><i class="icon-bar-chart"></i> Game statistics</a></div>
+    <div class="menuitem"><a id="gameStatistics" href="#"><i class="icon-bar-chart"></i> Game statistics</a></div>
   </div>
 </span>
 
 <span class="dropdown-menu">
   <span class="label menu-icon icon-comment"></span>
   <div class="content">
-    <div id="chat-messages"></div>
-    <form id="chat-form">
-      <input id="chat-input" type="text" /><input id="chat-submit" type="submit" value=">" />
+    <ul id="chatMessages"></ul>
+    <form id="chatForm">
+      <input id="chatInput" type="text" /><input id="chatSubmit" type="submit" value=">" />
     </form>
   </div>
 </span>
@@ -33,17 +33,18 @@
 <span class="dropdown-menu">
   <span class="label menu-icon icon-caret-down"></span>
   <ul class="content">
-    <li class="menuitem"><a href="#"><i class="icon-ok"></i>End turn</a></li>
-    <li class="menuitem"><a href="#"><i class="icon-flag"></i>Surrender</a></li>
-    <hr/>
-    <li class="menuitem"><a href="#"><i class="icon-check"></i>Send notifications</a></li>
+    <li class="menuitem turnAction"><a id="endTurn" href="#"><i class="icon-ok"></i>End turn</a></li>
+    <li class="menuitem turnAction"><a id="surrender" href="#"><i class="icon-flag"></i>Surrender</a></li>
+    <hr class="turnAction"/>
+    <li class="menuitem"><a id="leaveGame" href="#"><i class="icon-remove"></i>Leave game</a></li>
+    <li class="menuitem"><a id="sendNotifications" href="#"><i class="icon-check"></i>Send notifications</a></li>
     <hr/>
     <li>
       <div><i class="icon-film"></i>Animation speed</div>
-      <div id="animation-speed-container">
-        <a  id="animation-speed-minus" href="#"><i class="icon-minus-sign"></i></a>
-        <span id="animation-speed">3x</span>
-        <a id="animation-speed-plus" href="#"><i class="icon-plus-sign"></i></a>
+      <div id="animationSpeedContainer">
+        <a  id="animationSpeedMinus" class="dontCloseMenu" href="#"><i class="icon-minus-sign"></i></a>
+        <span id="animationSpeed">3x</span>
+        <a id="animationSpeedPlus" class="dontCloseMenu" href="#"><i class="icon-plus-sign"></i></a>
       </div>
     </li>
   </ul>

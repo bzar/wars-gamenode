@@ -1,27 +1,56 @@
-#chat-messages {
+#chatMessages {
   height: 128px;
   background-color: #eee;
+  overflow-y: scroll;
+  list-style: none;
+  margin: 4px;
+  padding: 0px;
 }
 
-#chat-input {
+#chatMessages li {
+  border-bottom: 1px solid #bbb;
+}
+
+#chatMessages .messageTime {
+  font-size: 8pt;
+  display: block;
+}
+
+#chatMessages .messageSender {
+  font-size: 10pt;
+  margin-right: 8px;
+}
+
+#chatMessages .messageContent {
+  font-size: 10pt;
+}
+
+#chatForm {
+  margin: 0 4px;
+}
+
+#chatInput {
   border: 1px solid #777;
 }
 
-#chat-submit {
-  border: 1px solid #777;
+#chatSubmit {
+  border-style: solid; 
+  border-color: #777;
+  border-width: 1px 1px 1px 0;
+  border-radius: 0 4px 4px 0;
 }
 
-#animation-speed-container {
+#animationSpeedContainer {
   margin-top: 4px;
   text-align: center;
 }
 
-#animation-speed-plus, #animation-speed-minus, #animation-speed {
+#animationSpeedPlus, #animationSpeedMinus, #animationSpeed {
   display: inline-block;
   margin: 0 8px;
 }
 
-#animation-speed-plus, #animation-speed-minus {
+#animationSpeedPlus, #animationSpeedMinus {
   width: 24px;
   color: inherit;
   text-decoration: none;
@@ -30,11 +59,11 @@
   vertical-align: middle;
 }
 
-#animation-speed-plus:hover, #animation-speed-minus:hover {
+#animationSpeedPlus:hover, #animationSpeedMinus:hover {
   background-color: #ddd;
 }
 
-#animation-speed-plus:visited, #animation-speed-minus:visited {
+#animationSpeedPlus:visited, #animationSpeedMinus:visited {
   color: inherit;
 }
 
@@ -48,7 +77,7 @@
 }
 
 #players li {
-  padding: 8px 8px 4px 8px;
+  padding: 8px;
   margin: 4px 0 4px 0;
   vertical-align: middle;
   display: block;
@@ -60,6 +89,7 @@
   font-weight: bold;
   text-shadow: #fff 0 0 4px;
   color: #444;
+  background-color: #ddd;
 }
 
 .playerNumber {

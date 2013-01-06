@@ -1,5 +1,8 @@
-require(["Theme", "AnimatedMap", "GameLogic", "jquery-1.6.2.min.js","gamenode", "base", "lib/d3/d3", "ticker.js"],
-        function(Theme, AnimatedMap, GameLogic) {
+Colorr = null;
+
+require(["Theme", "AnimatedMap", "GameLogic", "Color", "jquery-1.6.2.min.js","gamenode", "base", "lib/d3/d3", "ticker.js"],
+        function(Theme, AnimatedMap, GameLogic, Color) {
+  Colorr = Color
   var client = new GameNodeClient(Skeleton);
   gameClient = client;
   var session = null;
@@ -58,30 +61,7 @@ require(["Theme", "AnimatedMap", "GameLogic", "jquery-1.6.2.min.js","gamenode", 
   });
 
   function initializeMenuControls() {
-    var showGameMenu = $("#showGameMenu");
-    var showMainMenu = $("#showMainMenu");
-    var gameMenu = $("#gameMenu");
-    var navigation = $("#navigation");
-
     $("#gameStatistics").attr("href", "gameStatistics.html?gameId=" + gameId);
-
-    showGameMenu.click(function(e) {
-      e.preventDefault();
-      showGameMenu.hide();
-      showMainMenu.show();
-      gameMenu.show();
-      navigation.hide();
-    });
-
-    showMainMenu.click(function(e) {
-      e.preventDefault();
-      showGameMenu.show();
-      showMainMenu.hide();
-      gameMenu.hide();
-      navigation.show();
-    });
-
-    showGameMenu.click();
   }
 
   function refreshFunds() {
@@ -136,25 +116,6 @@ require(["Theme", "AnimatedMap", "GameLogic", "jquery-1.6.2.min.js","gamenode", 
       };
     });
 
-    var chat = $("#chat");
-    $("#showChat").click(function(e) {
-      e.preventDefault();
-      chat.toggle();
-      if(chat.css("display") == "none") {
-        $("#content").css("top", 0);
-        $("#showChatStatus").text("Show");
-      } else {
-        $("#showChatStatus").text("Hide");
-        $("#showChat").removeClass("highlight");
-        $("#content").css("top", chat.outerHeight());
-      }
-    });
-
-    $("#showHideChat").click(function(e) {
-      e.preventDefault();
-      $("#content").css("top", chat.outerHeight());
-    });
-
     client.stub.emailNotifications(gameId, function(response) {
       if(response.success) {
         if(response.value) {
@@ -167,75 +128,41 @@ require(["Theme", "AnimatedMap", "GameLogic", "jquery-1.6.2.min.js","gamenode", 
 
     $("#sendNotifications").click(function(e) {
       e.preventDefault();
-      var status = $("#sendNotificationsStatus");
-      var nextValue = status.text() != "off";
+      var status = $("#sendNotifications i");
+      var nextValue = !status.hasClass("icon-check");
       client.stub.setEmailNotifications(gameId, nextValue, function(response) {
         if(response.success) {
-          status.text(nextValue ? "off" : "on");
+          status.removeClass(nextValue ? "icon-check-empty" : "icon-check");
+          status.addClass(nextValue ? "icon-check" : "icon-check-empty");
         } else {
           alert("Could not change email notifications setting! " + response.reason);
         }
       });
     });
 
-    $("#showGrid").click(function(e) {
-      e.preventDefault();
-      map.showGrid = !map.showGrid;
-      if(map.showGrid) {
-        $("#showGridStatus").text("Hide");
-      } else {
-        $("#showGridStatus").text("Show");
-      }
-      map.refresh();
-    });
-
-    $("#showBorders").click(function(e) {
-      e.preventDefault();
-      map.showBorders = !map.showBorders;
-      if(map.showBorders) {
-        map.powerMap = getPowerMap();
-        $("#showBordersStatus").text("Hide");
-      } else {
-        $("#showBordersStatus").text("Show");
-      }
-      map.refresh();
-    });
-
-    $("#showPowerMap").click(function(e) {
-      e.preventDefault();
-      map.showPowerMap = !map.showPowerMap;
-      if(map.showPowerMap) {
-        map.powerMap = getPowerMap();
-        $("#showPowerMapStatus").text("Hide");
-      } else {
-        $("#showPowerMapStatus").text("Show");
-      }
-      map.refresh();
-    });
-
     var speeds = [{x:"1",t:"1x"},{x:"1.5",t:"1.5x"},{x:"2",t:"2x"},{x:"3",t:"3x"},{x:"4",t:"4x"},{x:"5",t:"5x"},{x:"0",t:"off"}];
 
-    $("#animation-speed-plus").click(function(e) {
-      var current = $("#animation-speed").text();
+    $("#animationSpeedPlus").click(function(e) {
+      var current = $("#animationSpeed").text();
       for(var i = 0; i < speeds.length; ++i) {
         if(speeds[i].t === current) {
           if(i < speeds.length - 1) {
             map.animationSpeed = speeds[i + 1].x;
             map.animate = map.animationSpeed != 0;
-            $("#animation-speed").text(speeds[i + 1].t);
+            $("#animationSpeed").text(speeds[i + 1].t);
           }
         }
       }
     });
 
-    $("#animation-speed-minus").click(function(e) {
-      var current = $("#animation-speed").text();
+    $("#animationSpeedMinus").click(function(e) {
+      var current = $("#animationSpeed").text();
       for(var i = 0; i < speeds.length; ++i) {
         if(speeds[i].t === current) {
           if(i > 0) {
             map.animationSpeed = speeds[i - 1].x;
             map.animate = map.animationSpeed != 0;
-            $("#animation-speed").text(speeds[i - 1].t);
+            $("#animationSpeed").text(speeds[i - 1].t);
           }
         }
       }
@@ -266,6 +193,14 @@ require(["Theme", "AnimatedMap", "GameLogic", "jquery-1.6.2.min.js","gamenode", 
     return s;
   }
 
+  function setMenubarToPlayerColor(playerNumber) {
+    var c = theme.getPlayerColor(inTurnNumber);
+    var playerColor = Color.fromRgb(c.r, c.g, c.b);
+    var hsl = playerColor.toHsl();
+    var barColor = Color.fromHsl(hsl[0], hsl[1], 0.3);
+    $("#menubar").css("background-color", barColor.toString());
+  }
+  
   function initializeGame(game, author, turnRemaining) {
     showGame(game, author, turnRemaining);
 
@@ -275,7 +210,7 @@ require(["Theme", "AnimatedMap", "GameLogic", "jquery-1.6.2.min.js","gamenode", 
       $(".playerItem.inTurn").removeClass("inTurn");
       var playerInTurn = $('.playerItem[playerNumber="' + inTurnNumber + '"]');
       playerInTurn.addClass("inTurn");
-      $("#content").css("border-color", theme.getPlayerColorString(inTurnNumber));
+      setMenubarToPlayerColor(inTurnNumber);
       if(playerInTurn.hasClass("isMe")) {
         initializeTurn();
       } else {
@@ -323,9 +258,7 @@ require(["Theme", "AnimatedMap", "GameLogic", "jquery-1.6.2.min.js","gamenode", 
 
           map.doPreload(function() {
             inTurnNumber = game.inTurnNumber;
-            $("#content").css("border-color", theme.getPlayerColorString(inTurnNumber));
-            $("#content").css("border-width", "4px");
-            $("#content").css("border-style", "solid");
+            setMenubarToPlayerColor(inTurnNumber);
             initializePlayers(game.players);
             initializeMessageTicker();
             refreshFunds();
@@ -533,13 +466,13 @@ require(["Theme", "AnimatedMap", "GameLogic", "jquery-1.6.2.min.js","gamenode", 
   function initializeTurn() {
     inTurn = true;
     refreshFunds();
-    $("#turnActions").show();
+    $(".turnAction").show();
   }
 
   function finalizeTurn() {
     inTurn = false;
     refreshFunds();
-    $("#turnActions").hide();
+    $(".turnAction").hide();
   }
 
   function handleMapClick(e) {
