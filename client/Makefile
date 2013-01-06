@@ -2,7 +2,7 @@ ECTC=nodejs bin/ectc
 LESSC=nodejs lib/less/bin/lessc
 COFFEEC=coffee
 
-PAGES=www/game.html
+PAGES=www/game.html www/mygames.html www/opengames.html www/login.html www/publicgames.html
 STYLES=www/common.css www/game.css
 SOURCES=www/common.js www/Color.js
 

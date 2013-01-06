@@ -1,8 +1,5 @@
-Colorr = null;
-
-require(["Theme", "AnimatedMap", "GameLogic", "Color", "jquery-1.6.2.min.js","gamenode", "base", "lib/d3/d3", "ticker.js"],
+require(["Theme", "AnimatedMap", "GameLogic", "Color", "gamenode", "base", "lib/d3/d3", "ticker.js"],
         function(Theme, AnimatedMap, GameLogic, Color) {
-  Colorr = Color
   var client = new GameNodeClient(Skeleton);
   gameClient = client;
   var session = null;

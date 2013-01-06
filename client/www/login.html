@@ -1,38 +1,57 @@
+<!DOCTYPE html>
 <html>
   <head>
-    <script data-main="login" src="require.js"></script>
-    <link rel="stylesheet" href="wars.css" type="text/css"/>
+    <link rel="stylesheet" type="text/css" href="common.css">
+    <link rel="stylesheet" type="text/css" href="lib/font-awesome/css/font-awesome.css">
+    
+    <script src="lib/jquery-1.8.3.min.js" type="text/javascript"></script>
+    <script src="common.js" type="text/javascript"></script>
+    
+    
+<script data-main="login" src="require.js"></script>
 
-    <title>Wars - Login</title>
   </head>
-
   <body>
-    <div id="sidebar">
-      <h1>Wars</h1>
-      <ul id="navigation" class="navigation">
-        <li><a href="login.html">Login</a></li>
-        <li><a href="register.html">Register</a></li>
-      </ul>
-    </div>
-
-    <div id="content">
-      <form id="loginForm" class="centeredForm">
-        <ul>
-          <li>
-            <label for="username">Username</label>
-            <input type="text" id="username" name="username" />
-          </li>
-          <li>
-            <label for="password">Password</label>
-            <input type="password" id="password" name="password" />
-          </li>
-          <li>
-            <label for="remember" class="small">Remember me</label>
-            <input type="checkbox" id="remember" name="remember" />
-          </li>
-          <li class="alignRight"><input id="loginButton" type="submit" value="Login"/></li>
+    <div id="menubar">
+      <span class="dropdown-menu">
+        <span class="label menu-icon icon-list"></span>
+        <ul class="content">
+          <li class="menuitem"><a href="mygames.html"><i class="icon-home"></i>My games</a></li>
+          <li class="menuitem"><a href="publicgames.html"><i class="icon-group"></i>Public games</a></li>
+          <li class="menuitem"><a href="mymaps.html"><i class="icon-edit"></i>Map editor</a></li>
+          <li class="menuitem"><a href="manual.html"><i class="icon-question-sign"></i>Manual</a></li>
+          <li class="menuitem"><a href="info.html"><i class="icon-table"></i>Info</a></li>
+          <li class="menuitem"><a href="profile.html"><i class="icon-wrench"></i>Profile</a></li>
+          <hr/>
+          <li class="menuitem"><a id="logout" href="#"><i class="icon-signout"></i>Log out</a></li>
         </ul>
-      </form>
+      </span>
+      
+    </div>
+    
+    <div id="content">
+      
+  <form id="loginForm" class="centeredForm">
+    <ul>
+      <li>
+        <label for="username">Username</label>
+        <input type="text" id="username" name="username" />
+      </li>
+      <li>
+        <label for="password">Password</label>
+        <input type="password" id="password" name="password" />
+      </li>
+      <li>
+        <label for="remember" class="small">Remember me</label>
+        <input type="checkbox" id="remember" name="remember" />
+      </li>
+      <li class="alignRight"><input id="loginButton" type="submit" value="Login"/></li>
+    </ul>
+  </form>
+
+
+
     </div>
   </body>
 </html>
+

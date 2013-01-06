@@ -1,4 +1,4 @@
-require(["jquery-1.6.2.min.js", "gamenode"], function() {
+require(["gamenode"], function() {
   $("#username").prop("disabled", true);
   $("#password").prop("disabled", true);
   $("#remember").prop("disabled", true);
@@ -11,7 +11,7 @@ require(["jquery-1.6.2.min.js", "gamenode"], function() {
   if(next !== null)
     next = next[1];
   else
-    next = "home.html";
+    next = "mygames.html";
 
   session.onAuthenticationSuccess = function() {
     location.replace(next);
