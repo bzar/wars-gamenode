@@ -1,11 +1,13 @@
+<% @noMainMenu = true %>
 <% extend 'base.ect' %>
 
 <% block 'head' : %>
+<link rel="stylesheet" type="text/css" href="login.css">
 <script data-main="login" src="require.js"></script>
 <% end %>
 
-<form id="loginForm" class="centeredForm">
-  <ul>
+<form id="loginForm">
+  <ul class="inputFieldList">
     <li>
       <label for="username">Username</label>
       <input type="text" id="username" name="username" />

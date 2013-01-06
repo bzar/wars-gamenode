@@ -19,6 +19,7 @@ require(["gamenode"], function() {
 
   client.onConnected = function() {
     $("#username").prop("disabled", false);
+    $("#username").focus();
     $("#password").prop("disabled", false);
     $("#remember").prop("disabled", false);
     $("#loginButton").prop("disabled", false);

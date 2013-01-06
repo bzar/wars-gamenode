@@ -3,7 +3,7 @@ LESSC=nodejs lib/less/bin/lessc
 COFFEEC=coffee
 
 PAGES=www/game.html www/mygames.html www/opengames.html www/login.html www/publicgames.html www/mymaps.html www/mapeditor.html
-STYLES=www/common.css www/game.css www/maplist.css www/mapeditor.css
+STYLES=www/common.css www/game.css www/maplist.css www/mapeditor.css www/login.css
 SOURCES=www/common.js www/Color.js
 
 all: pages styles sources
