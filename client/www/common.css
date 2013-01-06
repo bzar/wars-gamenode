@@ -37,6 +37,11 @@ body {
   cursor: pointer;
   color: #ddd;
   text-align: center;
+  text-decoration: none;
+}
+#menubar a.button [class^="icon-"],
+#menubar a [class*=" icon-"] {
+  display: inline;
 }
 #menubar .button:hover,
 .dropdown-menu:hover {

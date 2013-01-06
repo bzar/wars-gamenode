@@ -1,0 +1,30 @@
+.mapContainer {
+  width: 200;
+  border: 1px solid #ccc;
+  display: inline-block;
+  margin: 16px;
+  background-color: #ddd;
+  border-radius: 16px;
+  cursor: pointer;
+  color: #333;
+  text-decoration: none;
+  overflow: hidden;
+}
+.mapContainer:hover {
+  background-color: #e8e8e8;
+  color: #111;
+}
+.mapContainer.selected {
+  background-color: #aad;
+}
+.mapContainer .name {
+  font: 16px sans-serif;
+  margin: 4px 8px;
+  text-align: center;
+  font-weight: bold;
+}
+.mapContainer .info {
+  font: 14px sans-serif;
+  margin: 2px 4px;
+  text-align: center;
+}

@@ -1,4 +1,12 @@
 <% extend 'base.ect' %>
+
+<% block 'head' : %>
+<script data-main="publicgames" src="require.js"></script>
+<% end %>
+
+<% block 'menubar' : %>
+<% end %>
+
 <h2>Public games</h2>
 <table id="games" class="bigTable">
   <thead>
@@ -15,10 +23,3 @@
   <a class="pageControl" id="nextPage">&gt;</a>
   <a class="pageControl" id="lastPage">&gt;&gt;</a>
 </div>
-
-<% block 'head' : %>
-<script data-main="publicgames" src="require.js"></script>
-<% end %>
-
-<% block 'menubar' : %>
-<% end %>

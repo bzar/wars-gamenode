@@ -1,4 +1,16 @@
 <% extend 'base.ect' %>
+
+<% block 'head' : %>
+<link rel="stylesheet" type="text/css" href="maplist.css">
+<script data-main="mymaps" src="require.js"></script>
+<% end %>
+
+<% block 'menubar' : %>
+<a href="mapeditor.html" class="button">
+  <span class="label menu-icon icon-plus"></span>
+</a>
+<% end %>
+
 <h2>My maps</h2>
 <form id="mapFilterForm">
   <span class="filterInput">
@@ -30,9 +42,12 @@
   <input type="submit" value="Filter maps" />
 </form>
 
-<% block 'menubar' : %>
-<span class="button">
-  <span class="label menu-icon icon-plus"></span>
-</span>
+<div id="myMaps"></div>
+<div id="pageControls">
+  <a class="pageControl" id="firstPage">&lt;&lt;</a>
+  <a class="pageControl" id="prevPage">&lt;</a>
+  <span id="pages"></span>
+  <a class="pageControl" id="nextPage">&gt;</a>
+  <a class="pageControl" id="lastPage">&gt;&gt;</a>
+</div>
 
-<% end %>
