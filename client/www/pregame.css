@@ -1,3 +1,13 @@
+#tools {
+  min-width: 300px;
+  max-width: 480px;
+  display: inline-block;
+  vertical-align: top;
+}
+#mapPreview {
+  display: inline-block;
+  vertical-align: bottom;
+}
 #players {
   list-style: none;
   color: #eee;

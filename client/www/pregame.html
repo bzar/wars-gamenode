@@ -41,26 +41,26 @@
 
 
 <h2>Pregame - <span id="gameName"></span></h2>
+<div id="tools">
+  <div id="gameInfo">
+    <ul id="players"></ul>
+  </div>
 
-<div id="authorTools" class="navigation">
-  <a id="startGame" class="actionButton" href="#">Start game</a>
-  <a id="deleteGame" class="actionButton" href="#">Delete game</a>
-  <form id="inviteForm" class="toolForm">
-    <select id="username" name="username"/>
-    <input type="submit" value="Invite bot"/>
-  </form>
-</div>
+  <div id="authorTools" class="navigation">
+    <form id="inviteForm" class="toolForm">
+      <select id="username" name="username"/>
+      <input type="submit" value="Invite bot"/>
+    </form>
+    <a id="startGame" class="actionButton" href="#">Start game</a>
+    <a id="deleteGame" class="actionButton" href="#">Delete game</a>
+  </div>
 
-<div id="gameInfo">
-  <ul id="players"></ul>
-</div>
-
-<div id="chat">
-  <ul id="chatMessages"><li>Welcome to pregame chat!</li></ul>
-  <form id="chatForm">
-    <input id="chatInput" type="text" value=""/>
-    <input id="chatSend" type="submit" value="send"/>
-  </form>
+  <div id="chat">
+    <ul id="chatMessages"><li>Welcome to pregame chat!</li></ul>
+    <form id="chatForm">
+      <input id="chatInput" type="text" value=""/><input id="chatSubmit" type="submit" value="send"/>
+    </form>
+  </div>
 </div>
 
 <div id="mapPreview">
