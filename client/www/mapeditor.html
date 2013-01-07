@@ -66,7 +66,7 @@
           <span>x</span>
           <input type="text" id="mapHeight" class="smallInput" />
         </li>
-        <li><input type="submit" value="Set map size" /></li>
+        <li><input type="submit" class="small actionButton" value="Set map size" /></li>
       </ul>
     </form>
     <form id="mapShiftForm" class="toolForm">
@@ -75,22 +75,38 @@
         <tbody>
           <tr>
             <td></td>
-            <td><span id="shiftMapUp" class="button">&uarr;</span></td>
+            <td><span id="shiftMapUp" class="actionButton">&uarr;</span></td>
             <td></td>
           </tr>
           <tr>
-            <td><span id="shiftMapLeft" class="button">&larr;</span></td>
+            <td><span id="shiftMapLeft" class="actionButton">&larr;</span></td>
             <td></td>
-            <td><span id="shiftMapRight" class="button">&rarr;</span></td>
+            <td><span id="shiftMapRight" class="actionButton">&rarr;</span></td>
           </tr>
           <tr>
             <td></td>
-            <td><span id="shiftMapDown" class="button">&darr;</span></td>
+            <td><span id="shiftMapDown" class="actionButton">&darr;</span></td>
             <td></td>
           </tr>
         </tbody>
       </table>
     </form>
+  </div>
+</span>
+<span class="dropdown-menu">
+  <span class="label menu-icon icon-exchange"></span>
+  <div id="mapImportExport" class="content">
+    <form id="mapImportExportForm" class="toolForm">
+      <ul>
+        <li><textarea id="importExportData" rows="10"></textarea></li>
+        <li><span id="import" class="small actionButton">Import</span><span id="export" class="small actionButton">Export</span></li>
+      </ul>
+    </form>
+    <form id="mapDeleteForm" class="toolForm">
+      <ul>
+          <input name="deleteMap" type="submit" value="Delete map" />
+      </ul>
+    </form>  
   </div>
 </span>
 <span class="dropdown-menu">
@@ -108,19 +124,8 @@
         </li>
         <li>
           <span id="mapSavedMessage" style="display:none" class="left">Map saved!</span>
-          <input name="saveMap" type="submit" value="Save map" class="right"/>
+          <input name="saveMap" class="actionButton" type="submit" value="Save map" class="right"/>
         </li>
-      </ul>
-    </form>
-    <form id="mapImportExportForm" class="toolForm">
-      <ul>
-        <li><textarea id="importExportData" rows="10"></textarea></li>
-        <li><span id="import" class="small actionButton">Import</span><span id="export" class="small actionButton">Export</span></li>
-      </ul>
-    </form>
-    <form id="mapDeleteForm" class="toolForm">
-      <ul>
-          <input name="deleteMap" type="submit" value="Delete map" />
       </ul>
     </form>
   </div>

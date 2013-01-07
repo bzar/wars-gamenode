@@ -6,6 +6,13 @@
 <script data-main="login" src="require.js"></script>
 <% end %>
 
+<% block 'menubar' : %>
+<a href="register.html" class="button" title="Register">
+  <span class="label menu-icon icon-file-alt"></span>
+</a>
+<% end %>
+
+<h2>Wars</h2>
 <form id="loginForm">
   <ul class="inputFieldList">
     <li>
@@ -20,6 +27,6 @@
       <label for="remember" class="small">Remember me</label>
       <input type="checkbox" id="remember" name="remember" />
     </li>
-    <li class="alignRight"><input id="loginButton" type="submit" value="Login"/></li>
+    <li class="alignRight"><input id="loginButton" class="actionButton" type="submit" value="Login"/></li>
   </ul>
 </form>

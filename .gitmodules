@@ -16,3 +16,6 @@
 [submodule "client/lib/less"]
 	path = client/lib/less
 	url = https://github.com/cloudhead/less.js
+[submodule "client/www/lib/font-awesome"]
+	path = client/www/lib/font-awesome
+	url = https://github.com/FortAwesome/Font-Awesome.git
