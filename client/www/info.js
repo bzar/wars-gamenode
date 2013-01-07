@@ -1,4 +1,4 @@
-require(["Theme", "jquery-1.6.2.min.js","gamenode", "base"], function(Theme) {
+require(["Theme", "gamenode", "base"], function(Theme) {
   var client = new GameNodeClient(Skeleton);
   var session = null;
   var theme = null;

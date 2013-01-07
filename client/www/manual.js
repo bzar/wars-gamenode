@@ -1,4 +1,4 @@
-require(["jquery-1.6.2.min.js","gamenode", "base"], function() {
+require(["gamenode", "base"], function() {
   var client = new GameNodeClient(Skeleton);
   var session = null;
 

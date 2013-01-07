@@ -25,7 +25,7 @@ server.io.configure(null, function(){
 var fileServer = undefined;
 if(configuration.enableFileServer) {
   fileServer = new FileServer(
-    ["jquery-1.6.2.min.js", "require.js", "gamenode.js", "skeleton.js", "base.js", "game.css",
+    ["gamenode.js", "skeleton.js", "base.js", "game.css",
     "common.css", "common.js", "login.html", "login.js", "register.html", "register.js", 
     "mygames.html", "mygames.js", "mymaps.html", "mymaps.js",
     "mapeditor.html", "mapeditor.js", "Map.js", "image_map.js",
@@ -34,7 +34,7 @@ if(configuration.enableFileServer) {
     "profile.html", "profile.js", "publicgames.html", "publicgames.js",
     "ticker.js", "Theme.js", "gamestatistics.html", "gamestatistics.js",
     "manual.html", "manual.js", "info.html", "info.js", "settings.js",
-    "AnimatedMap.js", "vec2d.js", "pixastic.js", "sylvester.js", "Color.js", 
+    "AnimatedMap.js", "Color.js", 
     "maplist.css", "mapeditor.css", "login.css", "creategame.css", "pregame.css", "info.css"
     ], 
     { 

@@ -1,4 +1,4 @@
-define(["Theme", "sylvester"], function(Theme, sylvester) {
+define(["Theme", "lib/sylvester"], function(Theme, sylvester) {
   function Map(canvas, scale, theme) {
     this.theme = theme ? theme : new Theme("pixel");
     this.autoscale = !scale;

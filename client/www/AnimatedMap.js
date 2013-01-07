@@ -1,4 +1,4 @@
-define(["Theme", "lib/aja/lib/aja", "pixastic", "sylvester"], function(Theme) {
+define(["Theme", "lib/aja/lib/aja", "lib/pixastic", "lib/sylvester"], function(Theme) {
   function AnimatedMap(canvasId, scale, theme, rules) {
     this.theme = theme ? theme : new Theme("pixel");
     this.autoscale = !scale;
