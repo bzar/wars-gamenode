@@ -1,0 +1,20 @@
+<% extend 'base.ect' %>
+
+<% block 'head' : %>
+<!--<link rel="stylesheet" type="text/css" href="gamestatistics.css">-->
+<script data-main="gamestatistics" src="require.js"></script>
+<% end %>
+
+<% block 'menubar' : %>
+<a id="backToGame" class="button" href="#" title="Back to game">
+  <span class="label menu-icon icon-reply"></span>
+</a>
+<% end %>
+
+<h2>Game statistics - <span id="gameTitle"></span></h2>
+<h3>Score</h3>
+<div id="scoreChart" class="chart"></div>
+<h3>Power</h3>
+<div id="powerChart" class="chart"></div>
+<h3>Property</h3>
+<div id="propertyChart" class="chart"></div>

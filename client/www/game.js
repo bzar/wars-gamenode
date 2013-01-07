@@ -58,7 +58,7 @@ require(["Theme", "AnimatedMap", "GameLogic", "Color", "gamenode", "base", "lib/
   });
 
   function initializeMenuControls() {
-    $("#gameStatistics").attr("href", "gameStatistics.html?gameId=" + gameId);
+    $("#gameStatistics").attr("href", "gamestatistics.html?gameId=" + gameId);
   }
 
   function refreshFunds() {

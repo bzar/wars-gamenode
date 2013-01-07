@@ -32,7 +32,7 @@ if(configuration.enableFileServer) {
     "creategame.html", "creategame.js", "pregame.html", "pregame.js",
     "opengames.html", "opengames.js", "game.html", "game.js", "GameLogic.js",
     "profile.html", "profile.js", "publicgames.html", "publicgames.js",
-    "ticker.js", "Theme.js", "gameStatistics.html", "gameStatistics.js",
+    "ticker.js", "Theme.js", "gamestatistics.html", "gamestatistics.js",
     "manual.html", "manual.js", "info.html", "info.js", "settings.js",
     "AnimatedMap.js", "vec2d.js", "pixastic.js", "sylvester.js", "Color.js", 
     "maplist.css", "mapeditor.css", "login.css", "creategame.css", "pregame.css", "info.css"
