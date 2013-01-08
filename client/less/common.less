@@ -208,3 +208,48 @@ h2 {
   width: 25px !important;
 }
 
+#pageControls {
+  text-align: center;
+}
+
+.pageLink, .pageControl {
+  display: inline-block;
+  font-family: sans-serif;
+  padding: 4px;
+  font-size: 12px;
+  border-width: 1px;
+  border-style: solid;
+  border-color: #aaa #aaa #888 #888;
+  background-image: linear-gradient(to bottom, #eee, #ccc);
+  color: #333;
+  text-decoration: none;
+  cursor: pointer;
+}
+
+.pageLink:hover, .pageControl:hover {
+  background-image: linear-gradient(to bottom, #efefef, #ddd);
+}
+
+.pageControl.disabled {
+  color: #666;
+  cursor: default;
+}
+
+.pageControl.disabled:hover {
+  background-image: linear-gradient(to bottom, #eee, #ccc);
+}
+
+.pageControl:first-child {
+  border-radius: 4px 0 0 4px;
+}
+
+.pageControl:last-child {
+  border-radius: 0 4px 4px 0;
+}
+
+.pageLink.current {
+  background-image: linear-gradient(to top, #eee, #ccc);
+}
+.pageLink.current:hover {
+  background-image: linear-gradient(to top, #efefef, #ddd);
+}
