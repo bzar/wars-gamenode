@@ -653,28 +653,19 @@ define ["Theme", "lib/aja/lib/aja", "lib/pixastic", "lib/sylvester"], (Theme) ->
     change = newHealth - u.unit.health
     if change > 0 and @animate
       changeString = "" + change
-      canvas = @canvas
-      that = this
-      i = 0
 
-      while i < changeString.length
-        n = parseInt(changeString[i])
-        number = new MapDigit(n, u.x - (changeString.length - i) * @theme.settings.number.width, u.y, this)
-        number.effects = [new aja.OpacityEffect]
-        number.opacity = 1.0
-        canvas.addEntity number
-        f = (number) ->
-          anim = new aja.NumberAnimation(number,
-            y:
-              delta: -32
-
-            opacity: 0.0
-          , 1000 / that.animationSpeed, aja.easing.QuadIn, ->
-            canvas.removeEntity number
+      for n, i in changeString
+        do (n, i) =>
+          n = parseInt(n)
+          number = new MapDigit(n, u.x - (changeString.length - i) * @theme.settings.number.width, u.y, this)
+          number.effects = [new aja.OpacityEffect]
+          number.opacity = 1.0
+          @canvas.addEntity number
+          anim = new aja.NumberAnimation(number, {y:{delta: -32}, opacity: 0.0}, 1000 / @animationSpeed, aja.easing.QuadIn, =>
+            @canvas.removeEntity number
           )
-          canvas.addAnimation anim
-        (number)
-        ++i
+          @canvas.addAnimation anim
+        
     u.unit.health = newHealth
     @canvas.redrawEntity u
     callback?()

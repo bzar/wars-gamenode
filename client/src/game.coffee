@@ -9,20 +9,43 @@ require ["Theme", "AnimatedMap", "GameLogic", "Color", "gamenode", "base", "lib/
   map = null
   ticker = null
   turnCounter = null
-  oldUnits = {}
   powerMap = null
   finished = false
   gameClient = null
   gameMap = null
   gameUIState = stateName: "select"
   gameId = /[?&]gameId=([0-9a-f]+)/.exec(window.location.search)
+
   if gameId isnt null
     gameId = gameId[1]
   else
     document.location = "/"
+
+  $(document).ready ->
+    loginUrl = "login.html?next=" + document.location.pathname + document.location.search
+    session = resumeSessionOrRedirect client, WARS_CLIENT_SETTINGS.gameServer, loginUrl, ->
+      client.stub.subscribeGame gameId
+      populateNavigation session
+      if gameId isnt null
+        client.stub.gameData gameId, (response) ->
+          if response.success
+            document.location = "pregame.html?gameId=" + gameId  if response.game.state is "pregame"
+            $("#spinner").show()
+            initializeChat client, gameId
+            initializeMenuControls()
+            initializeGameTools()
+            $("#round").text response.game.roundNumber
+            if response.author
+              initializeAuthorTools()
+            else
+              $("#authorTools").hide()
+            initializeGame response.game, response.author, response.turnRemaining
+          else
+            alert "Error loading game!"
   
   initializeMenuControls = ->
     $("#gameStatistics").attr "href", "gamestatistics.html?gameId=" + gameId
+    
   refreshFunds = ->
     client.stub.myFunds gameId, (response) ->
       if response.success
@@ -103,29 +126,26 @@ require ["Theme", "AnimatedMap", "GameLogic", "Color", "gamenode", "base", "lib/
       x: "0"
       t: "off"
     ]
+    
     $("#animationSpeedPlus").click (e) ->
       current = $("#animationSpeed").text()
-      i = 0
 
-      while i < speeds.length
-        if speeds[i].t is current
+      for speed, i in speeds
+        if speed.t is current
           if i < speeds.length - 1
             map.animationSpeed = speeds[i + 1].x
             map.animate = map.animationSpeed isnt 0
             $("#animationSpeed").text speeds[i + 1].t
-        ++i
 
     $("#animationSpeedMinus").click (e) ->
       current = $("#animationSpeed").text()
-      i = 0
 
-      while i < speeds.length
-        if speeds[i].t is current
+      for speed, i in speeds
+        if speed.t is current
           if i > 0
             map.animationSpeed = speeds[i - 1].x
             map.animate = map.animationSpeed isnt 0
             $("#animationSpeed").text speeds[i - 1].t
-        ++i
 
   initializeAuthorTools = ->
   formatTime = (t) ->
@@ -142,6 +162,7 @@ require ["Theme", "AnimatedMap", "GameLogic", "Color", "gamenode", "base", "lib/
     s += 0  if sec < 10
     s += sec
     s
+    
   setMenubarToPlayerColor = (playerNumber) ->
     c = theme.getPlayerColor(inTurnNumber)
     playerColor = Color.fromRgb(c.r, c.g, c.b)
@@ -201,16 +222,16 @@ require ["Theme", "AnimatedMap", "GameLogic", "Color", "gamenode", "base", "lib/
             map.resize mapSize.e(1), mapSize.e(2)
             map.refresh()
             map.initEntities()
-            if response.profile.settings.animationSpeed is `undefined`
+            if not response.profile.settings.animationSpeed?
               map.animationSpeed = 1
               map.animate = true
-              $("#animationSpeedLabel").text "1x"
+              $("#animationSpeed").text "1x"
             else if response.profile.settings.animationSpeed > 0
               map.animationSpeed = parseFloat(response.profile.settings.animationSpeed)
-              $("#animationSpeedLabel").text response.profile.settings.animationSpeed + "x"
+              $("#animationSpeed").text response.profile.settings.animationSpeed + "x"
             else
               map.animate = false
-              $("#animationSpeedLabel").text "off"
+              $("#animationSpeed").text "off"
             $("#spinner").hide()
 
   initializeMessageTicker = ->
@@ -226,50 +247,32 @@ require ["Theme", "AnimatedMap", "GameLogic", "Color", "gamenode", "base", "lib/
           else
             callback()
         e = queue.shift()
-        e = e.content  if e.content
-        if e.action is "move"
-          map.moveUnit e.unit.unitId, e.tile.tileId, e.path, nextEvent
-        else if e.action is "wait"
-          map.waitUnit e.unit.unitId, nextEvent
-        else if e.action is "attack"
-          map.attackUnit e.attacker.unitId, e.target.unitId, e.damage, nextEvent
-        else if e.action is "counterattack"
-          map.counterattackUnit e.attacker.unitId, e.target.unitId, e.damage, nextEvent
-        else if e.action is "capture"
-          map.captureTile e.unit.unitId, e.tile.tileId, e.left, nextEvent
-        else if e.action is "captured"
-          map.capturedTile e.unit.unitId, e.tile.tileId, nextEvent
-        else if e.action is "deploy"
-          map.deployUnit e.unit.unitId, nextEvent
-        else if e.action is "undeploy"
-          map.undeployUnit e.unit.unitId, nextEvent
-        else if e.action is "load"
-          map.loadUnit e.unit.unitId, e.carrier.unitId, nextEvent
-        else if e.action is "unload"
-          map.unloadUnit e.unit.unitId, e.carrier.unitId, e.tile.tileId, nextEvent
-        else if e.action is "destroyed"
-          map.destroyUnit e.unit.unitId, nextEvent
-        else if e.action is "repair"
-          map.repairUnit e.unit.unitId, e.newHealth, nextEvent
-        else if e.action is "build"
-          map.buildUnit e.tile.tileId, e.unit, nextEvent
-        else if e.action is "regenerateCapturePoints"
-          map.regenerateCapturePointsTile e.tile.tileId, e.newCapturePoints, nextEvent
-        else if e.action is "produceFunds"
-          map.produceFundsTile e.tile.tileId, nextEvent
-        else if e.action is "beginTurn"
-          map.beginTurn e.player, nextEvent
-        else if e.action is "endTurn"
-          map.endTurn e.player, nextEvent
-        else if e.action is "turnTimeout"
-          map.turnTimeout e.player, nextEvent
-        else if e.action is "finished"
-          map.finished e.winner, nextEvent
-        else map.surrender e.player, nextEvent  if e.action is "surrender"
+        e = e.content  if e.content?
+        
+        switch e.action 
+          when "move" then map.moveUnit e.unit.unitId, e.tile.tileId, e.path, nextEvent
+          when "wait" then map.waitUnit e.unit.unitId, nextEvent
+          when "attack" then map.attackUnit e.attacker.unitId, e.target.unitId, e.damage, nextEvent
+          when "counterattack" then map.counterattackUnit e.attacker.unitId, e.target.unitId, e.damage, nextEvent
+          when "capture" then map.captureTile e.unit.unitId, e.tile.tileId, e.left, nextEvent
+          when "captured" then map.capturedTile e.unit.unitId, e.tile.tileId, nextEvent
+          when "deploy" then map.deployUnit e.unit.unitId, nextEvent
+          when "undeploy" then map.undeployUnit e.unit.unitId, nextEvent
+          when "load" then map.loadUnit e.unit.unitId, e.carrier.unitId, nextEvent
+          when "unload" then map.unloadUnit e.unit.unitId, e.carrier.unitId, e.tile.tileId, nextEvent
+          when "destroyed" then map.destroyUnit e.unit.unitId, nextEvent
+          when "repair" then map.repairUnit e.unit.unitId, e.newHealth, nextEvent
+          when "build" then map.buildUnit e.tile.tileId, e.unit, nextEvent
+          when "regenerateCapturePoints" then map.regenerateCapturePointsTile e.tile.tileId, e.newCapturePoints, nextEvent
+          when "produceFunds" then map.produceFundsTile e.tile.tileId, nextEvent
+          when "beginTurn" then map.beginTurn e.player, nextEvent
+          when "endTurn" then map.endTurn e.player, nextEvent
+          when "turnTimeout" then map.turnTimeout e.player, nextEvent
+          when "finished" then map.finished e.winner, nextEvent
+          when "surrender" then map.surrender e.player, nextEvent
+          
       alreadyProcessing = queue.length isnt 0
-
-      for event in events
-        queue.push event
+      queue.push event for event in events
 
       $("#spinner").hide()
       ticker.showMessages events
@@ -381,17 +384,13 @@ require ["Theme", "AnimatedMap", "GameLogic", "Color", "gamenode", "base", "lib/
 
     if inTurn
       buildMenu.hide()
-      if gameUIState.stateName is "select"
-        handleSelectMapClick tilePosition, canvasPosition
-      else if gameUIState.stateName is "move"
-        handleMoveMapClick tilePosition, canvasPosition
-      else if gameUIState.stateName is "action"
-        handleActionMapClick()
-      else if gameUIState.stateName is "attack"
-        handleAttackMapClick tilePosition
-      else if gameUIState.stateName is "unloadUnit"
-        handleUnloadUnitMapClick()
-      else handleUnloadTargetMapClick tilePosition  if gameUIState.stateName is "unloadTarget"
+      switch gameUIState.stateName 
+        when "select" then handleSelectMapClick tilePosition, canvasPosition
+        when "move" then handleMoveMapClick tilePosition, canvasPosition
+        when "action" then handleActionMapClick()
+        when "attack" then handleAttackMapClick tilePosition
+        when "unloadUnit" then handleUnloadUnitMapClick()
+        when "unloadTarget" then handleUnloadTargetMapClick tilePosition
       
   handleSelectMapClick = (tilePosition, canvasPosition) ->
     if gameLogic.tileHasMovableUnit(inTurnNumber, tilePosition.x, tilePosition.y)
@@ -478,17 +477,13 @@ require ["Theme", "AnimatedMap", "GameLogic", "Color", "gamenode", "base", "lib/
     tx = tilePosition.x
     ty = tilePosition.y
     canUnload = false
-    i = 0
 
-    while i < gameUIState.unloadTargetOptions.length
-      option = gameUIState.unloadTargetOptions[i]
+    for option in gameUIState.unloadTargetOptions
       if option.x is tx and option.y is ty
         canUnload = true
         break
-      ++i
-    unless canUnload
-      undoMove()
-    else
+        
+    if canUnload
       unitId = map.getTile(gameUIState.x, gameUIState.y).unit.unitId
       destination =
         x: gameUIState.dx
@@ -503,6 +498,8 @@ require ["Theme", "AnimatedMap", "GameLogic", "Color", "gamenode", "base", "lib/
       client.stub.moveAndUnload gameId, unitId, destination, gameUIState.path, carriedUnitId, unloadDestination, (response) ->
         alert response.reason  unless response.success
         gameUIState = stateName: "select"
+    else
+      undoMove()
 
   undoMove = ->
     if gameUIState.stateName isnt "select"
@@ -517,6 +514,7 @@ require ["Theme", "AnimatedMap", "GameLogic", "Color", "gamenode", "base", "lib/
     $("#actionMenu").hide()
     $("#unloadMenu").hide()
     $("#buildMenu").hide()
+    
   switchToActionState = (x, y, dx, dy, path, movementOptions, canvasPosition) ->
     gameUIState =
       stateName: "action"
@@ -556,6 +554,7 @@ require ["Theme", "AnimatedMap", "GameLogic", "Color", "gamenode", "base", "lib/
     height = maxHeight  if height > maxHeight
     width: width
     height: height
+    
   clampElement = (left, top, width, height, content) ->
     minLeft = content.scrollLeft()
     minTop = content.scrollTop()
@@ -640,63 +639,67 @@ require ["Theme", "AnimatedMap", "GameLogic", "Color", "gamenode", "base", "lib/
         gameUIState = stateName: "select"
       action = $(this).attr("action")
       actionMenu.hide()
-      if action is "cancel"
-        undoMove()
-      else if action is "attack"
-        gameUIState =
-          stateName: "attack"
-          attackOptions: gameLogic.unitAttackOptions(gameUIState.x, gameUIState.y, gameUIState.dx, gameUIState.dy)
-          x: gameUIState.x
-          y: gameUIState.y
-          dx: gameUIState.dx
-          dy: gameUIState.dy
-          path: gameUIState.path
-
-        map.paintAttackMask gameUIState.attackOptions
-      else if action is "wait"
-        unitId = map.getTile(gameUIState.x, gameUIState.y).unit.unitId
-        destination =
-          x: gameUIState.dx
-          y: gameUIState.dy
-
-        $("#spinner").show()
-        client.stub.moveAndWait gameId, unitId, destination, gameUIState.path, resetUI
-      else if action is "capture"
-        unitId = map.getTile(gameUIState.x, gameUIState.y).unit.unitId
-        destination =
-          x: gameUIState.dx
-          y: gameUIState.dy
-
-        $("#spinner").show()
-        client.stub.moveAndCapture gameId, unitId, destination, gameUIState.path, resetUI
-      else if action is "deploy"
-        unitId = map.getTile(gameUIState.x, gameUIState.y).unit.unitId
-        destination =
-          x: gameUIState.dx
-          y: gameUIState.dy
-
-        $("#spinner").show()
-        client.stub.moveAndDeploy gameId, unitId, destination, gameUIState.path, resetUI
-      else if action is "undeploy"
-        unitId = map.getTile(gameUIState.x, gameUIState.y).unit.unitId
-        $("#spinner").show()
-        client.stub.undeploy gameId, unitId, resetUI
-      else if action is "load"
-        unitId = map.getTile(gameUIState.x, gameUIState.y).unit.unitId
-        carrierId = map.getTile(gameUIState.dx, gameUIState.dy).unit.unitId
-        $("#spinner").show()
-        client.stub.moveAndLoadInto gameId, unitId, carrierId, gameUIState.path, resetUI
-      else if action is "unload"
-        gameUIState =
-          stateName: "unloadUnit"
-          unloadOptions: gameLogic.unitUnloadOptions(gameUIState.x, gameUIState.y, gameUIState.dx, gameUIState.dy)
-          x: gameUIState.x
-          y: gameUIState.y
-          dx: gameUIState.dx
-          dy: gameUIState.dy
-          path: gameUIState.path
-
-        showUnloadMenu gameUIState.unloadOptions, canvasPosition
+      
+      switch action
+        when "cancel"
+          undoMove()
+          
+        when "attack"
+          gameUIState =
+            stateName: "attack"
+            attackOptions: gameLogic.unitAttackOptions(gameUIState.x, gameUIState.y, gameUIState.dx, gameUIState.dy)
+            x: gameUIState.x
+            y: gameUIState.y
+            dx: gameUIState.dx
+            dy: gameUIState.dy
+            path: gameUIState.path
+          map.paintAttackMask gameUIState.attackOptions
+          
+        when "wait"
+          unitId = map.getTile(gameUIState.x, gameUIState.y).unit.unitId
+          destination =
+            x: gameUIState.dx
+            y: gameUIState.dy
+          $("#spinner").show()
+          client.stub.moveAndWait gameId, unitId, destination, gameUIState.path, resetUI
+          
+        when "capture"
+          unitId = map.getTile(gameUIState.x, gameUIState.y).unit.unitId
+          destination =
+            x: gameUIState.dx
+            y: gameUIState.dy
+          $("#spinner").show()
+          client.stub.moveAndCapture gameId, unitId, destination, gameUIState.path, resetUI
+          
+        when "deploy"
+          unitId = map.getTile(gameUIState.x, gameUIState.y).unit.unitId
+          destination =
+            x: gameUIState.dx
+            y: gameUIState.dy
+          $("#spinner").show()
+          client.stub.moveAndDeploy gameId, unitId, destination, gameUIState.path, resetUI
+          
+        when "undeploy"
+          unitId = map.getTile(gameUIState.x, gameUIState.y).unit.unitId
+          $("#spinner").show()
+          client.stub.undeploy gameId, unitId, resetUI
+          
+        when "load"
+          unitId = map.getTile(gameUIState.x, gameUIState.y).unit.unitId
+          carrierId = map.getTile(gameUIState.dx, gameUIState.dy).unit.unitId
+          $("#spinner").show()
+          client.stub.moveAndLoadInto gameId, unitId, carrierId, gameUIState.path, resetUI
+          
+        when "unload"
+          gameUIState =
+            stateName: "unloadUnit"
+            unloadOptions: gameLogic.unitUnloadOptions(gameUIState.x, gameUIState.y, gameUIState.dx, gameUIState.dy)
+            x: gameUIState.x
+            y: gameUIState.y
+            dx: gameUIState.dx
+            dy: gameUIState.dy
+            path: gameUIState.path
+          showUnloadMenu gameUIState.unloadOptions, canvasPosition
 
   showUnloadMenu = (units, canvasPosition) ->
     unloadMenu = $("#unloadMenu")
@@ -775,21 +778,17 @@ require ["Theme", "AnimatedMap", "GameLogic", "Color", "gamenode", "base", "lib/
       buildItem.append unitImage
       buildItem.append unitName
       funds = parseInt($("#funds").text())
+      
       if parseInt(unitType.price) <= funds
         buildItem.click ->
           unitTypeId = parseInt($(this).attr("unitTypeId"))
           $("#spinner").show()
-          client.stub.build gameId, unitTypeId,
-            x: tilePosition.x
-            y: tilePosition.y
-          , (response) ->
+          client.stub.build gameId, unitTypeId,{x: tilePosition.x, y: tilePosition.y}, (response) ->
             if response.success
               refreshFunds()
             else
               alert "Error building unit! " + response.reason
             buildMenu.hide()
-
-
       else
         buildItem.addClass "disabled"
       buildMenu.append buildItem
@@ -820,9 +819,8 @@ require ["Theme", "AnimatedMap", "GameLogic", "Color", "gamenode", "base", "lib/
       latestStatistic = response.latestStatistic
       container = d3.select("#gameStatistic")
       container.selectAll("div").remove()
-      data = latestStatistic.content.sort((a, b) ->
+      data = latestStatistic.content.sort (a, b) ->
         a.playerNumber - b.playerNumber
-      )
       
       addChart container, data, "score", "trophy"
       addChart container, data, "power", "chevron-up"
@@ -831,29 +829,3 @@ require ["Theme", "AnimatedMap", "GameLogic", "Color", "gamenode", "base", "lib/
   getPowerMap = ->
     powerMap = gameLogic.getPowerMap()  if powerMap is null
     powerMap
-
-  $(document).ready ->
-    loginUrl = "login.html?next=" + document.location.pathname + document.location.search
-    session = resumeSessionOrRedirect(client, WARS_CLIENT_SETTINGS.gameServer, loginUrl, ->
-      client.stub.subscribeGame gameId
-      populateNavigation session
-      if gameId isnt null
-        client.stub.gameData gameId, (response) ->
-          if response.success
-            document.location = "pregame.html?gameId=" + gameId  if response.game.state is "pregame"
-            $("#spinner").show()
-            initializeChat client, gameId
-            initializeMenuControls()
-            initializeGameTools()
-            $("#round").text response.game.roundNumber
-            if response.author
-              initializeAuthorTools()
-            else
-              $("#authorTools").hide()
-            initializeGame response.game, response.author, response.turnRemaining
-          else
-            alert "Error loading game!"
-
-    )
-
-

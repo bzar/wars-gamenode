@@ -27,7 +27,6 @@ GameLogic::getNeighborTiles = (mapArray, x, y) ->
     y: y + 1
   ]
   neighbors = []
-  i = 0
 
   for a in adjacent
     neighbors.push a if mapArray[a.y] and mapArray[a.y][a.x]
@@ -61,51 +60,47 @@ GameLogic::tileHasMovableUnit = (player, x, y) ->
 
 GameLogic::tileCanBuild = (player, x, y) ->
   tile = @map.getTile(x, y)
-  if not tile or tile.owner isnt player
+  if not tile? or tile.owner isnt player or tile.unit?
     return false
-  else if tile.unit
-    return false
-  else return false  if @rules.terrains[tile.type].buildTypes.length is 0
-  true
+  else 
+    return @rules.terrains[tile.type].buildTypes.length isnt 0
 
 GameLogic::tileBuildOptions = (x, y) ->
   tile = @map.getTile(x, y)
   terrain = @rules.terrains[tile.type]
   buildOptions = []
-  for i of @rules.units
-    unitType = @rules.units[i]
+  for unitId, unitType of @rules.units
     canBuild = false
-    for j of terrain.buildTypes
-      if terrain.buildTypes[j] is unitType.unitClass
+    for buildType in terrain.buildTypes
+      if buildType is unitType.unitClass
         canBuild = true
         break
     continue  unless canBuild
     banned = false
-    for k of @rules.bannedUnits
-      if @rules.bannedUnits[k] is unitType.id
+    for bannedUnit in @rules.bannedUnits
+      if bannedUnit is unitType.id
         banned = true
         break
     buildOptions.push unitType  unless banned
   buildOptions
 
 GameLogic::unitCanMovePath = (x, y, dx, dy, path) ->
+  return true if x is dx and y is dy
   mapArray = @map.getMapArray()
   unit = mapArray[y][x].unit
-  if unit is null
-    console.log "no unit at (" + x + ", " + y + ")"
-    return false
-  unitType = @rules.units[unit.type]
+  return false if unit is null
   return false  if unit.deployed and (x isnt dx or y isnt dy)
+  unitType = @rules.units[unit.type]
   unitMovementType = @rules.movementTypes[unitType.movementType]
   left = unitType.movement
-  i = 1
-
-  while i < path.length
-    node = path[i]
+  prev = path[0]
+  
+  for node in path[1..]
+    return false if @getDistance(prev.x, prev.y, node.x, node.y) isnt 1
     tile = mapArray[node.y][node.x]
     
     # Reject if does not exist
-    return false  if tile is `undefined`
+    return false  if not tile?
     
     # Reject if tile has an enemy unit
     return false  if tile.unit isnt null and tile.unit.owner isnt unit.owner
@@ -117,7 +112,7 @@ GameLogic::unitCanMovePath = (x, y, dx, dy, path) ->
     # Reject if cannot move on terrain or cost is too high
     return false  if not cost? or cost > left
     left -= cost
-    ++i
+    prev = node
   true
 
 GameLogic::unitCanMoveTo = (x, y, dx, dy) ->
@@ -140,7 +135,6 @@ GameLogic::unitCanMoveTo = (x, y, dx, dy) ->
   mapArray = @map.getMapArray()
   unit = mapArray[y][x].unit
   if unit is null
-    console.log "no unit at (" + x + ", " + y + ")"
     return null
   unitType = @rules.units[unit.type]
   return false  if unit.deployed and (x isnt dx or y isnt dy)
@@ -160,7 +154,7 @@ GameLogic::unitCanMoveTo = (x, y, dx, dy) ->
     next = current.next
     
     # Add node as visited
-    from[current.tile.y] = {}  if from[current.tile.y] is `undefined`
+    from[current.tile.y] = {}  if not from[current.tile.y]?
     from[current.tile.y][current.tile.x] = current.from
     
     # Check end condition
@@ -176,16 +170,15 @@ GameLogic::unitCanMoveTo = (x, y, dx, dy) ->
     
     # Process neighbors
     neighbors = @getNeighborTiles(mapArray, current.tile.x, current.tile.y)
-    i = 0
 
-    while i < neighbors.length
-      tile = mapArray[neighbors[i].y][neighbors[i].x]
+    for neighbor in neighbors
+      tile = mapArray[neighbor.y][neighbor.x]
       
       # Reject if does not exist
-      continue  if tile is `undefined`
+      continue  if not tile?
       
       # Reject if visited
-      continue  if from[tile.y] isnt `undefined` and from[tile.y][tile.x] isnt `undefined`
+      continue  if from[tile.y]? and from[tile.y][tile.x]?
       
       # Reject if tile has an enemy unit
       continue  if tile.unit isnt null and tile.unit.owner isnt unit.owner
@@ -226,10 +219,11 @@ GameLogic::unitCanMoveTo = (x, y, dx, dy) ->
             previous.next = existing.next
           existing.next = null
           addNode node
-      ++i
+
   false
 
 GameLogic::getPath = (movementTypeId, playerNumber, x, y, dx, dy, maxCostPerNode, maxCost, acceptNextTo) ->
+  console.log "getPath"
   addNode = (node) ->
     isBefore = (a, b) ->
       if a.cost < b.cost
@@ -263,11 +257,11 @@ GameLogic::getPath = (movementTypeId, playerNumber, x, y, dx, dy, maxCostPerNode
     next = current.next
     
     # Add node as visited
-    from[current.tile.y] = {}  if from[current.tile.y] is `undefined`
+    from[current.tile.y] = {}  if not from[current.tile.y]?
     from[current.tile.y][current.tile.x] = current.from
     
     # Check end condition
-    if (if @getDistance(current.tile.x, current.tile.y, dx, dy) <= acceptNextTo then 1 else 0)
+    if @getDistance(current.tile.x, current.tile.y, dx, dy) <= (if acceptNextTo then 1 else 0)
       path = []
       while current isnt null
         path.push
@@ -280,16 +274,15 @@ GameLogic::getPath = (movementTypeId, playerNumber, x, y, dx, dy, maxCostPerNode
     
     # Process neighbors
     neighbors = @getNeighborTiles(mapArray, current.tile.x, current.tile.y)
-    i = 0
 
-    while i < neighbors.length
-      tile = mapArray[neighbors[i].y][neighbors[i].x]
+    for neighbor in neighbors
+      tile = mapArray[neighbor.y][neighbor.x]
       
       # Reject if does not exist
-      continue  if tile is `undefined`
+      continue  if not tile?
       
       # Reject if visited
-      continue  if from[tile.y] isnt `undefined` and from[tile.y][tile.x] isnt `undefined`
+      continue  if from[tile.y]? and from[tile.y][tile.x]?
       
       # Reject if tile has an enemy unit
       continue  if tile.unit isnt null and tile.unit.owner isnt playerNumber
@@ -297,7 +290,7 @@ GameLogic::getPath = (movementTypeId, playerNumber, x, y, dx, dy, maxCostPerNode
       # Determine cost
       cost = 1
       cost = unitMovementType.effectMap[tile.type]  if tile.type of unitMovementType.effectMap
-      continue  if cost is null or (maxCostPerNode isnt `undefined` and maxCostPerNode < cost) or (maxCost isnt `undefined` and maxCost < cost + current.cost)
+      continue  if cost is null or (maxCostPerNode? and maxCostPerNode < cost) or (maxCost? and maxCost < cost + current.cost)
       
       # Search list for existing node for same tile
       previous = null
@@ -328,7 +321,7 @@ GameLogic::getPath = (movementTypeId, playerNumber, x, y, dx, dy, maxCostPerNode
             previous.next = existing.next
           existing.next = null
           addNode node
-      ++i
+
   false
 
 GameLogic::unitMovementOptions = (x, y) ->
@@ -359,10 +352,10 @@ GameLogic::unitMovementOptions = (x, y) ->
   until bfsQueue.length is 0
     node = bfsQueue.shift()
     addNode = true
-    nodeIndex = `undefined`
+    nodeIndex = null
     oldNodeLongerPath = false
+    
     i = 0
-
     while i < movementOptions.length
       option = movementOptions[i]
       if option.pos.x is node.pos.x and option.pos.y is node.pos.y
@@ -376,7 +369,7 @@ GameLogic::unitMovementOptions = (x, y) ->
     targetTile = mapArray[node.pos.y][node.pos.x]
     addNode = false  if targetTile.unit and (node.pos.x isnt x or node.pos.y isnt y) and not @unitCanLoadInto(x, y, node.pos.x, node.pos.y)
     if addNode
-      destinationIndex = `undefined`
+      destinationIndex = null
       i = 0
 
       while i < destinationOptions.length
@@ -385,11 +378,11 @@ GameLogic::unitMovementOptions = (x, y) ->
           destinationIndex = i
           break
         ++i
-      if destinationIndex is `undefined`
+      if destinationIndex is null
         destinationOptions.push node
       else
         destinationOptions[i] = node
-    if nodeIndex is `undefined`
+    if nodeIndex is null
       movementOptions.push node
     else
       movementOptions[i] = node
@@ -403,7 +396,7 @@ GameLogic::unitMovementOptions = (x, y) ->
       cost = unitMovementType.effectMap[tile.type]  if tile.type of unitMovementType.effectMap
       continue  unless cost?
       continue  if cost > node.n
-      continue  unless tile.unit.owner is unit.owner  if tile.unit?
+      continue  if tile.unit? and tile.unit.owner isnt unit.owner  
       newNode =
         pos:
           x: neighbor.x
@@ -478,27 +471,23 @@ GameLogic::unitCanCapture = (x1, y1, x2, y2) ->
   targetTileType = @rules.terrains[targetTile.type]
   return false  if targetTile.owner is unit.owner
   capturable = false
-  i = 0
 
-  while i < targetTileType.flags.length
-    flag = @rules.terrainFlags[targetTileType.flags[i]]
+  for flagName in targetTileType.flags
+    flag = @rules.terrainFlags[flagName]
     if flag.name is "Capturable"
       capturable = true
       break
-    ++i
   return false  unless capturable
-  i = 0
 
-  while i < unitType.flags.length
-    flag = @rules.unitFlags[unitType.flags[i]]
+  for flagName in unitType.flags
+    flag = @rules.unitFlags[flagName]
     return true  if flag.name is "Capture"
-    ++i
+
   false
 
 GameLogic::unitCanWait = (x1, y1, x2, y2) ->
   targetTile = @map.getTile(x2, y2)
-  return false  if targetTile.unit? and (x1 isnt x2 or y1 isnt y2)
-  true
+  return not targetTile.unit? or x1 is x2 and y1 is y2
 
 GameLogic::unitCanDeploy = (x1, y1, x2, y2) ->
   tile = @map.getTile(x1, y1)
@@ -507,14 +496,12 @@ GameLogic::unitCanDeploy = (x1, y1, x2, y2) ->
   targetTile = @map.getTile(x2, y2)
   return false  if targetTile.unit? and (x1 isnt x2 or y1 isnt y2)
   unitType = @rules.units[unit.type]
-  return true  if (unitType.primaryWeapon? and @rules.weapons[unitType.primaryWeapon].requireDeployed) or (unitType.secondaryWeapon? and @rules.weapons[unitType.secondaryWeapon].requireDeployed)
-  false
+  return (unitType.primaryWeapon? and @rules.weapons[unitType.primaryWeapon].requireDeployed) or (unitType.secondaryWeapon? and @rules.weapons[unitType.secondaryWeapon].requireDeployed)
 
 GameLogic::unitCanUndeploy = (x, y) ->
   tile = @map.getTile(x, y)
   unit = tile.unit
-  return true  if unit.deployed
-  false
+  return unit.deployed
 
 GameLogic::unitCanLoadInto = (x1, y1, x2, y2) ->
   tile = @map.getTile(x1, y1)
@@ -534,25 +521,19 @@ GameLogic::unitCanUnload = (x1, y1, x2, y2) ->
   return false  if unit.carriedUnits is `undefined` or unit.carriedUnits.length is 0
   fromTile = mapArray[y2][x2]
   neighbors = @getNeighborTiles(mapArray, fromTile.x, fromTile.y)
-  j = 0
 
-  while j < unit.carriedUnits.length
-    carriedUnit = unit.carriedUnits[j]
+  for carriedUnit in unit.carriedUnits
     carriedUnitType = @rules.units[carriedUnit.type]
     carriedUnitMovementType = @rules.movementTypes[carriedUnitType.movementType]
     continue  if fromTile.type of carriedUnitMovementType.effectMap and (not carriedUnitMovementType.effectMap[fromTile.type]? or carriedUnitMovementType.effectMap[fromTile.type] > carriedUnitType.movement)
-    i = 0
 
-    while i < neighbors.length
-      neighbor = neighbors[i]
+    for neighbor in neighbors
       toTile = mapArray[neighbor.y][neighbor.x]
       
       # cannot unload to tile with unit, unless the tile is the carrier unit's origin tile
       # and the carrier moves away from that tile on the same turn
       continue  if toTile.unit? and not ((x1 isnt x2 or y1 isnt y2) and (neighbor.x is x1 and neighbor.y is y1))
       return true  if (toTile.type not of carriedUnitMovementType.effectMap) or (carriedUnitMovementType.effectMap[toTile.type]? and carriedUnitMovementType.effectMap[toTile.type] <= carriedUnitType.movement)
-      ++i
-    ++j
   false
 
 GameLogic::unitUnloadOptions = (x1, y1, x2, y2) ->
@@ -563,17 +544,14 @@ GameLogic::unitUnloadOptions = (x1, y1, x2, y2) ->
   fromTile = mapArray[y2][x2]
   neighbors = @getNeighborTiles(mapArray, fromTile.x, fromTile.y)
   unloadOptions = []
-  j = 0
 
-  while j < unit.carriedUnits.length
-    carriedUnit = unit.carriedUnits[j]
+  for carriedUnit in unit.carriedUnits
     carriedUnitType = @rules.units[carriedUnit.type]
     carriedUnitMovementType = @rules.movementTypes[carriedUnitType.movementType]
     continue  if fromTile.type of carriedUnitMovementType.effectMap and (not carriedUnitMovementType.effectMap[fromTile.type]? or carriedUnitMovementType.effectMap[fromTile.type] > carriedUnitType.movement)
     i = 0
 
-    while i < neighbors.length
-      neighbor = neighbors[i]
+    for neighbor in neighbors
       toTile = mapArray[neighbor.y][neighbor.x]
       
       # cannot unload to tile with unit, unless the tile is the carrier unit's origin tile
@@ -582,8 +560,6 @@ GameLogic::unitUnloadOptions = (x1, y1, x2, y2) ->
       if (toTile.type not of carriedUnitMovementType.effectMap) or (carriedUnitMovementType.effectMap[toTile.type]? and carriedUnitMovementType.effectMap[toTile.type] <= carriedUnitType.movement)
         unloadOptions.push carriedUnit
         break
-      ++i
-    ++j
   unloadOptions
 
 GameLogic::unitUnloadTargetOptions = (x1, y1, x2, y2, unitId) ->
@@ -594,30 +570,26 @@ GameLogic::unitUnloadTargetOptions = (x1, y1, x2, y2, unitId) ->
   fromTile = mapArray[y2][x2]
   neighbors = @getNeighborTiles(mapArray, fromTile.x, fromTile.y)
   unloadOptions = []
-  carriedUnit = `undefined`
-  carriedUnitType = `undefined`
-  carriedUnitMovementType = `undefined`
-  i = 0
+  carriedUnit = null
+  carriedUnitType = null
+  carriedUnitMovementType = null
 
-  while i < unit.carriedUnits.length
-    if unit.carriedUnits[i].unitId is unitId
-      carriedUnit = unit.carriedUnits[i]
+  for cu in unit.carriedUnits
+    if cu.unitId is unitId
+      carriedUnit = cu
       carriedUnitType = @rules.units[carriedUnit.type]
       carriedUnitMovementType = @rules.movementTypes[carriedUnitType.movementType]
-    ++i
-  return null  if carriedUnit is `undefined`
-  return null  if fromTile.type of carriedUnitMovementType.effectMap and (not carriedUnitMovementType.effectMap[fromTile.type]? or carriedUnitMovementType.effectMap[fromTile.type] > carriedUnitType.movement)
-  i = 0
 
-  while i < neighbors.length
-    neighbor = neighbors[i]
+  return null  if carriedUnit is null
+  return null  if fromTile.type of carriedUnitMovementType.effectMap and (not carriedUnitMovementType.effectMap[fromTile.type]? or carriedUnitMovementType.effectMap[fromTile.type] > carriedUnitType.movement)
+
+  for neighbor in neighbors
     toTile = mapArray[neighbor.y][neighbor.x]
     
     # cannot unload to tile with unit, unless the tile is the carrier unit's origin tile
     # and the carrier moves away from that tile on the same turn
     continue  if toTile.unit? and not ((x1 isnt x2 or y1 isnt y2) and (neighbor.x is x1 and neighbor.y is y1))
     unloadOptions.push neighbor  if (toTile.type not of carriedUnitMovementType.effectMap) or (carriedUnitMovementType.effectMap[toTile.type]? and carriedUnitMovementType.effectMap[toTile.type] <= carriedUnitType.movement)
-    ++i
   unloadOptions
 
 GameLogic::getPowerMap = ->

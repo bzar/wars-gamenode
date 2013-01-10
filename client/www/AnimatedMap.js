@@ -788,35 +788,32 @@
       }
     };
     AnimatedMap.prototype.repairUnit = function(unitId, newHealth, callback) {
-      var canvas, change, changeString, f, i, n, number, that, u;
+      var change, changeString, i, n, u, _fn, _i, _len,
+        _this = this;
       u = this.getUnitEntity(unitId);
       change = newHealth - u.unit.health;
       if (change > 0 && this.animate) {
         changeString = "" + change;
-        canvas = this.canvas;
-        that = this;
-        i = 0;
-        while (i < changeString.length) {
-          n = parseInt(changeString[i]);
-          number = new MapDigit(n, u.x - (changeString.length - i) * this.theme.settings.number.width, u.y, this);
+        _fn = function(n, i) {
+          var anim, number;
+          n = parseInt(n);
+          number = new MapDigit(n, u.x - (changeString.length - i) * _this.theme.settings.number.width, u.y, _this);
           number.effects = [new aja.OpacityEffect];
           number.opacity = 1.0;
-          canvas.addEntity(number);
-          f = function(number) {
-            var anim;
-            anim = new aja.NumberAnimation(number, {
-              y: {
-                delta: -32
-              },
-              opacity: 0.0
-            }, 1000 / that.animationSpeed, aja.easing.QuadIn, function() {
-              return canvas.removeEntity(number);
-            });
-            return canvas.addAnimation(anim);
-          };
-          number;
-
-          ++i;
+          _this.canvas.addEntity(number);
+          anim = new aja.NumberAnimation(number, {
+            y: {
+              delta: -32
+            },
+            opacity: 0.0
+          }, 1000 / _this.animationSpeed, aja.easing.QuadIn, function() {
+            return _this.canvas.removeEntity(number);
+          });
+          return _this.canvas.addAnimation(anim);
+        };
+        for (i = _i = 0, _len = changeString.length; _i < _len; i = ++_i) {
+          n = changeString[i];
+          _fn(n, i);
         }
       }
       u.unit.health = newHealth;

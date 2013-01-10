@@ -2,7 +2,7 @@
 (function() {
 
   require(["Theme", "AnimatedMap", "GameLogic", "Color", "gamenode", "base", "lib/d3/d3", "ticker.js"], function(Theme, AnimatedMap, GameLogic, Color) {
-    var clampElement, client, finalizeTurn, finished, fitElement, formatTime, gameClient, gameId, gameLogic, gameMap, gameUIState, getPowerMap, handleActionMapClick, handleAttackMapClick, handleMapClick, handleMoveMapClick, handleSelectMapClick, handleUnloadTargetMapClick, handleUnloadUnitMapClick, inTurn, inTurnNumber, initializeAuthorTools, initializeGame, initializeGameTools, initializeMenuControls, initializeMessageTicker, initializePlayers, initializeTurn, map, oldUnits, powerMap, refreshFunds, session, setMenubarToPlayerColor, showActionMenu, showBuildMenu, showGame, showUnloadMenu, switchToActionState, theme, ticker, turnCounter, undoMove, updateStatistic;
+    var clampElement, client, finalizeTurn, finished, fitElement, formatTime, gameClient, gameId, gameLogic, gameMap, gameUIState, getPowerMap, handleActionMapClick, handleAttackMapClick, handleMapClick, handleMoveMapClick, handleSelectMapClick, handleUnloadTargetMapClick, handleUnloadUnitMapClick, inTurn, inTurnNumber, initializeAuthorTools, initializeGame, initializeGameTools, initializeMenuControls, initializeMessageTicker, initializePlayers, initializeTurn, map, powerMap, refreshFunds, session, setMenubarToPlayerColor, showActionMenu, showBuildMenu, showGame, showUnloadMenu, switchToActionState, theme, ticker, turnCounter, undoMove, updateStatistic;
     client = new GameNodeClient(Skeleton);
     gameClient = client;
     session = null;
@@ -13,7 +13,6 @@
     map = null;
     ticker = null;
     turnCounter = null;
-    oldUnits = {};
     powerMap = null;
     finished = false;
     gameClient = null;
@@ -27,6 +26,36 @@
     } else {
       document.location = "/";
     }
+    $(document).ready(function() {
+      var loginUrl;
+      loginUrl = "login.html?next=" + document.location.pathname + document.location.search;
+      return session = resumeSessionOrRedirect(client, WARS_CLIENT_SETTINGS.gameServer, loginUrl, function() {
+        client.stub.subscribeGame(gameId);
+        populateNavigation(session);
+        if (gameId !== null) {
+          return client.stub.gameData(gameId, function(response) {
+            if (response.success) {
+              if (response.game.state === "pregame") {
+                document.location = "pregame.html?gameId=" + gameId;
+              }
+              $("#spinner").show();
+              initializeChat(client, gameId);
+              initializeMenuControls();
+              initializeGameTools();
+              $("#round").text(response.game.roundNumber);
+              if (response.author) {
+                initializeAuthorTools();
+              } else {
+                $("#authorTools").hide();
+              }
+              return initializeGame(response.game, response.author, response.turnRemaining);
+            } else {
+              return alert("Error loading game!");
+            }
+          });
+        }
+      });
+    });
     initializeMenuControls = function() {
       return $("#gameStatistics").attr("href", "gamestatistics.html?gameId=" + gameId);
     };
@@ -126,36 +155,42 @@
         }
       ];
       $("#animationSpeedPlus").click(function(e) {
-        var current, i, _results;
+        var current, i, speed, _i, _len, _results;
         current = $("#animationSpeed").text();
-        i = 0;
         _results = [];
-        while (i < speeds.length) {
-          if (speeds[i].t === current) {
+        for (i = _i = 0, _len = speeds.length; _i < _len; i = ++_i) {
+          speed = speeds[i];
+          if (speed.t === current) {
             if (i < speeds.length - 1) {
               map.animationSpeed = speeds[i + 1].x;
               map.animate = map.animationSpeed !== 0;
-              $("#animationSpeed").text(speeds[i + 1].t);
+              _results.push($("#animationSpeed").text(speeds[i + 1].t));
+            } else {
+              _results.push(void 0);
             }
+          } else {
+            _results.push(void 0);
           }
-          _results.push(++i);
         }
         return _results;
       });
       return $("#animationSpeedMinus").click(function(e) {
-        var current, i, _results;
+        var current, i, speed, _i, _len, _results;
         current = $("#animationSpeed").text();
-        i = 0;
         _results = [];
-        while (i < speeds.length) {
-          if (speeds[i].t === current) {
+        for (i = _i = 0, _len = speeds.length; _i < _len; i = ++_i) {
+          speed = speeds[i];
+          if (speed.t === current) {
             if (i > 0) {
               map.animationSpeed = speeds[i - 1].x;
               map.animate = map.animationSpeed !== 0;
-              $("#animationSpeed").text(speeds[i - 1].t);
+              _results.push($("#animationSpeed").text(speeds[i - 1].t));
+            } else {
+              _results.push(void 0);
             }
+          } else {
+            _results.push(void 0);
           }
-          _results.push(++i);
         }
         return _results;
       });
@@ -253,16 +288,16 @@
               map.resize(mapSize.e(1), mapSize.e(2));
               map.refresh();
               map.initEntities();
-              if (response.profile.settings.animationSpeed === undefined) {
+              if (!(response.profile.settings.animationSpeed != null)) {
                 map.animationSpeed = 1;
                 map.animate = true;
-                $("#animationSpeedLabel").text("1x");
+                $("#animationSpeed").text("1x");
               } else if (response.profile.settings.animationSpeed > 0) {
                 map.animationSpeed = parseFloat(response.profile.settings.animationSpeed);
-                $("#animationSpeedLabel").text(response.profile.settings.animationSpeed + "x");
+                $("#animationSpeed").text(response.profile.settings.animationSpeed + "x");
               } else {
                 map.animate = false;
-                $("#animationSpeedLabel").text("off");
+                $("#animationSpeed").text("off");
               }
               return $("#spinner").hide();
             });
@@ -288,51 +323,50 @@
             }
           };
           e = queue.shift();
-          if (e.content) {
+          if (e.content != null) {
             e = e.content;
           }
-          if (e.action === "move") {
-            return map.moveUnit(e.unit.unitId, e.tile.tileId, e.path, nextEvent);
-          } else if (e.action === "wait") {
-            return map.waitUnit(e.unit.unitId, nextEvent);
-          } else if (e.action === "attack") {
-            return map.attackUnit(e.attacker.unitId, e.target.unitId, e.damage, nextEvent);
-          } else if (e.action === "counterattack") {
-            return map.counterattackUnit(e.attacker.unitId, e.target.unitId, e.damage, nextEvent);
-          } else if (e.action === "capture") {
-            return map.captureTile(e.unit.unitId, e.tile.tileId, e.left, nextEvent);
-          } else if (e.action === "captured") {
-            return map.capturedTile(e.unit.unitId, e.tile.tileId, nextEvent);
-          } else if (e.action === "deploy") {
-            return map.deployUnit(e.unit.unitId, nextEvent);
-          } else if (e.action === "undeploy") {
-            return map.undeployUnit(e.unit.unitId, nextEvent);
-          } else if (e.action === "load") {
-            return map.loadUnit(e.unit.unitId, e.carrier.unitId, nextEvent);
-          } else if (e.action === "unload") {
-            return map.unloadUnit(e.unit.unitId, e.carrier.unitId, e.tile.tileId, nextEvent);
-          } else if (e.action === "destroyed") {
-            return map.destroyUnit(e.unit.unitId, nextEvent);
-          } else if (e.action === "repair") {
-            return map.repairUnit(e.unit.unitId, e.newHealth, nextEvent);
-          } else if (e.action === "build") {
-            return map.buildUnit(e.tile.tileId, e.unit, nextEvent);
-          } else if (e.action === "regenerateCapturePoints") {
-            return map.regenerateCapturePointsTile(e.tile.tileId, e.newCapturePoints, nextEvent);
-          } else if (e.action === "produceFunds") {
-            return map.produceFundsTile(e.tile.tileId, nextEvent);
-          } else if (e.action === "beginTurn") {
-            return map.beginTurn(e.player, nextEvent);
-          } else if (e.action === "endTurn") {
-            return map.endTurn(e.player, nextEvent);
-          } else if (e.action === "turnTimeout") {
-            return map.turnTimeout(e.player, nextEvent);
-          } else if (e.action === "finished") {
-            return map.finished(e.winner, nextEvent);
-          } else {
-            if (e.action === "surrender") {
+          switch (e.action) {
+            case "move":
+              return map.moveUnit(e.unit.unitId, e.tile.tileId, e.path, nextEvent);
+            case "wait":
+              return map.waitUnit(e.unit.unitId, nextEvent);
+            case "attack":
+              return map.attackUnit(e.attacker.unitId, e.target.unitId, e.damage, nextEvent);
+            case "counterattack":
+              return map.counterattackUnit(e.attacker.unitId, e.target.unitId, e.damage, nextEvent);
+            case "capture":
+              return map.captureTile(e.unit.unitId, e.tile.tileId, e.left, nextEvent);
+            case "captured":
+              return map.capturedTile(e.unit.unitId, e.tile.tileId, nextEvent);
+            case "deploy":
+              return map.deployUnit(e.unit.unitId, nextEvent);
+            case "undeploy":
+              return map.undeployUnit(e.unit.unitId, nextEvent);
+            case "load":
+              return map.loadUnit(e.unit.unitId, e.carrier.unitId, nextEvent);
+            case "unload":
+              return map.unloadUnit(e.unit.unitId, e.carrier.unitId, e.tile.tileId, nextEvent);
+            case "destroyed":
+              return map.destroyUnit(e.unit.unitId, nextEvent);
+            case "repair":
+              return map.repairUnit(e.unit.unitId, e.newHealth, nextEvent);
+            case "build":
+              return map.buildUnit(e.tile.tileId, e.unit, nextEvent);
+            case "regenerateCapturePoints":
+              return map.regenerateCapturePointsTile(e.tile.tileId, e.newCapturePoints, nextEvent);
+            case "produceFunds":
+              return map.produceFundsTile(e.tile.tileId, nextEvent);
+            case "beginTurn":
+              return map.beginTurn(e.player, nextEvent);
+            case "endTurn":
+              return map.endTurn(e.player, nextEvent);
+            case "turnTimeout":
+              return map.turnTimeout(e.player, nextEvent);
+            case "finished":
+              return map.finished(e.winner, nextEvent);
+            case "surrender":
               return map.surrender(e.player, nextEvent);
-            }
           }
         };
         alreadyProcessing = queue.length !== 0;
@@ -469,20 +503,19 @@
       };
       if (inTurn) {
         buildMenu.hide();
-        if (gameUIState.stateName === "select") {
-          return handleSelectMapClick(tilePosition, canvasPosition);
-        } else if (gameUIState.stateName === "move") {
-          return handleMoveMapClick(tilePosition, canvasPosition);
-        } else if (gameUIState.stateName === "action") {
-          return handleActionMapClick();
-        } else if (gameUIState.stateName === "attack") {
-          return handleAttackMapClick(tilePosition);
-        } else if (gameUIState.stateName === "unloadUnit") {
-          return handleUnloadUnitMapClick();
-        } else {
-          if (gameUIState.stateName === "unloadTarget") {
+        switch (gameUIState.stateName) {
+          case "select":
+            return handleSelectMapClick(tilePosition, canvasPosition);
+          case "move":
+            return handleMoveMapClick(tilePosition, canvasPosition);
+          case "action":
+            return handleActionMapClick();
+          case "attack":
+            return handleAttackMapClick(tilePosition);
+          case "unloadUnit":
+            return handleUnloadUnitMapClick();
+          case "unloadTarget":
             return handleUnloadTargetMapClick(tilePosition);
-          }
         }
       }
     };
@@ -590,24 +623,21 @@
       return undoMove();
     };
     handleUnloadTargetMapClick = function(tilePosition) {
-      var canUnload, carriedUnitId, destination, i, option, tx, ty, unitId, unloadDestination;
+      var canUnload, carriedUnitId, destination, option, tx, ty, unitId, unloadDestination, _i, _len, _ref;
       map.refresh();
       map.hideOverlay();
       tx = tilePosition.x;
       ty = tilePosition.y;
       canUnload = false;
-      i = 0;
-      while (i < gameUIState.unloadTargetOptions.length) {
-        option = gameUIState.unloadTargetOptions[i];
+      _ref = gameUIState.unloadTargetOptions;
+      for (_i = 0, _len = _ref.length; _i < _len; _i++) {
+        option = _ref[_i];
         if (option.x === tx && option.y === ty) {
           canUnload = true;
           break;
         }
-        ++i;
       }
-      if (!canUnload) {
-        return undoMove();
-      } else {
+      if (canUnload) {
         unitId = map.getTile(gameUIState.x, gameUIState.y).unit.unitId;
         destination = {
           x: gameUIState.dx,
@@ -627,6 +657,8 @@
             stateName: "select"
           };
         });
+      } else {
+        return undoMove();
       }
     };
     undoMove = function() {
@@ -812,63 +844,64 @@
         };
         action = $(this).attr("action");
         actionMenu.hide();
-        if (action === "cancel") {
-          return undoMove();
-        } else if (action === "attack") {
-          gameUIState = {
-            stateName: "attack",
-            attackOptions: gameLogic.unitAttackOptions(gameUIState.x, gameUIState.y, gameUIState.dx, gameUIState.dy),
-            x: gameUIState.x,
-            y: gameUIState.y,
-            dx: gameUIState.dx,
-            dy: gameUIState.dy,
-            path: gameUIState.path
-          };
-          return map.paintAttackMask(gameUIState.attackOptions);
-        } else if (action === "wait") {
-          unitId = map.getTile(gameUIState.x, gameUIState.y).unit.unitId;
-          destination = {
-            x: gameUIState.dx,
-            y: gameUIState.dy
-          };
-          $("#spinner").show();
-          return client.stub.moveAndWait(gameId, unitId, destination, gameUIState.path, resetUI);
-        } else if (action === "capture") {
-          unitId = map.getTile(gameUIState.x, gameUIState.y).unit.unitId;
-          destination = {
-            x: gameUIState.dx,
-            y: gameUIState.dy
-          };
-          $("#spinner").show();
-          return client.stub.moveAndCapture(gameId, unitId, destination, gameUIState.path, resetUI);
-        } else if (action === "deploy") {
-          unitId = map.getTile(gameUIState.x, gameUIState.y).unit.unitId;
-          destination = {
-            x: gameUIState.dx,
-            y: gameUIState.dy
-          };
-          $("#spinner").show();
-          return client.stub.moveAndDeploy(gameId, unitId, destination, gameUIState.path, resetUI);
-        } else if (action === "undeploy") {
-          unitId = map.getTile(gameUIState.x, gameUIState.y).unit.unitId;
-          $("#spinner").show();
-          return client.stub.undeploy(gameId, unitId, resetUI);
-        } else if (action === "load") {
-          unitId = map.getTile(gameUIState.x, gameUIState.y).unit.unitId;
-          carrierId = map.getTile(gameUIState.dx, gameUIState.dy).unit.unitId;
-          $("#spinner").show();
-          return client.stub.moveAndLoadInto(gameId, unitId, carrierId, gameUIState.path, resetUI);
-        } else if (action === "unload") {
-          gameUIState = {
-            stateName: "unloadUnit",
-            unloadOptions: gameLogic.unitUnloadOptions(gameUIState.x, gameUIState.y, gameUIState.dx, gameUIState.dy),
-            x: gameUIState.x,
-            y: gameUIState.y,
-            dx: gameUIState.dx,
-            dy: gameUIState.dy,
-            path: gameUIState.path
-          };
-          return showUnloadMenu(gameUIState.unloadOptions, canvasPosition);
+        switch (action) {
+          case "cancel":
+            return undoMove();
+          case "attack":
+            gameUIState = {
+              stateName: "attack",
+              attackOptions: gameLogic.unitAttackOptions(gameUIState.x, gameUIState.y, gameUIState.dx, gameUIState.dy),
+              x: gameUIState.x,
+              y: gameUIState.y,
+              dx: gameUIState.dx,
+              dy: gameUIState.dy,
+              path: gameUIState.path
+            };
+            return map.paintAttackMask(gameUIState.attackOptions);
+          case "wait":
+            unitId = map.getTile(gameUIState.x, gameUIState.y).unit.unitId;
+            destination = {
+              x: gameUIState.dx,
+              y: gameUIState.dy
+            };
+            $("#spinner").show();
+            return client.stub.moveAndWait(gameId, unitId, destination, gameUIState.path, resetUI);
+          case "capture":
+            unitId = map.getTile(gameUIState.x, gameUIState.y).unit.unitId;
+            destination = {
+              x: gameUIState.dx,
+              y: gameUIState.dy
+            };
+            $("#spinner").show();
+            return client.stub.moveAndCapture(gameId, unitId, destination, gameUIState.path, resetUI);
+          case "deploy":
+            unitId = map.getTile(gameUIState.x, gameUIState.y).unit.unitId;
+            destination = {
+              x: gameUIState.dx,
+              y: gameUIState.dy
+            };
+            $("#spinner").show();
+            return client.stub.moveAndDeploy(gameId, unitId, destination, gameUIState.path, resetUI);
+          case "undeploy":
+            unitId = map.getTile(gameUIState.x, gameUIState.y).unit.unitId;
+            $("#spinner").show();
+            return client.stub.undeploy(gameId, unitId, resetUI);
+          case "load":
+            unitId = map.getTile(gameUIState.x, gameUIState.y).unit.unitId;
+            carrierId = map.getTile(gameUIState.dx, gameUIState.dy).unit.unitId;
+            $("#spinner").show();
+            return client.stub.moveAndLoadInto(gameId, unitId, carrierId, gameUIState.path, resetUI);
+          case "unload":
+            gameUIState = {
+              stateName: "unloadUnit",
+              unloadOptions: gameLogic.unitUnloadOptions(gameUIState.x, gameUIState.y, gameUIState.dx, gameUIState.dy),
+              x: gameUIState.x,
+              y: gameUIState.y,
+              dx: gameUIState.dx,
+              dy: gameUIState.dy,
+              path: gameUIState.path
+            };
+            return showUnloadMenu(gameUIState.unloadOptions, canvasPosition);
         }
       });
     };
@@ -1017,42 +1050,12 @@
         return addChart(container, data, "property", "globe");
       });
     };
-    getPowerMap = function() {
+    return getPowerMap = function() {
       if (powerMap === null) {
         powerMap = gameLogic.getPowerMap();
       }
       return powerMap;
     };
-    return $(document).ready(function() {
-      var loginUrl;
-      loginUrl = "login.html?next=" + document.location.pathname + document.location.search;
-      return session = resumeSessionOrRedirect(client, WARS_CLIENT_SETTINGS.gameServer, loginUrl, function() {
-        client.stub.subscribeGame(gameId);
-        populateNavigation(session);
-        if (gameId !== null) {
-          return client.stub.gameData(gameId, function(response) {
-            if (response.success) {
-              if (response.game.state === "pregame") {
-                document.location = "pregame.html?gameId=" + gameId;
-              }
-              $("#spinner").show();
-              initializeChat(client, gameId);
-              initializeMenuControls();
-              initializeGameTools();
-              $("#round").text(response.game.roundNumber);
-              if (response.author) {
-                initializeAuthorTools();
-              } else {
-                $("#authorTools").hide();
-              }
-              return initializeGame(response.game, response.author, response.turnRemaining);
-            } else {
-              return alert("Error loading game!");
-            }
-          });
-        }
-      });
-    });
   });
 
 }).call(this);
