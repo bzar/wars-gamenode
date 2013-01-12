@@ -174,19 +174,17 @@
         }
       });
       return client.stub.botNames(function(names) {
-        var i, item, name, _results;
-        if (names === null || names === undefined || names.length === 0) {
+        var item, name, _i, _len, _results;
+        if (!(names != null) || names.length === 0) {
           return $("#inviteForm").hide();
         } else {
-          i = 0;
           _results = [];
-          while (i < names.length) {
-            name = names[i];
+          for (_i = 0, _len = names.length; _i < _len; _i++) {
+            name = names[_i];
             item = $("<option></option>");
             item.attr("value", name);
             item.text(name);
-            $("#username").append(item);
-            _results.push(++i);
+            _results.push($("#username").append(item));
           }
           return _results;
         }

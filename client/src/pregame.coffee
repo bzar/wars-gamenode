@@ -8,9 +8,10 @@ require ["Theme", "Map", "gamenode", "base"], (Theme, Map) ->
     document.location = "/"
   theme = null
   mapPainter = null
+  
   $(document).ready ->
     loginUrl = "login.html?next=" + document.location.pathname + document.location.search
-    session = resumeSessionOrRedirect(client, WARS_CLIENT_SETTINGS.gameServer, loginUrl, ->
+    session = resumeSessionOrRedirect client, WARS_CLIENT_SETTINGS.gameServer, loginUrl, ->
       client.stub.subscribeGame gameId
       populateNavigation session
       client.stub.profile (response) ->
@@ -26,8 +27,6 @@ require ["Theme", "Map", "gamenode", "base"], (Theme, Map) ->
                 showGame response.game, response.author
               else
                 alert "Error loading game!" + response.reason
-    )
-
 
   showGame = (game, author) ->
     $("#gameName").text game.name
@@ -136,16 +135,12 @@ require ["Theme", "Map", "gamenode", "base"], (Theme, Map) ->
 
 
     client.stub.botNames (names) ->
-      if names is null or names is `undefined` or names.length is 0
+      if not names? or names.length is 0
         $("#inviteForm").hide()
       else
-        i = 0
-
-        while i < names.length
-          name = names[i]
+        for name in names
           item = $("<option></option>")
           item.attr "value", name
           item.text name
           $("#username").append item
-          ++i
 
