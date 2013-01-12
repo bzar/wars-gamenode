@@ -4,15 +4,15 @@ A browser multiplayer turn-based strategy game
 
 Developer setup
 ---------------
-1. Install node.js, mongodb and coffeescript
-2. Run the following commands
+    1. Install node.js, mongodb and coffeescript
+    2. Run the following commands
  
     git clone https://github.com/bzar/wars-gamenode.git 
     cd wars-gamenode 
     git checkout new-ui && git submodule update --init --recursive
     node wars
     
-3.  Development server runs at port 8888
+    3. Development server runs at port 8888
  
 Used libs and stuff
 -------------------
