@@ -16,9 +16,7 @@
 
   Skeleton.prototype.playerLeft = function(gameId, playerNumber) {};
 
-  Skeleton.prototype.unitBanned = function(unitType) {};
-
-  Skeleton.prototype.unitUnbanned = function(unitType) {};
+  Skeleton.prototype.bannedUnits = function(unitTypes) {};
 
   Skeleton.prototype.gameStarted = function(gameId) {};
 

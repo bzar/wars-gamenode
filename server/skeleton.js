@@ -579,6 +579,32 @@ Skeleton.prototype.gameRules = function(gameId) {
   }
 }
 
+Skeleton.prototype.setBannedUnits = function(gameId, bannedUnits) {
+  if(!requireArgs([gameId, bannedUnits])) return {success: false, reason: "Missing method arguments!"};
+  
+  if(this.sessionId === null)
+    return {success: false, reason: "Not logged in"}
+
+  var requestId = this.client.requestId;
+  var this_ = this;
+  var userId = this.session.userId;
+
+  var mutex = this.server.gameMutex(gameId);
+  mutex.lock(function() {
+    var timer = new utils.Timer("Skeleton.setBannedUnits");
+    this_.server.gameManagement.setBannedUnits(gameId, bannedUnits, userId, function(result) {
+      if(result.success) {
+        this_.server.messenger.sendBannedUnits(gameId, bannedUnits);
+        this_.client.sendResponse(requestId, {success: true});
+        timer.end();
+      } else {
+        this_.client.sendResponse(requestId, {success: false, reason: result.reason});
+      }
+      mutex.release();
+    });
+  });
+}
+
 Skeleton.prototype.gameData = function(gameId) {
   if(!requireArgs([gameId])) return {success: false, reason: "Missing method arguments!"};
   var timer = new utils.Timer("Skeleton.gameData");

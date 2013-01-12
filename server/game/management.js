@@ -321,3 +321,26 @@ GameManagement.prototype.myGames = function(userId, callback) {
     }
   });
 }
+
+GameManagement.prototype.setBannedUnits = function(gameId, bannedUnits, userId, callback) {
+  var database = this.database;
+  database.game(gameId, function(result) {
+    if(!result.success) {
+      callback({success: false, reason: result.reason});
+    } else if(result.game.authorId != userId) {
+      callback({success: false, reason: "Not the game author!"});
+    } else if(result.game.state != result.game.STATE_PREGAME) {
+      callback({success: false, reason: "Banned units can only be set during pregame!"});
+    } else {
+      var game = result.game;
+      game.settings.bannedUnits = bannedUnits;
+      database.updateGame(game, function(result) {
+        if(result.success) {
+          callback({success: true});
+        } else {
+          callback({success: false, reason: result.reason});
+        }
+      });
+    }
+  });
+}

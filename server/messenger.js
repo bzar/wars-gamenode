@@ -21,6 +21,13 @@ Messenger.prototype.sendGameEvents = function(gameId, events) {
   }, "game-" + gameId);
 }
 
+Messenger.prototype.sendBannedUnits = function(gameId, bannedUnits) {
+  this.subscriptions.forSubscribers(function(sub) {
+    if(sub.client.stub.bannedUnits)
+      sub.client.stub.bannedUnits(gameId, bannedUnits);
+  }, "game-" + gameId);
+}
+
 Messenger.prototype.sendPlayerJoined = function(gameId, playerNumber, username, userId) {
   this.subscriptions.forSubscribers(function(sub) {
     var isMe = userId == sub.session.userId;
