@@ -17,6 +17,7 @@ Developer setup
 Used libs and stuff
 -------------------
  *  [Node.js][] - Server runtime
+ *  [MongoDB] - Database
  *  [Gamenode][] - Client/server communication
    *  [Socket.io] - Communication transport layer
  *  [CoffeeScript][] - JavaScript replacement for client and server
@@ -32,6 +33,7 @@ Used libs and stuff
  *  [js2coffee][] - Javascript to CoffeeScript migration helper
  
 [Node.js]: http://nodejs.org
+[MongoDB]: http://www.mongodb.org/
 [Gamenode]: https://github.com/bzar/gamenode
 [Socket.io]: http://socket.io/
 [CoffeeScript]: http://coffeescript.org
