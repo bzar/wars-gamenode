@@ -10,7 +10,8 @@ function Game(gameId, authorId, name, mapId, state, turnStart, turnNumber, round
   this.inTurnNumber = inTurnNumber;
   this.settings = {
     public: settings.public,
-    turnLength: settings.turnLength
+    turnLength: settings.turnLength,
+    bannedUnits: settings.bannedUnits ? settings.bannedUnits : []
   }
 };
 
@@ -21,9 +22,12 @@ Game.prototype.STATE_PREGAME = "pregame";
 Game.prototype.STATE_FINISHED = "finished";
 
 Game.prototype.clone = function() {
-  var g = new Game(this.gameId, this.authorId, this.name, this.mapId, this.state, this.turnStart, 
-                   this.turnNumber, this.roundNumber, this.inTurnNumber, 
-                   {public: this.settings.public, turnLength: this.settings.turnLength});
+  var g = new Game(this.gameId, this.authorId, this.name, this.mapId, 
+                   this.state, this.turnStart, this.turnNumber, this.roundNumber,
+                   this.inTurnNumber, 
+                   {public: this.settings.public, 
+                    turnLength: this.settings.turnLength,
+                    bannedUnits: this.settings.bannedUnits ? this.settings.bannedUnits : []});
   return g;
 }
 
@@ -39,7 +43,8 @@ Game.prototype.cloneFrom = function(other) {
   this.inTurnNumber = other.inTurnNumber;
   this.settings = {
     public: other.settings.public,
-    turnLength: other.settings.turnLength
+    turnLength: other.settings.turnLength,
+    bannedUnits: other.settings.bannedUnits ? other.settings.bannedUnits : []
   }
   return this;
 }

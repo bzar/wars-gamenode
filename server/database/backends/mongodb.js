@@ -43,7 +43,7 @@ MongoDBDatabase.prototype.game = function(gameId, callback) {
       if(game === null) { callback({success: false, reason: "Invalid gameId: " + gameId}); return; }
       var result = new entities.Game(game._id.toString(), game.authorId, game.name, game.mapId, game.state,
                                      game.turnStart, game.turnNumber, game.roundNumber, game.inTurnNumber,
-                                     {public: game.public, turnLength: game.turnLength});
+                                     {public: game.public, turnLength: game.turnLength, bannedUnits: game.bannedUnits});
       timer.end();
       callback({success: true, game: result});
     });
@@ -62,7 +62,7 @@ MongoDBDatabase.prototype.createGame = function(game, gameData, players, callbac
                       mapId: game.mapId, state: game.state, turnStart: game.turnStart,
                       turnNumber: game.turnNumber, roundNumber: game.roundNumber,
                       inTurnNumber: game.inTurnNumber, public: game.settings.public,
-                      turnLength: game.settings.turnLength};
+                      turnLength: game.settings.turnLength, bannedUnits: game.settings.bannedUnits};
     collection.insert(gameValues, function(err, game) {
       if(err) { callback({success: false, reason: err}); return; }
       database.collection("players", function(err, collection) {
@@ -139,7 +139,8 @@ MongoDBDatabase.prototype.updateGame = function(game, callback) {
     var values = {$set: {authorId: game.authorId, name: game.name, mapId: game.mapId,
                   state: game.state, turnStart: game.turnStart, turnNumber: game.turnNumber,
                   roundNumber: game.roundNumber, inTurnNumber: game.inTurnNumber,
-                  public: game.settings.public, turnLength: game.settings.turnLength} }
+                  public: game.settings.public, turnLength: game.settings.turnLength,
+                  bannedUnits: game.settings.bannedUnits} }
     collection.update({_id:gameId}, values, function(err) {
       if(err) { callback({success: false, reason: err}); return; }
       timer.end();
@@ -185,7 +186,7 @@ function fetchGamesByQuery(database, query, callback) {
         if(game !== null) {
           var gameObj = new entities.Game(game._id.toString(), game.authorId, game.name, game.mapId, game.state,
                                           game.turnStart, game.turnNumber, game.roundNumber, game.inTurnNumber,
-                                          {public: game.public, turnLength: game.turnLength});
+                                          {public: game.public, turnLength: game.turnLength, bannedUnits: game.bannedUnits});
           gameObj.numPlayers = 0;
           result.push(gameObj);
         } else {

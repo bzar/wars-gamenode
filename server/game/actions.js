@@ -443,6 +443,11 @@ GameActions.prototype.build = function(gameId, userId, unitTypeId, destination, 
     }
 
     var game = result.game;
+    
+    if(game.settings.bannedUnits.indexOf(unitTypeId) != -1) {
+      callback({success: false, reason: "Unit is banned in this game!"}); return;
+    }
+    
     database.userPlayerInTurn(gameId, userId, function(result) {
       if(!result.success) {
         callback({success: false, reason: result.reason}); return;

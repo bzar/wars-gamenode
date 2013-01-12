@@ -563,11 +563,20 @@ Skeleton.prototype.gameRules = function(gameId) {
   }
 
   if(gameId !== null) {
-    rules.bannedUnits = [];
+    var this_ = this;
+    var requestId = this.client.requestId;
+    this.server.database.game(gameId, function(result) {
+      if(result.success) {
+        rules.bannedUnits = result.game.settings.bannedUnits;
+        this_.client.sendResponse(requestId, rules);
+      } else {
+        this_.client.sendResponse(requestId, {success: false, reason: result.reason});
+      }
+    });
+  } else {
+    timer.end();
+    return rules;
   }
-
-  timer.end();
-  return rules;
 }
 
 Skeleton.prototype.gameData = function(gameId) {
