@@ -9,7 +9,7 @@ Developer setup
  
     git clone https://github.com/bzar/wars-gamenode.git 
     cd wars-gamenode 
-    git checkout new-ui && git submodule update --init --recursive
+    git submodule update --init --recursive
     node wars
     
     3. Development server runs at port 8888
