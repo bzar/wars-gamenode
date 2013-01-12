@@ -8,6 +8,12 @@ zeroPad = (str, len) ->
   s = "0" + s while s.length < len
   s
   
+timeString = (t) -> t.getFullYear() + "-" + 
+                    zeroPad(t.getMonth() + 1, 2) + 
+                    "-" + zeroPad(t.getDate(), 2) + 
+                    " " + zeroPad(t.getHours(), 2) + 
+                    ":" + zeroPad(t.getMinutes(), 2)
+                    
 addChatMessage = (time, sender, content) ->
   messages = $("#chatMessages")
   messageItem = $("<li></li>")
@@ -15,7 +21,7 @@ addChatMessage = (time, sender, content) ->
   messageSender = $("<span></span>")
   messageContent = $("<span></span>")
   t = new Date(Date.parse(time))
-  messageTime.text t.getFullYear() + "-" + zeroPad(t.getMonth() + 1, 2) + "-" + zeroPad(t.getDate(), 2) + " " + zeroPad(t.getHours(), 2) + ":" + zeroPad(t.getMinutes(), 2)
+  messageTime.text timeString t
   messageTime.addClass "messageTime"
   messageSender.text sender
   messageSender.addClass "messageSender"

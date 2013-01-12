@@ -43,37 +43,65 @@ require ["Theme", "gamenode", "base", "lib/d3/d3"], (Theme) ->
     h = 400
     marginLeft = 50
     marginBottom = 20
-    y = d3.scale.linear().domain([0, parsedData.max[statName]]).range([marginBottom, h - marginBottom]).nice()
-    x = d3.scale.linear().domain([0, parsedData.max.turn]).range([marginLeft, w - marginLeft])
-    vis = d3.select(selector).append("svg:svg").attr("width", w + 1).attr("height", h)
-    vis.append("svg:rect").style("stroke", "#111").style("fill", "#e8e8e8").attr("x", marginLeft).attr("y", 0).attr("width", w - marginLeft).attr "height", h - marginBottom
-    g = vis.append("svg:g").attr("transform", "translate(0, " + h + ")")
-    i = 0
+    y = d3.scale.linear()
+      .domain([0, parsedData.max[statName]])
+      .range([marginBottom, h - marginBottom]).nice()
+    x = d3.scale.linear()
+      .domain([0, parsedData.max.turn])
+      .range([marginLeft, w - marginLeft])
+    vis = d3.select(selector).append("svg:svg")
+      .attr("width", w + 1)
+      .attr("height", h)
+    vis.append("svg:rect")
+      .style("stroke", "#111")
+      .style("fill", "#e8e8e8")
+      .attr("x", marginLeft)
+      .attr("y", 0)
+      .attr("width", w - marginLeft)
+      .attr("height", h - marginBottom)
+      
+    g = vis.append("svg:g")
+      .attr("transform", "translate(0, " + h + ")")
 
-    while i < parsedData.players.length
-      playerNumber = parsedData.players[i]
-      line = d3.svg.line().x((d) ->
-        x d.turnNumber
-      ).y((d) ->
-        -1 * y(d[statName])
-      )
+    for playerNumber, i in parsedData.players
+      line = d3.svg.line()
+        .x((d) -> x d.turnNumber)
+        .y((d) -> -1 * y(d[statName]))
+        
       playerColor = theme.getPlayerColorString(playerNumber)
       c = g.append("svg:g")
-      c.append("svg:path").attr("d", line(parsedData.data[playerNumber].byRound)).style("stroke", playerColor).style "fill", "none"
-      c.selectAll("circle").data(parsedData.data[playerNumber].byTurn).enter().append("svg:circle").attr("cx", (d) ->
-        x d.turnNumber
-      ).attr("cy", (d) ->
-        -1 * y(d[statName])
-      ).attr("r", 3).style("stroke", playerColor).style "fill", playerColor
-      ++i
-    g.selectAll(".xLabel").data(x.ticks(5)).enter().append("svg:text").attr("class", "xLabel").text((i) ->
-      String i + 1
-    ).attr("x", (d) ->
-      x d
-    ).attr("y", -2).attr "text-anchor", "middle"
-    g.selectAll(".yLabel").data(y.ticks(4)).enter().append("svg:text").attr("class", "yLabel").text(String).attr("x", 0).attr("y", (d) ->
-      -1 * y(d)
-    ).attr("text-anchor", "right").attr "dy", 4
+      c.append("svg:path")
+        .attr("d", line(parsedData.data[playerNumber].byRound))
+        .style("stroke", playerColor)
+        .style("fill", "none")
+        
+      c.selectAll("circle")
+        .data(parsedData.data[playerNumber].byTurn)
+        .enter().append("svg:circle")
+          .attr("cx", (d) -> x d.turnNumber)
+          .attr("cy", (d) -> -1 * y(d[statName]))
+          .attr("r", 3)
+          .style("stroke", playerColor)
+          .style("fill", playerColor)
+      
+    g.selectAll(".xLabel")
+      .data(x.ticks(5))
+      .enter().append("svg:text")
+        .attr("class", "xLabel")
+        .text((i) -> if i isnt 0 then String i else "")
+        .attr("x", (d) -> x d)
+        .attr("y", -2)
+        .attr("text-anchor", "middle")
+        
+    g.selectAll(".yLabel")
+      .data(y.ticks(4))
+      .enter().append("svg:text")
+        .attr("class", "yLabel")
+        .text(String).attr("x", 0)
+        .attr("y", (d) -> -1 * y(d))
+        .attr("text-anchor", "right")
+        .attr("dy", 4)
+        
   parseStatisticData = (data) ->
     data.sort (a, b) ->
       return 0  if a.turnNumber is b.turnNumber
@@ -88,20 +116,16 @@ require ["Theme", "gamenode", "base", "lib/d3/d3"], (Theme) ->
     maxScore = 0
     maxPower = 0
     maxProperty = 0
-    i = 0
 
-    while i < data.length
-      turnData = data[i]
+    for turnData, i in data
       roundChange = lastRoundNumber isnt turnData.roundNumber
       maxTurn = Math.max(maxTurn, turnData.turnNumber)
       maxRound = Math.max(maxRound, turnData.roundNumber)
-      j = 0
 
-      while j < turnData.content.length
-        playerData = turnData.content[j]
+      for playerData, j in turnData.content
         playerNumber = playerData.playerNumber
         players.push playerNumber  if players.indexOf(playerNumber) is -1
-        if result[playerNumber] is `undefined`
+        if playerNumber not of result
           result[playerNumber] =
             byTurn: []
             byRound: [
@@ -122,6 +146,7 @@ require ["Theme", "gamenode", "base", "lib/d3/d3"], (Theme) ->
         maxPower = Math.max(maxPower, playerData.power)
         maxProperty = Math.max(maxProperty, playerData.property)
         roundStatistics = playerResults.byRound[playerResults.byRound.length - 1]
+        
         if roundChange or i is data.length - 1
           roundStatistics.score /= roundTurnNumber
           roundStatistics.power /= roundTurnNumber
@@ -138,10 +163,10 @@ require ["Theme", "gamenode", "base", "lib/d3/d3"], (Theme) ->
         roundStatistics.score += playerData.score
         roundStatistics.power += playerData.power
         roundStatistics.property += playerData.property
-        ++j
+        
       roundTurnNumber = (if roundChange then 1 else roundTurnNumber + 1)
       lastRoundNumber = turnData.roundNumber
-      ++i
+      
     data: result
     players: players
     max:

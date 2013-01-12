@@ -50,7 +50,7 @@
       });
     };
     drawGraph = function(parsedData, statName, selector) {
-      var c, g, h, i, line, marginBottom, marginLeft, playerColor, playerNumber, vis, w, x, y;
+      var c, g, h, i, line, marginBottom, marginLeft, playerColor, playerNumber, vis, w, x, y, _i, _len, _ref;
       w = Math.max(400, Math.min(3 * $(selector).innerWidth() / 4, parsedData.max.turn * 50));
       h = 400;
       marginLeft = 50;
@@ -60,9 +60,9 @@
       vis = d3.select(selector).append("svg:svg").attr("width", w + 1).attr("height", h);
       vis.append("svg:rect").style("stroke", "#111").style("fill", "#e8e8e8").attr("x", marginLeft).attr("y", 0).attr("width", w - marginLeft).attr("height", h - marginBottom);
       g = vis.append("svg:g").attr("transform", "translate(0, " + h + ")");
-      i = 0;
-      while (i < parsedData.players.length) {
-        playerNumber = parsedData.players[i];
+      _ref = parsedData.players;
+      for (i = _i = 0, _len = _ref.length; _i < _len; i = ++_i) {
+        playerNumber = _ref[i];
         line = d3.svg.line().x(function(d) {
           return x(d.turnNumber);
         }).y(function(d) {
@@ -76,10 +76,13 @@
         }).attr("cy", function(d) {
           return -1 * y(d[statName]);
         }).attr("r", 3).style("stroke", playerColor).style("fill", playerColor);
-        ++i;
       }
       g.selectAll(".xLabel").data(x.ticks(5)).enter().append("svg:text").attr("class", "xLabel").text(function(i) {
-        return String(i + 1);
+        if (i !== 0) {
+          return String(i);
+        } else {
+          return "";
+        }
       }).attr("x", function(d) {
         return x(d);
       }).attr("y", -2).attr("text-anchor", "middle");
@@ -88,7 +91,7 @@
       }).attr("text-anchor", "right").attr("dy", 4);
     };
     return parseStatisticData = function(data) {
-      var i, j, lastRoundNumber, maxPower, maxProperty, maxRound, maxScore, maxTurn, playerData, playerNumber, playerResults, players, result, roundChange, roundStatistics, roundTurnNumber, turnData;
+      var i, j, lastRoundNumber, maxPower, maxProperty, maxRound, maxScore, maxTurn, playerData, playerNumber, playerResults, players, result, roundChange, roundStatistics, roundTurnNumber, turnData, _i, _j, _len, _len1, _ref;
       data.sort(function(a, b) {
         if (a.turnNumber === b.turnNumber) {
           return 0;
@@ -108,20 +111,19 @@
       maxScore = 0;
       maxPower = 0;
       maxProperty = 0;
-      i = 0;
-      while (i < data.length) {
+      for (i = _i = 0, _len = data.length; _i < _len; i = ++_i) {
         turnData = data[i];
         roundChange = lastRoundNumber !== turnData.roundNumber;
         maxTurn = Math.max(maxTurn, turnData.turnNumber);
         maxRound = Math.max(maxRound, turnData.roundNumber);
-        j = 0;
-        while (j < turnData.content.length) {
-          playerData = turnData.content[j];
+        _ref = turnData.content;
+        for (j = _j = 0, _len1 = _ref.length; _j < _len1; j = ++_j) {
+          playerData = _ref[j];
           playerNumber = playerData.playerNumber;
           if (players.indexOf(playerNumber) === -1) {
             players.push(playerNumber);
           }
-          if (result[playerNumber] === undefined) {
+          if (!(playerNumber in result)) {
             result[playerNumber] = {
               byTurn: [],
               byRound: [
@@ -163,11 +165,9 @@
           roundStatistics.score += playerData.score;
           roundStatistics.power += playerData.power;
           roundStatistics.property += playerData.property;
-          ++j;
         }
         roundTurnNumber = (roundChange ? 1 : roundTurnNumber + 1);
         lastRoundNumber = turnData.roundNumber;
-        ++i;
       }
       return {
         data: result,
