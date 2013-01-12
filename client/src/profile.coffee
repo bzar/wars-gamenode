@@ -3,17 +3,16 @@ require ["gamenode", "base"], ->
   session = null
   $(document).ready ->
     loginUrl = "login.html?next=" + document.location.pathname + document.location.search
-    session = resumeSessionOrRedirect(client, WARS_CLIENT_SETTINGS.gameServer, loginUrl, ->
+    session = resumeSessionOrRedirect client, WARS_CLIENT_SETTINGS.gameServer, loginUrl, ->
       populateNavigation session
       initialize client
-    )
+    
 
 
   initialize = (client) ->
     client.stub.profile (response) ->
       alert "Unable to get profile! " + response.reason  unless response.success
       profile = response.profile
-      console.log profile.settings
       $("#username").val profile.username
       $("#email").val profile.email
       $("#theme").val profile.settings.gameTheme

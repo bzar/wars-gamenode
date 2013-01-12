@@ -10,17 +10,13 @@ require ["Theme", "Map", "gamenode", "base"], (Theme, Map) ->
   lastY = null
   $(document).ready ->
     loginUrl = "login.html?next=" + document.location.pathname + document.location.search
-    session = resumeSessionOrRedirect(client, WARS_CLIENT_SETTINGS.gameServer, loginUrl, ->
+    session = resumeSessionOrRedirect client, WARS_CLIENT_SETTINGS.gameServer, loginUrl, ->
       client.stub.profile (response) ->
         theme = new Theme(response.profile.settings.gameTheme)
         theme.load ->
           mapPainter = new Map(`undefined`, 1.0, theme)
           populateNavigation session
           initializeMapEditor client
-
-
-    )
-
 
   updatePalette = ->
     playerSelection = $("#playerSelection")

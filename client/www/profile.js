@@ -20,7 +20,6 @@
           alert("Unable to get profile! " + response.reason);
         }
         profile = response.profile;
-        console.log(profile.settings);
         $("#username").val(profile.username);
         $("#email").val(profile.email);
         $("#theme").val(profile.settings.gameTheme);

@@ -2,18 +2,19 @@ require ["gamenode", "base"], ->
   client = new GameNodeClient(Skeleton)
   session = null
   initialPage = /(\d+)/.exec(window.location.hash)
+  paginator = null
+  
   if initialPage isnt null
     initialPage = parseInt(initialPage[1])
   else
     initialPage = 1
     window.location.hash = initialPage
+    
   $(document).ready ->
     loginUrl = "login.html?next=" + document.location.pathname + document.location.search
-    session = resumeSessionOrRedirect(client, WARS_CLIENT_SETTINGS.gameServer, loginUrl, ->
+    session = resumeSessionOrRedirect client, WARS_CLIENT_SETTINGS.gameServer, loginUrl, ->
       populateNavigation session
       populatePublicGames client
-    )
-
 
   updatePageControls = ->
     $("#firstPage").attr("href", "#" + paginator.firstPage()).toggle paginator.currentPage isnt paginator.firstPage()
@@ -22,6 +23,7 @@ require ["gamenode", "base"], ->
     $("#nextPage").attr("href", "#" + paginator.nextPage()).toggle paginator.currentPage isnt paginator.lastPage()
     $(".pageLink").removeClass "current"
     $(".pageLink[page=\"" + paginator.currentPage + "\"]").addClass "current"
+    
   populatePublicGames = (client) ->
     client.stub.publicGames null, (response) ->
       changePage = (e, page) ->
@@ -33,9 +35,7 @@ require ["gamenode", "base"], ->
         alert "Error loading games! " + response.reason
         return
       games = $("#games tbody")
-      paginator = new Paginator(response.games, ->
-        games.empty()
-      , (game) ->
+      paginator = new Paginator response.games, (-> games.empty()), (game) ->
         row = $("<tr></tr>")
         nameItem = $("<td></td>")
         mapItem = $("<td></td>")
@@ -59,34 +59,23 @@ require ["gamenode", "base"], ->
         row.append gameRoundItem
         $("a", row).attr "href", "game.html?gameId=" + game.gameId
         games.append row
-      )
+
       paginator.setPage initialPage
       pages = $("#pages")
-      i = 0
 
-      while i < paginator.pages()
+      numPages = paginator.pages() 
+      for i in [1..numPages]
         pageLink = $("<a></a>")
-        pageLink.text i + 1
-        pageLink.attr "href", "#" + (i + 1)
-        pageLink.attr "page", i + 1
+        pageLink.text i
+        pageLink.attr "href", "#" + i
+        pageLink.attr "page", i
         pageLink.addClass "pageLink"
         pages.append pageLink
-        ++i
+
       updatePageControls()
-      $(".pageLink").click (e) ->
-        changePage e, parseInt($(this).attr("page"))
-
-      $("#firstPage").click (e) ->
-        changePage e, paginator.firstPage()
-
-      $("#lastPage").click (e) ->
-        changePage e, paginator.lastPage()
-
-      $("#nextPage").click (e) ->
-        changePage e, paginator.nextPage()
-
-      $("#prevPage").click (e) ->
-        changePage e, paginator.prevPage()
-
+      $(".pageLink").click (e) -> changePage e, parseInt($(this).attr("page"))
+      $("#firstPage").click (e) -> changePage e, paginator.firstPage()
+      $("#lastPage").click (e) -> changePage e, paginator.lastPage()
+      $("#nextPage").click (e) -> changePage e, paginator.nextPage()
+      $("#prevPage").click (e) -> changePage e, paginator.prevPage()
       $("#pageControls").hide()  if paginator.pages() is 1
-

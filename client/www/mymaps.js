@@ -22,7 +22,7 @@
         return client.stub.profile(function(response) {
           theme = new Theme(response.profile.settings.gameTheme);
           return theme.load(function() {
-            mapPainter = new Map(undefined, undefined, theme);
+            mapPainter = new Map(null, null, theme);
             populateNavigation(session);
             return populateMyMaps(client);
           });

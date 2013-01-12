@@ -4,18 +4,13 @@ require ["Theme", "gamenode", "base"], (Theme) ->
   theme = null
   $(document).ready ->
     loginUrl = "login.html?next=" + document.location.pathname + document.location.search
-    session = resumeSessionOrRedirect(client, WARS_CLIENT_SETTINGS.gameServer, loginUrl, ->
+    session = resumeSessionOrRedirect client, WARS_CLIENT_SETTINGS.gameServer, loginUrl, ->
       populateNavigation session
       client.stub.profile (response) ->
         theme = new Theme(response.profile.settings.gameTheme)
         theme.load ->
           client.stub.gameRules null, (rules) ->
             populateInfo rules
-
-
-
-    )
-
 
   populateInfo = (rules) ->
     populateArmorNames rules

@@ -9,11 +9,11 @@ require ["Theme", "gamenode", "base", "lib/d3/d3"], (Theme) ->
     document.location = "/"
   $(document).ready ->
     loginUrl = "login.html?next=" + document.location.pathname + document.location.search
-    session = resumeSessionOrRedirect(client, WARS_CLIENT_SETTINGS.gameServer, loginUrl, ->
+    session = resumeSessionOrRedirect client, WARS_CLIENT_SETTINGS.gameServer, loginUrl, ->
       populateNavigation session
       $("#backToGame").attr "href", "game.html?gameId=" + gameId
       initialize client
-    )
+    
 
   initialize = (client) ->
     client.stub.profile (response) ->

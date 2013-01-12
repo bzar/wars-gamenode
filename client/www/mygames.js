@@ -16,16 +16,16 @@
     });
     return populateMyGames = function(client) {
       return client.stub.myGames(null, function(response) {
-        var game, i, map, mapItem, myGames, name, nameItem, players, playersItem, row, state, stateItem, turn, turnItem, _results;
+        var game, map, mapItem, myGames, name, nameItem, players, playersItem, row, state, stateItem, turn, turnItem, _i, _len, _ref, _results;
         if (!response.success) {
           alert("Error loading games! " + response.reason);
           return;
         }
         myGames = $("#myGames tbody");
-        i = 0;
+        _ref = response.games;
         _results = [];
-        while (i < response.games.length) {
-          game = response.games[i];
+        for (_i = 0, _len = _ref.length; _i < _len; _i++) {
+          game = _ref[_i];
           row = $("<tr></tr>");
           nameItem = $("<td></td>");
           mapItem = $("<td></td>");
@@ -59,8 +59,7 @@
           row.append(stateItem);
           row.append(turnItem);
           $("a", row).attr("href", (game.state === "pregame" ? "/pregame.html" : "game.html") + "?gameId=" + game.gameId);
-          myGames.append(row);
-          _results.push(++i);
+          _results.push(myGames.append(row));
         }
         return _results;
       });

@@ -1,11 +1,8 @@
 require ["gamenode", "base"], ->
   client = new GameNodeClient()
   session = new Session(client)
-  session.onAuthenticationSuccess = ->
-    location.replace "mygames.html"
-
-  client.onConnected = ->
-    session.authenticate()
+  session.onAuthenticationSuccess = -> location.replace "mygames.html"
+  client.onConnected = -> session.authenticate()
 
   $(document).ready ->
     $("#registerForm").submit (e) ->

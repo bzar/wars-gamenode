@@ -4,12 +4,10 @@ require ["gamenode", "base"], ->
   session = null
   $(document).ready ->
     loginUrl = "login.html?next=" + document.location.pathname + document.location.search
-    session = resumeSessionOrRedirect(client, WARS_CLIENT_SETTINGS.gameServer, loginUrl, ->
+    session = resumeSessionOrRedirect client, WARS_CLIENT_SETTINGS.gameServer, loginUrl, ->
       populateNavigation session
       populateMyGames client
       initializeChat client
-    )
-
 
   populateMyGames = (client) ->
     client.stub.myGames null, (response) ->
@@ -17,10 +15,8 @@ require ["gamenode", "base"], ->
         alert "Error loading games! " + response.reason
         return
       myGames = $("#myGames tbody")
-      i = 0
 
-      while i < response.games.length
-        game = response.games[i]
+      for game in response.games
         row = $("<tr></tr>")
         nameItem = $("<td></td>")
         mapItem = $("<td></td>")
@@ -54,4 +50,3 @@ require ["gamenode", "base"], ->
         row.append turnItem
         $("a", row).attr "href", ((if game.state is "pregame" then "/pregame.html" else "game.html")) + "?gameId=" + game.gameId
         myGames.append row
-        ++i

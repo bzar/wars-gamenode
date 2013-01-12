@@ -2,10 +2,11 @@
 (function() {
 
   require(["gamenode", "base"], function() {
-    var client, initialPage, populatePublicGames, session, updatePageControls;
+    var client, initialPage, paginator, populatePublicGames, session, updatePageControls;
     client = new GameNodeClient(Skeleton);
     session = null;
     initialPage = /(\d+)/.exec(window.location.hash);
+    paginator = null;
     if (initialPage !== null) {
       initialPage = parseInt(initialPage[1]);
     } else {
@@ -30,7 +31,7 @@
     };
     return populatePublicGames = function(client) {
       return client.stub.publicGames(null, function(response) {
-        var changePage, games, i, pageLink, pages, paginator;
+        var changePage, games, i, numPages, pageLink, pages, _i;
         changePage = function(e, page) {
           e.preventDefault();
           paginator.setPage(page);
@@ -42,9 +43,9 @@
           return;
         }
         games = $("#games tbody");
-        paginator = new Paginator(response.games, function() {
+        paginator = new Paginator(response.games, (function() {
           return games.empty();
-        }, function(game) {
+        }), function(game) {
           var gameRound, gameRoundItem, map, mapItem, name, nameItem, players, playersItem, row;
           row = $("<tr></tr>");
           nameItem = $("<td></td>");
@@ -72,15 +73,14 @@
         });
         paginator.setPage(initialPage);
         pages = $("#pages");
-        i = 0;
-        while (i < paginator.pages()) {
+        numPages = paginator.pages();
+        for (i = _i = 1; 1 <= numPages ? _i <= numPages : _i >= numPages; i = 1 <= numPages ? ++_i : --_i) {
           pageLink = $("<a></a>");
-          pageLink.text(i + 1);
-          pageLink.attr("href", "#" + (i + 1));
-          pageLink.attr("page", i + 1);
+          pageLink.text(i);
+          pageLink.attr("href", "#" + i);
+          pageLink.attr("page", i);
           pageLink.addClass("pageLink");
           pages.append(pageLink);
-          ++i;
         }
         updatePageControls();
         $(".pageLink").click(function(e) {
