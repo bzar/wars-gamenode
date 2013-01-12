@@ -183,8 +183,8 @@
 
   e.Paginator = Paginator;
 
-  e.forEachProperty;
+  e.forEachProperty = forEachProperty;
 
-  e.getObjectWithId;
+  e.getObjectWithId = getObjectWithId;
 
 }).call(this);

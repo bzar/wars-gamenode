@@ -111,5 +111,5 @@ e.zeroPad = zeroPad
 e.addChatMessage = addChatMessage
 e.initializeChat = initializeChat
 e.Paginator = Paginator
-e.forEachProperty
-e.getObjectWithId
+e.forEachProperty = forEachProperty
+e.getObjectWithId = getObjectWithId

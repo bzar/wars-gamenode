@@ -15,7 +15,7 @@ require ["Theme", "Map", "gamenode", "base"], (Theme, Map) ->
   mapPainter = null
   $(document).ready ->
     loginUrl = "login.html?next=" + document.location.pathname + document.location.search
-    session = resumeSessionOrRedirect(client, WARS_CLIENT_SETTINGS.gameServer, loginUrl, ->
+    session = resumeSessionOrRedirect client, WARS_CLIENT_SETTINGS.gameServer, loginUrl, ->
       client.stub.profile (response) ->
         theme = new Theme(response.profile.settings.gameTheme)
         theme.load ->
@@ -27,7 +27,6 @@ require ["Theme", "Map", "gamenode", "base"], (Theme, Map) ->
               showMaps()
             else
               showFullMapPreview()
-    )
 
   initializeControls = ->
     $("#turnTimeLimit").change ->

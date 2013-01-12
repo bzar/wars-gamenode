@@ -155,7 +155,7 @@
         e.preventDefault();
         return client.stub.deleteGame(gameId, function(response) {
           if (response.success) {
-            return document.location = "/home.html";
+            return document.location = "/login.html";
           } else {
             return alert("Error deleting game! " + response.reason);
           }

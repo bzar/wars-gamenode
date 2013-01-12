@@ -122,7 +122,7 @@ require ["Theme", "Map", "gamenode", "base"], (Theme, Map) ->
       e.preventDefault()
       client.stub.deleteGame gameId, (response) ->
         if response.success
-          document.location = "/home.html"
+          document.location = "/login.html"
         else
           alert "Error deleting game! " + response.reason
 
