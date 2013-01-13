@@ -50,6 +50,9 @@ body {
 }
 .dropdown-menu .label {
   color: #ddd;
+  display: block;
+  height: 100%;
+  overflow: hidden;
 }
 .dropdown-menu .content {
   display: none;

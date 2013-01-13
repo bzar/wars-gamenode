@@ -69,6 +69,7 @@ require ["Theme", "Map", "gamenode", "base"], (Theme, Map) ->
       if $(".selected:visible", unitPalette).length is 0
         $(".sprite", unitPalette).removeClass "selected"
         $($(":visible", unitPalette)[0]).addClass "selected"
+  
   selectedBrush = ->
     terrainSelection = $("#terrainSelection")
     if terrainSelection.hasClass("selected")
@@ -82,13 +83,15 @@ require ["Theme", "Map", "gamenode", "base"], (Theme, Map) ->
       unit:
         type: parseInt(selected.attr("type"))
         owner: parseInt(selected.attr("owner"))
+        
   paintTile = (x, y, brush) ->
     tile = mapPainter.getTile(x, y)
     return  unless tile
-    tile.type = brush.type  if brush.type isnt `undefined`
-    tile.subtype = brush.subtype  if brush.subtype isnt `undefined`
-    tile.owner = brush.owner  if brush.owner isnt `undefined`
-    tile.unit = brush.unit  if brush.unit isnt `undefined`
+    tile.type = brush.type  if brush.type?
+    tile.subtype = brush.subtype  if brush.subtype?
+    tile.owner = brush.owner  if brush.owner?
+    tile.unit = brush.unit  if brush.unit?
+    
   resizeMap = (width, height) ->
     mapSize = mapPainter.getMapLimits().max
     w = mapSize.e(1) + 1
@@ -420,12 +423,13 @@ require ["Theme", "Map", "gamenode", "base"], (Theme, Map) ->
       $("#terrainTypePalette .sprite.selected").removeClass "selected"
       $(this).addClass "selected"
       updatePalette()
-
+      updateBrushIcon()
+      
     $("#terrainSubtypePalette .sprite").click ->
       $("#terrainSubtypePalette .sprite.selected").removeClass "selected"
       $(this).addClass "selected"
       updatePalette()
-
+      updateBrushIcon()
     unitEraserItem = $("<span></span>")
     unitEraserItem.attr "type", "null"
     unitEraserItem.attr "owner", "null"
@@ -459,11 +463,13 @@ require ["Theme", "Map", "gamenode", "base"], (Theme, Map) ->
       $("#unitPalette .sprite.selected").removeClass "selected"
       $(this).addClass "selected"
       updatePalette()
-
+      updateBrushIcon()
+      
     terrainTypePalette.children().first().addClass "selected"
     updatePalette()
     unitPalette.children().first().addClass "selected"
     terrainSubtypePalette.children().first().addClass "selected"
+    updateBrushIcon()
     
     # MAP SIZE
     mapSize.submit (e) ->
@@ -497,3 +503,43 @@ require ["Theme", "Map", "gamenode", "base"], (Theme, Map) ->
             alert "Error deleting map! " + response.reason
 
 
+  updateBrushIcon = () ->
+###    brush = selectedBrush()
+    
+    image = $("#brushIcon");
+    image.empty();
+    
+    iconWidth = image.width()
+    iconHeight = image.height()
+
+    dx = (theme.settings.image.width - iconWidth) / 2
+    
+    image.css "width", "100%"
+    image.css "height", "100%"
+    image.css "position", "relative"
+    
+    if brush.unit?
+      pos = theme.getUnitCoordinates(brush.unit.type, brush.unit.owner)
+      image.css "background-image", "url('#{theme.getSpriteSheetUrl()}')"
+      image.css "background-position", (-pos.x - dx) + "px " + (-pos.y) + "px"
+    
+    else if brush.type? and brush.subtype? and brush.owner?
+      pos = theme.getTileCoordinates(brush.type, brush.subtype, brush.owner)
+      image.css "background-image", "url('#{theme.getSpriteSheetUrl()}')"
+      image.css "background-position", (-pos.x - dx) + "px " + (-pos.y + (theme.settings.image.height - theme.settings.hex.height - theme.settings.hex.thickness)) + "px"
+      propPos = theme.getTilePropCoordinates(brush.type, brush.subtype, brush.owner)
+      if propPos
+        terrainProp = $("<span></span>")
+        terrainProp.css "background-image", "url('" + theme.getSpriteSheetUrl() + "')"
+        terrainProp.css "width", "100%"
+        terrainProp.css "height", "100%"
+        terrainProp.css "display", "block"
+        terrainProp.css "background-position", (-propPos.x - dx) + "px " + (-propPos.y - theme.settings.hex.thickness) + "px"
+        terrainProp.css "position", "absolute"
+        terrainProp.css "left", "0"
+        terrainProp.css "top", "0"
+        image.append terrainProp
+    else if brush.unit is null
+      image.css "background-image", "url('#{theme.getEraserIconUrl()}')"
+      image.css "background-position", "0px, 0px"
+      ###
