@@ -154,18 +154,17 @@
       return updatePageControls();
     };
     updatePageControls = function() {
-      var i, pageLink, pages;
+      var i, numPages, pageLink, pages, _i;
       pages = $("#pages");
       pages.empty();
-      i = 0;
-      while (i < paginator.pages()) {
+      numPages = paginator.pages();
+      for (i = _i = 1; 1 <= numPages ? _i <= numPages : _i >= numPages; i = 1 <= numPages ? ++_i : --_i) {
         pageLink = $("<a></a>");
-        pageLink.text(i + 1);
-        pageLink.attr("href", "#" + (i + 1));
-        pageLink.attr("page", i + 1);
+        pageLink.text(i);
+        pageLink.attr("href", "#" + i);
+        pageLink.attr("page", i);
         pageLink.addClass("pageLink");
         pages.append(pageLink);
-        ++i;
       }
       $("#firstPage").attr("href", "#" + paginator.firstPage()).toggle(paginator.currentPage !== paginator.firstPage());
       $("#lastPage").attr("href", "#" + paginator.lastPage()).toggle(paginator.currentPage !== paginator.lastPage());
@@ -183,9 +182,9 @@
         var mapList, maps;
         maps = response.maps;
         mapList = $("#maps");
-        paginator = new Paginator(maps, function() {
+        paginator = new Paginator(maps, (function() {
           return mapList.empty();
-        }, function(map) {
+        }), function(map) {
           var container, funds, name, players, preview, previewCanvas;
           container = $("<a></a>");
           name = $("<div></div>");

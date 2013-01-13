@@ -3,16 +3,19 @@ require ["Theme", "Map", "gamenode", "base"], (Theme, Map) ->
   session = null
   paginator = null
   initialPage = /(\d+)/.exec(window.location.hash)
+  
   if initialPage isnt null
     initialPage = parseInt(initialPage[1])
   else
     initialPage = 1
     window.location.hash = initialPage
+    
   lastMapId = null
   mapId = /[?&]mapId=([0-9a-f]+)/.exec(window.location.search)
   mapId = mapId[1]  if mapId isnt null
   theme = null
   mapPainter = null
+  
   $(document).ready ->
     loginUrl = "login.html?next=" + document.location.pathname + document.location.search
     session = resumeSessionOrRedirect client, WARS_CLIENT_SETTINGS.gameServer, loginUrl, ->
@@ -125,16 +128,16 @@ require ["Theme", "Map", "gamenode", "base"], (Theme, Map) ->
   updatePageControls = ->
     pages = $("#pages")
     pages.empty()
-    i = 0
 
-    while i < paginator.pages()
+    numPages = paginator.pages() 
+    for i in [1..numPages]
       pageLink = $("<a></a>")
-      pageLink.text i + 1
-      pageLink.attr "href", "#" + (i + 1)
-      pageLink.attr "page", i + 1
+      pageLink.text i
+      pageLink.attr "href", "#" + i
+      pageLink.attr "page", i
       pageLink.addClass "pageLink"
       pages.append pageLink
-      ++i
+
     $("#firstPage").attr("href", "#" + paginator.firstPage()).toggle paginator.currentPage isnt paginator.firstPage()
     $("#lastPage").attr("href", "#" + paginator.lastPage()).toggle paginator.currentPage isnt paginator.lastPage()
     $("#prevPage").attr("href", "#" + paginator.prevPage()).toggle paginator.currentPage isnt paginator.firstPage()
@@ -149,9 +152,8 @@ require ["Theme", "Map", "gamenode", "base"], (Theme, Map) ->
     client.stub.maps null, (response) ->
       maps = response.maps
       mapList = $("#maps")
-      paginator = new Paginator(maps, ->
-        mapList.empty()
-      , (map) ->
+      
+      paginator = new Paginator maps, (-> mapList.empty()), (map) ->
         container = $("<a></a>")
         name = $("<div></div>")
         preview = $("<div></div>")
@@ -189,7 +191,6 @@ require ["Theme", "Map", "gamenode", "base"], (Theme, Map) ->
           mapPainter.autoscale = true
           mapPainter.refresh()
 
-      )
       $("#firstPage").click (e) ->
         changePage e, paginator.firstPage()
 
