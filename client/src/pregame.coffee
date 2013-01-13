@@ -149,8 +149,7 @@ require ["Theme", "Map", "gamenode", "base"], (Theme, Map) ->
     populateBannedUnitSelections = (rules) ->
       forEachProperty rules.units, (unit) ->
         option = $("<option id='#{unit.id}'>#{unit.name}</option>")
-        console.log(rules.bannedUnits)
-        if unit.id in rules.bannedUnits  
+        if "#{unit.id}" in rules.bannedUnits  
           $("#bannedUnits").append option 
         else
           $("#notBannedUnits").append option 
@@ -174,7 +173,6 @@ require ["Theme", "Map", "gamenode", "base"], (Theme, Map) ->
     setBannedUnitsToServer = (bannedUnits) ->
       client.stub.setBannedUnits gameId, bannedUnits, (response) ->
         if response.success
-          alert "Added units to ban list! "
         else
           alert "Cannot add units to ban list! " + response.reason
   

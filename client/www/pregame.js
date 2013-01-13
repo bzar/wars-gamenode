@@ -198,8 +198,7 @@
         return forEachProperty(rules.units, function(unit) {
           var option, _ref;
           option = $("<option id='" + unit.id + "'>" + unit.name + "</option>");
-          console.log(rules.bannedUnits);
-          if (_ref = unit.id, __indexOf.call(rules.bannedUnits, _ref) >= 0) {
+          if (_ref = "" + unit.id, __indexOf.call(rules.bannedUnits, _ref) >= 0) {
             return $("#bannedUnits").append(option);
           } else {
             return $("#notBannedUnits").append(option);
@@ -237,7 +236,7 @@
       return setBannedUnitsToServer = function(bannedUnits) {
         return client.stub.setBannedUnits(gameId, bannedUnits, function(response) {
           if (response.success) {
-            return alert("Added units to ban list! ");
+
           } else {
             return alert("Cannot add units to ban list! " + response.reason);
           }
