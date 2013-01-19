@@ -8,7 +8,7 @@
 <% block 'menubar' : %>
 <span class="dropdown-menu">
   <!--<span id="brushIcon" class="label menu-icon"></span>-->
-  <span class="label menu-icon icon-pencil"></span>
+  <span class="label menu-icon"><i class="icon-pencil"></i></span>
   <div id="palette" class="content">
     <div id="playerSelection">
       <span value="0" class="playerSelection">Neutral</span>
@@ -34,7 +34,7 @@
 </span>
 
 <span class="dropdown-menu">
-  <span class="label menu-icon icon-move"></span>
+  <span class="label menu-icon"><i class="icon-move"></i></span>
   <div id="mapSize" class="content">
     <form id="mapSizeForm" class="toolForm">
       <ul>
@@ -70,8 +70,9 @@
     </form>
   </div>
 </span>
+
 <span class="dropdown-menu">
-  <span class="label menu-icon icon-exchange"></span>
+  <span class="label menu-icon"><i class="icon-exchange"></i></span>
   <div id="mapImportExport" class="content">
     <form id="mapImportExportForm" class="toolForm">
       <ul>
@@ -86,8 +87,9 @@
     </form>  
   </div>
 </span>
+
 <span class="dropdown-menu">
-  <span class="label menu-icon icon-save"></span>
+  <span class="label menu-icon"><i class="icon-save"></i></span>
   <div id="mapProperties" class="content">
     <form id="mapSaveForm" class="toolForm">
       <ul>
@@ -107,6 +109,7 @@
     </form>
   </div>
 </span>
+
 <% end %>
     <div id="content">
       <canvas id="mapEditorView">Map editor canvas</canvas>
