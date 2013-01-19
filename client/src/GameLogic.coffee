@@ -67,9 +67,9 @@ GameLogic::areAllies = (playerNumber1, playerNumber2) ->
   p1 = @map.getPlayer(playerNumber1)
   p2 = @map.getPlayer(playerNumber2)
   return false if not p1? or not p2?
-  return p1.teamNumber? and p2.teamNumber and p1.teamNumber is p2.teamNumber
+  return p1.teamNumber? and p2.teamNumber? and p1.teamNumber is p2.teamNumber
 
-GameLogic::areEnemies = (playerNumber1, playerNumber2) -> not areAllies playerNumber1 playerNumber2
+GameLogic::areEnemies = (playerNumber1, playerNumber2) -> not @areAllies playerNumber1, playerNumber2
 
 GameLogic::tileHasMovableUnit = (player, x, y) ->
   tile = @map.getTile(x, y)
@@ -235,7 +235,6 @@ GameLogic::unitCanMoveTo = (x, y, dx, dy) ->
   return false
 
 GameLogic::getPath = (movementTypeId, playerNumber, x, y, dx, dy, maxCostPerNode, maxCost, acceptNextTo) ->
-  console.log "getPath"
   addNode = (node) ->
     isBefore = (a, b) -> a.cost < b.cost or (a.cost is b.cost and a.distance < b.distance)
     

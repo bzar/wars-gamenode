@@ -16,6 +16,8 @@
 
   Skeleton.prototype.playerLeft = function(gameId, playerNumber) {};
 
+  Skeleton.prototype.playerTeamChanged = function(gameId, playerNumber, teamNumber, playerName, isMe) {};
+
   Skeleton.prototype.bannedUnits = function(unitTypes) {};
 
   Skeleton.prototype.gameStarted = function(gameId) {};

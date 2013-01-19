@@ -4,6 +4,7 @@
   require(["Theme", "Map", "gamenode", "base"], function(Theme, Map) {
     var client, gameId, initalizeAuthorTools, mapPainter, session, showGame, showPlayers, theme;
     client = new GameNodeClient(Skeleton);
+    this.gameNodeClient = client;
     session = null;
     gameId = /[?&]gameId=([0-9a-f]+)/.exec(window.location.search);
     if (gameId !== null) {

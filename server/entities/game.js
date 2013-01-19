@@ -129,7 +129,7 @@ Game.prototype.getPlayer = function(playerNumber) {
   if(this.players !== undefined && this.inTurnNumber != 0) {
     for(var i = 0; i < this.players.length; ++i) {
       var player = this.players[i];
-      if(player.playerNumber == this.inTurnNumber) {
+      if(player.playerNumber == this.playerNumber) {
         p = player;
         break;
       }

@@ -43,6 +43,14 @@ Messenger.prototype.sendPlayerLeft = function(gameId, playerNumber) {
   }, "game-" + gameId);
 }
 
+Messenger.prototype.sendPlayerTeamChanged = function(gameId, playerNumber, teamNumber, username, userId) {
+  this.subscriptions.forSubscribers(function(sub) {
+    var isMe = userId == sub.session.userId;
+    if(sub.client.stub.playerTeamChanged)
+      sub.client.stub.playerTeamChanged(gameId, playerNumber, teamNumber, username, isMe);
+  }, "game-" + gameId);
+}
+
 Messenger.prototype.sendAddInvite = function(userId, gameId, toInviteId) {
   this.subscriptions.forSubscribers(function(sub) {
     if(sub.client.stub.addInvite)

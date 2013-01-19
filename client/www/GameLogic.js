@@ -116,11 +116,11 @@
     if (!(p1 != null) || !(p2 != null)) {
       return false;
     }
-    return (p1.teamNumber != null) && p2.teamNumber && p1.teamNumber === p2.teamNumber;
+    return (p1.teamNumber != null) && (p2.teamNumber != null) && p1.teamNumber === p2.teamNumber;
   };
 
   GameLogic.prototype.areEnemies = function(playerNumber1, playerNumber2) {
-    return !areAllies(playerNumber1(playerNumber2));
+    return !this.areAllies(playerNumber1, playerNumber2);
   };
 
   GameLogic.prototype.tileHasMovableUnit = function(player, x, y) {
@@ -319,7 +319,6 @@
 
   GameLogic.prototype.getPath = function(movementTypeId, playerNumber, x, y, dx, dy, maxCostPerNode, maxCost, acceptNextTo) {
     var addNode, cost, current, existing, from, mapArray, neighbor, neighbors, next, node, path, previous, tile, unitMovementType, _i, _len;
-    console.log("getPath");
     addNode = function(node) {
       var isBefore, next, pos;
       isBefore = function(a, b) {

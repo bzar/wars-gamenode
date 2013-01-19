@@ -123,6 +123,48 @@ GameManagement.prototype.joinGame = function(userId, gameId, playerNumber, callb
   });
 }
 
+GameManagement.prototype.setTeam = function(userId, gameId, playerNumber, teamNumber, callback) {
+  var this_ = this;
+  this.database.game(gameId, function(result) {
+    if(!result.success) {
+      callback({success: false, reason: result.reason});
+    } else if(result.game.state != result.game.STATE_PREGAME) {
+      callback({success: false, reason: "Can only change team during pregame!"});
+    } else {
+      var game = result.game;
+      this_.database.players(gameId, function(result) {
+        if(!result.success) { callback({success: false, reason: result.reason}); return; }
+        
+        var player = null;
+        var allSameTeam = true;
+        for(var i = 0; i < result.players.length; ++i) {
+          var p = result.players[i];
+          if(p.playerNumber === playerNumber) {
+            player = p;
+          } else if(p.userId !== null && p.teamNumber !== teamNumber) {
+            allSameTeam = false;
+          }
+        }
+        if(allSameTeam) {
+          callback({success: false, reason: "All players cannot belong to the same team!"});
+        } else if(userId != p.userId && userId != game.authorId) {
+          callback({success: false, reason: "Cannot change other players' teams unless game author!"});
+        } else {
+          player.teamNumber = teamNumber;
+          this_.database.updatePlayer(player, function(result) {
+            if(result.success) {
+              callback({success: true});
+            } else {
+              callback({success: false, reason: result.reason});
+            }
+          });
+        }
+      });
+    }
+  });
+
+}
+
 GameManagement.prototype.leaveGame = function(userId, gameId, playerNumber, callback) {
   var database = this.database;
   var this_ = this;

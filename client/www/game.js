@@ -274,6 +274,7 @@
           updateStatistic();
           return client.stub.gameRules(gameId, function(rules) {
             map = new AnimatedMap("mapCanvas", 1.0, theme, rules);
+            map.players = game.players;
             gameLogic = new GameLogic(map, rules);
             gameMap = map;
             return map.doPreload(function() {

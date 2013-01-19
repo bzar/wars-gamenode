@@ -91,6 +91,33 @@ Skeleton.prototype.leaveGame = function(gameId, playerNumber) {
   });
 }
 
+Skeleton.prototype.setTeam = function(gameId, playerNumber, teamNumber) {
+  if(!args.require([gameId, playerNumber, teamNumber])) return {success: false, reason: "Missing method arguments!"};
+  if(this.sessionId === null)
+    return {success: false, reason: "Not logged in"}
+
+  var requestId = this.client.requestId;
+  var this_ = this;
+  var userId = this.session.userId;
+
+  var mutex = this.server.gameMutex(gameId);
+  mutex.lock(function() {
+    var timer = new utils.Timer("Skeleton.setTeam");
+    this_.server.gameManagement.setTeam(userId, gameId, playerNumber, teamNumber, function(result) {
+      if(result.success) {
+        this_.server.database.user(userId, function(result) {
+          this_.server.messenger.sendPlayerTeamChanged(gameId, playerNumber, teamNumber, result.user.username, result.user.userId);
+        });
+        this_.client.sendResponse(requestId, {success: true});
+        timer.end();
+      } else {
+        this_.client.sendResponse(requestId, {success: false, reason: result.reason});
+      }
+      mutex.release();
+    });
+  });
+}
+
 Skeleton.prototype.botNames = function() {
   return this.server.settings.botNames;
 }

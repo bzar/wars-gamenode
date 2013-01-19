@@ -209,6 +209,7 @@ require ["Theme", "AnimatedMap", "GameLogic", "Color", "gamenode", "base", "lib/
         updateStatistic()
         client.stub.gameRules gameId, (rules) ->
           map = new AnimatedMap("mapCanvas", 1.0, theme, rules)
+          map.players = game.players
           gameLogic = new GameLogic(map, rules)
           gameMap = map
           map.doPreload ->

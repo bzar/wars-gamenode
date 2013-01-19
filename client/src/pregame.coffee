@@ -1,5 +1,6 @@
 require ["Theme", "Map", "gamenode", "base"], (Theme, Map) ->
   client = new GameNodeClient(Skeleton)
+  this.gameNodeClient = client
   session = null
   gameId = /[?&]gameId=([0-9a-f]+)/.exec(window.location.search)
   if gameId isnt null

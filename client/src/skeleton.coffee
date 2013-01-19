@@ -5,6 +5,8 @@ Skeleton::playerJoined = (gameId, playerNumber, playerName, isMe) ->
 
 Skeleton::playerLeft = (gameId, playerNumber) ->
 
+Skeleton::playerTeamChanged = (gameId, playerNumber, teamNumber, playerName, isMe) ->
+
 Skeleton::bannedUnits = (unitTypes) ->
 
 Skeleton::gameStarted = (gameId) ->

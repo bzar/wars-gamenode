@@ -85,7 +85,7 @@ GameActions.prototype.moveAndAttack = function(gameId, userId, unitId, destinati
         targetTile.setUnit(target);
 
         if(gameLogic.areAllies(target.owner, unit.owner)) {
-          callback({success: false, reason: "Cannot attack alliess!"}); return;
+          callback({success: false, reason: "Cannot attack allies!"}); return;
         }
 
         database.gamePlayer(gameId, target.owner, function(result) {
@@ -605,8 +605,7 @@ GameActions.prototype.startTurn = function(game, callback) {
             }
           }
           if(stillAlive) {
-            numAlivePlayers += 1;
-            if(aliveTeams.indexOf(player.teamNumber) == -1) {
+            if(player.teamNumber !== 0 && aliveTeams.indexOf(player.teamNumber) == -1) {
               aliveTeams.push(player.teamNumber);
             }
             if(nextPlayer === null) {
