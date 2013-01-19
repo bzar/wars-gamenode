@@ -603,47 +603,50 @@
       });
     };
     return updateBrushIcon = function() {};
+    /*
+        brush = selectedBrush()
+        image = $("<span></span>");
+        
+        brushIcon = $("#brushIcon");
+        iconWidth = brushIcon.width()
+        iconHeight = brushIcon.height()
+        dx = (theme.settings.image.width - iconWidth) / 2
+        
+        image.css "width", "100%"
+        image.css "height", "100%"
+        image.css "position", "absolute"
+        image.css "left", 0
+        image.css "top", "0"
+        
+        if brush.unit?
+          pos = theme.getUnitCoordinates(brush.unit.type, brush.unit.owner)
+          image.css "background-image", "url('#{theme.getSpriteSheetUrl()}')"
+          image.css "background-position", (-pos.x - dx) + "px " + (-pos.y) + "px"
+        
+        else if brush.type? and brush.subtype? and brush.owner?
+          pos = theme.getTileCoordinates(brush.type, brush.subtype, brush.owner)
+          image.css "background-image", "url('#{theme.getSpriteSheetUrl()}')"
+          image.css "background-position", (-pos.x - dx) + "px " + (-pos.y + (theme.settings.image.height - theme.settings.hex.height - theme.settings.hex.thickness)) + "px"
+          propPos = theme.getTilePropCoordinates(brush.type, brush.subtype, brush.owner)
+          if propPos
+            terrainProp = $("<span></span>")
+            terrainProp.css "background-image", "url('" + theme.getSpriteSheetUrl() + "')"
+            terrainProp.css "width", "100%"
+            terrainProp.css "height", "100%"
+            terrainProp.css "display", "block"
+            terrainProp.css "background-position", (-propPos.x - dx) + "px " + (-propPos.y - theme.settings.hex.thickness) + "px"
+            terrainProp.css "position", "absolute"
+            terrainProp.css "left", "0"
+            terrainProp.css "top", "0"
+            image.append terrainProp
+        else if brush.unit is null
+          image.css "background-image", "url('#{theme.getEraserIconUrl()}')"
+          image.css "background-position", "0px, 0px"
+    
+        brushIcon.empty();
+        brushIcon.append(image);
+    */
+
   });
-
-  /*    brush = selectedBrush()
-      
-      image = $("#brushIcon");
-      image.empty();
-      
-      iconWidth = image.width()
-      iconHeight = image.height()
-  
-      dx = (theme.settings.image.width - iconWidth) / 2
-      
-      image.css "width", "100%"
-      image.css "height", "100%"
-      image.css "position", "relative"
-      
-      if brush.unit?
-        pos = theme.getUnitCoordinates(brush.unit.type, brush.unit.owner)
-        image.css "background-image", "url('#{theme.getSpriteSheetUrl()}')"
-        image.css "background-position", (-pos.x - dx) + "px " + (-pos.y) + "px"
-      
-      else if brush.type? and brush.subtype? and brush.owner?
-        pos = theme.getTileCoordinates(brush.type, brush.subtype, brush.owner)
-        image.css "background-image", "url('#{theme.getSpriteSheetUrl()}')"
-        image.css "background-position", (-pos.x - dx) + "px " + (-pos.y + (theme.settings.image.height - theme.settings.hex.height - theme.settings.hex.thickness)) + "px"
-        propPos = theme.getTilePropCoordinates(brush.type, brush.subtype, brush.owner)
-        if propPos
-          terrainProp = $("<span></span>")
-          terrainProp.css "background-image", "url('" + theme.getSpriteSheetUrl() + "')"
-          terrainProp.css "width", "100%"
-          terrainProp.css "height", "100%"
-          terrainProp.css "display", "block"
-          terrainProp.css "background-position", (-propPos.x - dx) + "px " + (-propPos.y - theme.settings.hex.thickness) + "px"
-          terrainProp.css "position", "absolute"
-          terrainProp.css "left", "0"
-          terrainProp.css "top", "0"
-          image.append terrainProp
-      else if brush.unit is null
-        image.css "background-image", "url('#{theme.getEraserIconUrl()}')"
-        image.css "background-position", "0px, 0px"
-  */
-
 
 }).call(this);

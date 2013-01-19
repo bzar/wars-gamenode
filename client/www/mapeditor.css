@@ -58,6 +58,14 @@
 #paletteSelection {
   margin-bottom: 8px;
 }
+/*
+#brushIcon {
+  display: inline-block;
+  width: 100%;
+  height: 100%;
+  position: relative;
+}
+*/
 .paletteSelection {
   width: 60px;
 }

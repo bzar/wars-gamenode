@@ -504,19 +504,20 @@ require ["Theme", "Map", "gamenode", "base"], (Theme, Map) ->
 
 
   updateBrushIcon = () ->
-###    brush = selectedBrush()
+  ###
+    brush = selectedBrush()
+    image = $("<span></span>");
     
-    image = $("#brushIcon");
-    image.empty();
-    
-    iconWidth = image.width()
-    iconHeight = image.height()
-
+    brushIcon = $("#brushIcon");
+    iconWidth = brushIcon.width()
+    iconHeight = brushIcon.height()
     dx = (theme.settings.image.width - iconWidth) / 2
     
     image.css "width", "100%"
     image.css "height", "100%"
-    image.css "position", "relative"
+    image.css "position", "absolute"
+    image.css "left", 0
+    image.css "top", "0"
     
     if brush.unit?
       pos = theme.getUnitCoordinates(brush.unit.type, brush.unit.owner)
@@ -542,4 +543,7 @@ require ["Theme", "Map", "gamenode", "base"], (Theme, Map) ->
     else if brush.unit is null
       image.css "background-image", "url('#{theme.getEraserIconUrl()}')"
       image.css "background-position", "0px, 0px"
-      ###
+
+    brushIcon.empty();
+    brushIcon.append(image);
+  ###
