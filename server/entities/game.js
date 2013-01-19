@@ -123,3 +123,17 @@ Game.prototype.turnRemaining = function() {
     return null;
   }
 }
+
+Game.prototype.getPlayer = function(playerNumber) {
+  var p = null;
+  if(this.players !== undefined && this.inTurnNumber != 0) {
+    for(var i = 0; i < this.players.length; ++i) {
+      var player = this.players[i];
+      if(player.playerNumber == this.inTurnNumber) {
+        p = player;
+        break;
+      }
+    }
+  }
+  return p;
+}

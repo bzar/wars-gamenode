@@ -1,5 +1,6 @@
 var entities = require("./entities");
 var utils = require("./utils");
+var args = require("./args");
 var crypto = require("crypto");
 
 function Skeleton(client) {
@@ -15,19 +16,10 @@ function Skeleton(client) {
 
 exports.Skeleton = Skeleton;
 
-function requireArgs(args) {
-  for(var i = 0; i < args.length; ++i) {
-    if(args[i] === undefined) {
-      return false;
-    }
-  }
-  return true;
-}
-
 // GAME MANAGEMENT
 
 Skeleton.prototype.createGame = function(name, mapId, public, turnLength) {
-  if(!requireArgs([name, mapId, public, turnLength])) return {success: false, reason: "Missing method arguments!"};
+  if(!args.require([name, mapId, public, turnLength])) return {success: false, reason: "Missing method arguments!"};
   var timer = new utils.Timer("Skeleton.createGame");
   if(this.sessionId === null)
     return {success: false, reason: "Not logged in"}
@@ -48,7 +40,7 @@ Skeleton.prototype.createGame = function(name, mapId, public, turnLength) {
 }
 
 Skeleton.prototype.joinGame = function(gameId, playerNumber) {
-  if(!requireArgs([gameId, playerNumber])) return {success: false, reason: "Missing method arguments!"};
+  if(!args.require([gameId, playerNumber])) return {success: false, reason: "Missing method arguments!"};
   if(this.sessionId === null)
     return {success: false, reason: "Not logged in"}
 
@@ -75,7 +67,7 @@ Skeleton.prototype.joinGame = function(gameId, playerNumber) {
 }
 
 Skeleton.prototype.leaveGame = function(gameId, playerNumber) {
-  if(!requireArgs([gameId, playerNumber])) return {success: false, reason: "Missing method arguments!"};
+  if(!args.require([gameId, playerNumber])) return {success: false, reason: "Missing method arguments!"};
   if(this.sessionId === null)
     return {success: false, reason: "Not logged in"}
 
@@ -104,7 +96,7 @@ Skeleton.prototype.botNames = function() {
 }
 
 Skeleton.prototype.addInvite = function(gameId, username) {
-  if(!requireArgs([gameId, username])) return {success: false, reason: "Missing method arguments!"};
+  if(!args.require([gameId, username])) return {success: false, reason: "Missing method arguments!"};
   if(this.sessionId === null)
     return {success: false, reason: "Not logged in"}
 
@@ -137,7 +129,7 @@ Skeleton.prototype.addInvite = function(gameId, username) {
 }
 
 Skeleton.prototype.removeInvite = function(gameId, username) {
-  if(!requireArgs([gameId, username])) return {success: false, reason: "Missing method arguments!"};
+  if(!args.require([gameId, username])) return {success: false, reason: "Missing method arguments!"};
   if(this.sessionId === null)
     return {success: false, reason: "Not logged in"}
 
@@ -170,7 +162,7 @@ Skeleton.prototype.removeInvite = function(gameId, username) {
 }
 
 Skeleton.prototype.startGame = function(gameId) {
-  if(!requireArgs([gameId])) return {success: false, reason: "Missing method arguments!"};
+  if(!args.require([gameId])) return {success: false, reason: "Missing method arguments!"};
   if(this.sessionId === null)
     return {success: false, reason: "Not logged in"}
 
@@ -208,7 +200,7 @@ Skeleton.prototype.startGame = function(gameId) {
 }
 
 Skeleton.prototype.deleteGame = function(gameId) {
-  if(!requireArgs([gameId])) return {success: false, reason: "Missing method arguments!"};
+  if(!args.require([gameId])) return {success: false, reason: "Missing method arguments!"};
   if(this.sessionId === null)
     return {success: false, reason: "Not logged in"}
 
@@ -286,7 +278,7 @@ Skeleton.prototype.myGames = function() {
 // MAP MANAGEMENT
 
 Skeleton.prototype.createMap = function(name, initialFunds, mapData) {
-  if(!requireArgs([name, initialFunds, mapData])) return {success: false, reason: "Missing method arguments!"};
+  if(!args.require([name, initialFunds, mapData])) return {success: false, reason: "Missing method arguments!"};
   var timer = new utils.Timer("Skeleton.createMap");
   if(this.sessionId === null)
     return {success: false, reason: "Not logged in"}
@@ -307,7 +299,7 @@ Skeleton.prototype.createMap = function(name, initialFunds, mapData) {
 }
 
 Skeleton.prototype.updateMap = function(mapId, name, initialFunds, mapData) {
-  if(!requireArgs([mapId, name, initialFunds, mapData])) return {success: false, reason: "Missing method arguments!"};
+  if(!args.require([mapId, name, initialFunds, mapData])) return {success: false, reason: "Missing method arguments!"};
   var timer = new utils.Timer("Skeleton.updateMap");
   if(this.sessionId === null)
     return {success: false, reason: "Not logged in"}
@@ -328,7 +320,7 @@ Skeleton.prototype.updateMap = function(mapId, name, initialFunds, mapData) {
 }
 
 Skeleton.prototype.deleteMap = function(mapId) {
-  if(!requireArgs([mapId])) return {success: false, reason: "Missing method arguments!"};
+  if(!args.require([mapId])) return {success: false, reason: "Missing method arguments!"};
   var timer = new utils.Timer("Skeleton.deleteMap");
   if(this.sessionId === null)
     return {success: false, reason: "Not logged in"}
@@ -355,7 +347,7 @@ Skeleton.prototype.deleteMap = function(mapId) {
 }
 
 Skeleton.prototype.mapData = function(mapId) {
-  if(!requireArgs([mapId])) return {success: false, reason: "Missing method arguments!"};
+  if(!args.require([mapId])) return {success: false, reason: "Missing method arguments!"};
   var timer = new utils.Timer("Skeleton.mapData");
   if(this.sessionId === null)
     return {success: false, reason: "Not logged in"}
@@ -417,7 +409,7 @@ Skeleton.prototype.myMaps = function() {
 // PROFILE MANAGEMENT
 
 Skeleton.prototype.saveProfile = function(username, password, email, theme, animationSpeed, defaultEmailSetting) {
-  if(!requireArgs([username, password, email, theme, animationSpeed, defaultEmailSetting])) return {success: false, reason: "Missing method arguments!"};
+  if(!args.require([username, password, email, theme, animationSpeed, defaultEmailSetting])) return {success: false, reason: "Missing method arguments!"};
   var timer = new utils.Timer("Skeleton.saveProfile");
   if(this.sessionId === null)
     return {success: false, reason: "Not logged in"}
@@ -473,7 +465,7 @@ Skeleton.prototype.profile = function() {
 // USER MANAGEMENT
 
 Skeleton.prototype.newSession = function(credentials) {
-  if(!requireArgs([credentials])) return {success: false, reason: "Missing method arguments!"};
+  if(!args.require([credentials])) return {success: false, reason: "Missing method arguments!"};
   var requestId = this.client.requestId;
   var this_ = this;
   this.server.database.userByName(credentials.username, function(result) {
@@ -502,7 +494,7 @@ Skeleton.prototype.newSession = function(credentials) {
 }
 
 Skeleton.prototype.resumeSession = function(sessionId) {
-  if(!requireArgs([sessionId])) return {success: false, reason: "Missing method arguments!"};
+  if(!args.require([sessionId])) return {success: false, reason: "Missing method arguments!"};
   this.session = this.server.sessionStorage.getSession(sessionId);
   this.sessionId = sessionId;
   if(this.session !== undefined) {
@@ -522,7 +514,7 @@ Skeleton.prototype.closeSession = function() {
 }
 
 Skeleton.prototype.register = function(username, password, email) {
-  if(!requireArgs([username, password, email])) return {success: false, reason: "Missing method arguments!"};
+  if(!args.require([username, password, email])) return {success: false, reason: "Missing method arguments!"};
   var timer = new utils.Timer("Skeleton.register");
   if(username.length < this.server.settings.minimumUsernameLength)  {
     return {success: false, reason: "Username must be at least " + this.server.settings.minimumUsernameLength + " characters long!"};
@@ -548,7 +540,7 @@ Skeleton.prototype.register = function(username, password, email) {
 // GAME
 
 Skeleton.prototype.gameRules = function(gameId) {
-  if(!requireArgs([gameId])) return {success: false, reason: "Missing method arguments!"};
+  if(!args.require([gameId])) return {success: false, reason: "Missing method arguments!"};
   var timer = new utils.Timer("Skeleton.gameRules");
   var elements = this.server.settings.gameElements;
   var rules = {
@@ -580,7 +572,7 @@ Skeleton.prototype.gameRules = function(gameId) {
 }
 
 Skeleton.prototype.setBannedUnits = function(gameId, bannedUnits) {
-  if(!requireArgs([gameId, bannedUnits])) return {success: false, reason: "Missing method arguments!"};
+  if(!args.require([gameId, bannedUnits])) return {success: false, reason: "Missing method arguments!"};
   
   if(this.sessionId === null)
     return {success: false, reason: "Not logged in"}
@@ -606,7 +598,7 @@ Skeleton.prototype.setBannedUnits = function(gameId, bannedUnits) {
 }
 
 Skeleton.prototype.gameData = function(gameId) {
-  if(!requireArgs([gameId])) return {success: false, reason: "Missing method arguments!"};
+  if(!args.require([gameId])) return {success: false, reason: "Missing method arguments!"};
   var timer = new utils.Timer("Skeleton.gameData");
   if(this.sessionId === null)
     return {success: false, reason: "Not logged in"}
@@ -634,7 +626,7 @@ Skeleton.prototype.gameData = function(gameId) {
 }
 
 Skeleton.prototype.emailNotifications = function(gameId) {
-  if(!requireArgs([gameId])) return {success: false, reason: "Missing method arguments!"};
+  if(!args.require([gameId])) return {success: false, reason: "Missing method arguments!"};
   var timer = new utils.Timer("Skeleton.emailNotifications");
   if(this.sessionId === null)
     return {success: false, reason: "Not logged in"}
@@ -664,7 +656,7 @@ Skeleton.prototype.emailNotifications = function(gameId) {
 }
 
 Skeleton.prototype.setEmailNotifications = function(gameId, value) {
-  if(!requireArgs([gameId, value])) return {success: false, reason: "Missing method arguments!"};
+  if(!args.require([gameId, value])) return {success: false, reason: "Missing method arguments!"};
   var timer = new utils.Timer("Skeleton.setEmailNotifications");
   if(this.sessionId === null)
     return {success: false, reason: "Not logged in"}
@@ -702,7 +694,7 @@ Skeleton.prototype.setEmailNotifications = function(gameId, value) {
 }
 
 Skeleton.prototype.myFunds = function(gameId) {
-  if(!requireArgs([gameId])) return {success: false, reason: "Missing method arguments!"};
+  if(!args.require([gameId])) return {success: false, reason: "Missing method arguments!"};
   var timer = new utils.Timer("Skeleton.myFunds");
   var requestId = this.client.requestId;
   var this_ = this;
@@ -749,7 +741,7 @@ Skeleton.prototype.myFunds = function(gameId) {
 }
 
 Skeleton.prototype.subscribeGame = function(gameId) {
-  if(!requireArgs([gameId])) return {success: false, reason: "Missing method arguments!"};
+  if(!args.require([gameId])) return {success: false, reason: "Missing method arguments!"};
   var topic = "game-" + gameId;
   var this_ = this;
   var alreadySubscribed = false;
@@ -767,14 +759,14 @@ Skeleton.prototype.subscribeGame = function(gameId) {
 }
 
 Skeleton.prototype.unsubscribeGame = function(gameId) {
-  if(!requireArgs([gameId])) return {success: false, reason: "Missing method arguments!"};
+  if(!args.require([gameId])) return {success: false, reason: "Missing method arguments!"};
   this.server.subscriptions.removeSubscription(this, "game-" + gameId);
   return {success: true};
 }
 
 
 Skeleton.prototype.moveAndAttack = function(gameId, unitId, destination, path, targetId) {
-  if(!requireArgs([gameId, unitId, destination, targetId])) return {success: false, reason: "Missing method arguments!"};
+  if(!args.require([gameId, unitId, destination, targetId])) return {success: false, reason: "Missing method arguments!"};
   if(this.sessionId === null)
     return {success: false, reason: "Not logged in"}
 
@@ -799,7 +791,7 @@ Skeleton.prototype.moveAndAttack = function(gameId, unitId, destination, path, t
 }
 
 Skeleton.prototype.moveAndWait = function(gameId, unitId, destination, path) {
-  if(!requireArgs([gameId, unitId, destination])) return {success: false, reason: "Missing method arguments!"};
+  if(!args.require([gameId, unitId, destination])) return {success: false, reason: "Missing method arguments!"};
   if(this.sessionId === null)
     return {success: false, reason: "Not logged in"}
 
@@ -824,7 +816,7 @@ Skeleton.prototype.moveAndWait = function(gameId, unitId, destination, path) {
 }
 
 Skeleton.prototype.moveAndCapture = function(gameId, unitId, destination, path) {
-  if(!requireArgs([gameId, unitId, destination])) return {success: false, reason: "Missing method arguments!"};
+  if(!args.require([gameId, unitId, destination])) return {success: false, reason: "Missing method arguments!"};
   if(this.sessionId === null)
     return {success: false, reason: "Not logged in"}
 
@@ -849,7 +841,7 @@ Skeleton.prototype.moveAndCapture = function(gameId, unitId, destination, path) 
 }
 
 Skeleton.prototype.moveAndDeploy = function(gameId, unitId, destination, path) {
-  if(!requireArgs([gameId, unitId, destination])) return {success: false, reason: "Missing method arguments!"};
+  if(!args.require([gameId, unitId, destination])) return {success: false, reason: "Missing method arguments!"};
   if(this.sessionId === null)
     return {success: false, reason: "Not logged in"}
 
@@ -874,7 +866,7 @@ Skeleton.prototype.moveAndDeploy = function(gameId, unitId, destination, path) {
 }
 
 Skeleton.prototype.undeploy = function(gameId, unitId) {
-  if(!requireArgs([gameId, unitId])) return {success: false, reason: "Missing method arguments!"};
+  if(!args.require([gameId, unitId])) return {success: false, reason: "Missing method arguments!"};
   if(this.sessionId === null)
     return {success: false, reason: "Not logged in"}
 
@@ -899,7 +891,7 @@ Skeleton.prototype.undeploy = function(gameId, unitId) {
 }
 
 Skeleton.prototype.moveAndLoadInto = function(gameId, unitId, carrierId, path) {
-  if(!requireArgs([gameId, unitId, carrierId])) return {success: false, reason: "Missing method arguments!"};
+  if(!args.require([gameId, unitId, carrierId])) return {success: false, reason: "Missing method arguments!"};
   if(this.sessionId === null)
     return {success: false, reason: "Not logged in"}
 
@@ -924,7 +916,7 @@ Skeleton.prototype.moveAndLoadInto = function(gameId, unitId, carrierId, path) {
 }
 
 Skeleton.prototype.moveAndUnload = function(gameId, unitId, destination, path, carriedUnitId, unloadDestination) {
-  if(!requireArgs([gameId, unitId, destination, carriedUnitId, unloadDestination])) return {success: false, reason: "Missing method arguments!"};
+  if(!args.require([gameId, unitId, destination, carriedUnitId, unloadDestination])) return {success: false, reason: "Missing method arguments!"};
   if(this.sessionId === null)
     return {success: false, reason: "Not logged in"}
 
@@ -950,7 +942,7 @@ Skeleton.prototype.moveAndUnload = function(gameId, unitId, destination, path, c
 }
 
 Skeleton.prototype.build = function(gameId, unitTypeId, destination) {
-  if(!requireArgs([gameId, unitTypeId, destination])) return {success: false, reason: "Missing method arguments!"};
+  if(!args.require([gameId, unitTypeId, destination])) return {success: false, reason: "Missing method arguments!"};
   if(this.sessionId === null)
     return {success: false, reason: "Not logged in"}
 
@@ -975,7 +967,7 @@ Skeleton.prototype.build = function(gameId, unitTypeId, destination) {
 }
 
 Skeleton.prototype.endTurn = function(gameId) {
-  if(!requireArgs([gameId])) return {success: false, reason: "Missing method arguments!"};
+  if(!args.require([gameId])) return {success: false, reason: "Missing method arguments!"};
   if(this.sessionId === null)
     return {success: false, reason: "Not logged in"}
 
@@ -1012,7 +1004,7 @@ Skeleton.prototype.endTurn = function(gameId) {
 }
 
 Skeleton.prototype.surrender = function(gameId) {
-  if(!requireArgs([gameId])) return {success: false, reason: "Missing method arguments!"};
+  if(!args.require([gameId])) return {success: false, reason: "Missing method arguments!"};
   if(this.sessionId === null)
     return {success: false, reason: "Not logged in"}
 
@@ -1051,7 +1043,7 @@ Skeleton.prototype.surrender = function(gameId) {
 // CHAT
 
 Skeleton.prototype.chatMessages = function(gameId) {
-  if(!requireArgs([gameId])) return {success: false, reason: "Missing method arguments!"};
+  if(!args.require([gameId])) return {success: false, reason: "Missing method arguments!"};
   var timer = new utils.Timer("Skeleton.chatMessages");
   if(this.sessionId === null)
     return {success: false, reason: "Not logged in"}
@@ -1078,7 +1070,7 @@ Skeleton.prototype.subscribeLobbyChat = function() {
 }
 
 Skeleton.prototype.lobbyChat = function(message) {
-  if(!requireArgs([message])) return {success: false, reason: "Missing method arguments!"};
+  if(!args.require([message])) return {success: false, reason: "Missing method arguments!"};
   var this_ = this;
   var time = (new Date()).toUTCString();
   this.server.database.user(this.session.userId, function(result) {
@@ -1088,7 +1080,7 @@ Skeleton.prototype.lobbyChat = function(message) {
 }
 
 Skeleton.prototype.chat = function(gameId, message) {
-  if(!requireArgs([gameId, message])) return {success: false, reason: "Missing method arguments!"};
+  if(!args.require([gameId, message])) return {success: false, reason: "Missing method arguments!"};
   var this_ = this;
   var time = new Date();
   var chatMessage = new entities.ChatMessage(undefined, gameId, this.session.userId, time.getTime(), message);
@@ -1107,7 +1099,7 @@ Skeleton.prototype.chat = function(gameId, message) {
 // GAME EVENTS
 
 Skeleton.prototype.gameEvents = function(gameId, first, count) {
-  if(!requireArgs([gameId, first, count])) return {success: false, reason: "Missing method arguments!"};
+  if(!args.require([gameId, first, count])) return {success: false, reason: "Missing method arguments!"};
   var timer = new utils.Timer("Skeleton.gameEvents");
   if(this.sessionId === null)
     return {success: false, reason: "Not logged in"}
@@ -1139,7 +1131,7 @@ Skeleton.prototype.gameEvents = function(gameId, first, count) {
 // GAME STATISTICS
 
 Skeleton.prototype.gameStatistics = function(gameId) {
-  if(!requireArgs([gameId])) return {success: false, reason: "Missing method arguments!"};
+  if(!args.require([gameId])) return {success: false, reason: "Missing method arguments!"};
   var timer = new utils.Timer("Skeleton.gameStatistics");
   if(this.sessionId === null)
     return {success: false, reason: "Not logged in"}
@@ -1161,7 +1153,7 @@ Skeleton.prototype.gameStatistics = function(gameId) {
 }
 
 Skeleton.prototype.gameLatestStatistic = function(gameId) {
-  if(!requireArgs([gameId])) return {success: false, reason: "Missing method arguments!"};
+  if(!args.require([gameId])) return {success: false, reason: "Missing method arguments!"};
   var timer = new utils.Timer("Skeleton.latestStatistic");
   if(this.sessionId === null)
     return {success: false, reason: "Not logged in"}

@@ -29,6 +29,7 @@ define ["Theme", "lib/aja/lib/aja", "lib/pixastic", "lib/sylvester"], (Theme) ->
       @origin = $V([0, @theme.settings.image.height - @theme.settings.hex.height])
       @tiles = null
       @sprites = null
+      @players = null
       @rules = rules
       @powerMap = null
       @showPowerMap = false
@@ -56,6 +57,12 @@ define ["Theme", "lib/aja/lib/aja", "lib/pixastic", "lib/sylvester"], (Theme) ->
     mat = $M([[@xAxis.e(1), @yAxis.e(1), 0], [@xAxis.e(2), @yAxis.e(2), 0], [0, 0, 1]]).inv()
     mat.multiply(origin.multiply($V([p.e(1), p.e(2), 1]))).round()
 
+  AnimatedMap::getPlayer = (playerNumber) ->
+    for player in @players
+      if player.playerNumber == playerNumber
+        return player
+    return null
+    
   AnimatedMap::getScale = ->
     if @autoscale
       mapSize = @getMapDimensions()

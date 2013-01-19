@@ -84,8 +84,8 @@ GameActions.prototype.moveAndAttack = function(gameId, userId, unitId, destinati
         var targetTile = result.tile;
         targetTile.setUnit(target);
 
-        if(target.owner == unit.owner) {
-          callback({success: false, reason: "Cannot attack own units!"}); return;
+        if(gameLogic.areAllies(target.owner, unit.owner)) {
+          callback({success: false, reason: "Cannot attack alliess!"}); return;
         }
 
         database.gamePlayer(gameId, target.owner, function(result) {
@@ -566,7 +566,7 @@ GameActions.prototype.startTurn = function(game, callback) {
     }
 
     var nextPlayer = null;
-    var numAlivePlayers = 0;
+    var aliveTeams = [];
     database.tiles(game.gameId, function(result) {
       var tiles = result.tiles;
       database.units(game.gameId, function(result) {
@@ -606,6 +606,9 @@ GameActions.prototype.startTurn = function(game, callback) {
           }
           if(stillAlive) {
             numAlivePlayers += 1;
+            if(aliveTeams.indexOf(player.teamNumber) == -1) {
+              aliveTeams.push(player.teamNumber);
+            }
             if(nextPlayer === null) {
               nextPlayer = player;
             }
@@ -616,7 +619,7 @@ GameActions.prototype.startTurn = function(game, callback) {
 
         // Change turn
         var events = new GameEventManager(game.gameId);
-        if(nextPlayer.playerNumber == game.inTurnNumber || numAlivePlayers < 2) {
+        if(aliveTeams.length < 2) {
           game.state = game.STATE_FINISHED;
           events.gameFinished(nextPlayer);
           database.updateGame(game, function(result) {

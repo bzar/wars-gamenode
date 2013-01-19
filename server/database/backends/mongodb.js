@@ -70,7 +70,7 @@ MongoDBDatabase.prototype.createGame = function(game, gameData, players, callbac
         for(var i = 0; i < players.length; ++i) {
           var playerObj = players[i];
           var userId = this_.toObjectID(playerObj.userId);
-          var player = {gameId: gameId, userId: null, playerNumber: playerObj.playerNumber,
+          var player = {gameId: gameId, userId: null, playerNumber: playerObj.playerNumber, teamNumber: playerObj.teamNumber,
                         playerName: playerObj.playerName, funds: playerObj.funds, score: playerObj.score,
                         settings: playerObj.settings};
           playerValues.push(player);
@@ -287,9 +287,10 @@ MongoDBDatabase.prototype.players = function(gameId, callback) {
       var result = [];
       cursor.each(function(err, player) {
         if(player !== null) {
+          player.teamNumber = player.teamNumber ? player.teamNumber : player.playerNumber;
           var playerObj = new entities.Player(player._id.toString(), player.gameId, player.userId,
-                                              player.playerNumber, player.playerName, player.funds,
-                                              player.score, player.settings);
+                                              player.playerNumber, player.teamNumber, player.playerName, 
+                                              player.funds, player.score, player.settings);
           result.push(playerObj);
         } else {
           timer.end();
@@ -312,9 +313,10 @@ MongoDBDatabase.prototype.playersWithUsers = function(gameId, callback) {
       var result = [];
       cursor.each(function(err, player) {
         if(player !== null) {
+          player.teamNumber = player.teamNumber ? player.teamNumber : player.playerNumber;
           var playerObj = new entities.Player(player._id.toString(), player.gameId, player.userId,
-                                              player.playerNumber, player.playerName, player.funds,
-                                              player.score, player.settings);
+                                              player.playerNumber, player.teamNumber, player.playerName, 
+                                              player.funds, player.score, player.settings);
           result.push(player);
         } else {
           var userIds = result.map(function(d){ return d.userId });
@@ -348,10 +350,11 @@ MongoDBDatabase.prototype.gamePlayer = function(gameId, playerNumber, callback) 
     collection.findOne({gameId: gameId, playerNumber: playerNumber}, function(err, player) {
       if(err) { callback({success: false, reason: err}); return; }
       if(player === null) { callback({success: false, reason: "Player not found!"}); return; }
-
+      
+      player.teamNumber = player.teamNumber ? player.teamNumber : player.playerNumber;
       var playerObj = new entities.Player(player._id.toString(), player.gameId, player.userId,
-                                          player.playerNumber, player.playerName, player.funds,
-                                          player.score, player.settings);
+                                          player.playerNumber, player.teamNumber, player.playerName, 
+                                          player.funds, player.score, player.settings);
       timer.end();
       callback({success: true, player: playerObj});
     });
@@ -374,9 +377,11 @@ MongoDBDatabase.prototype.userPlayerInTurn = function(gameId, userId, callback) 
                            playerNumber: game.inTurnNumber}, function(err, player) {
           if(err) { callback({success: false, reason: err}); return; }
           if(player === null) { callback({success: false, reason: "Player not found!"}); return; }
+          
+          player.teamNumber = player.teamNumber ? player.teamNumber : player.playerNumber;
           var playerObj = new entities.Player(player._id.toString(), player.gameId, player.userId,
-                                              player.playerNumber, player.playerName, player.funds,
-                                              player.score, player.settings);
+                                              player.playerNumber, player.teamNumber, player.playerName, 
+                                              player.funds, player.score, player.settings);
           timer.end();
           callback({success: true, player: playerObj});
         });
@@ -395,9 +400,10 @@ MongoDBDatabase.prototype.player = function(playerId, callback) {
       if(err) { callback({success: false, reason: err}); return; }
       if(player === null) { callback({success: false, reason: "Player not found!"}); return; }
 
+      player.teamNumber = player.teamNumber ? player.teamNumber : player.playerNumber;
       var playerObj = new entities.Player(player._id.toString(), player.gameId, player.userId,
-                                          player.playerNumber, player.playerName, player.funds,
-                                          player.score, player.settings);
+                                          player.playerNumber, player.teamNumber, player.playerName, 
+                                          player.funds, player.score, player.settings);
       timer.end();
       callback({success: true, player: playerObj});
     });
@@ -419,8 +425,8 @@ MongoDBDatabase.prototype.updatePlayers = function(players, callback) {
       var gameId = this_.toObjectID(playerObj.gameId);
       var userId = this_.toObjectID(playerObj.userId);
       var player = {$set: {gameId: gameId, userId: userId, playerNumber: playerObj.playerNumber,
-                    playerName: playerObj.playerName, funds: playerObj.funds, score: playerObj.score,
-                    settings: playerObj.settings} };
+                    teamNumber: playerObj.teamNumber, playerName: playerObj.playerName, 
+                    funds: playerObj.funds, score: playerObj.score, settings: playerObj.settings} };
       collection.update({_id: playerId}, player);
     });
     timer.end();

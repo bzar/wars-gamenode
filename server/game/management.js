@@ -42,7 +42,7 @@ GameManagement.prototype.createGame = function(game, callback) {
 
         if(mapTile.owner > 0) {
           if(playerIds.indexOf(mapTile.owner) == -1) {
-            var player = new entities.Player(null, null, null, mapTile.owner, null, map.funds, 0,
+            var player = new entities.Player(null, null, null, mapTile.owner, mapTile.owner, null, map.funds, 0,
                                             {emailNotifications: true});
             players.push(player);
             playerIds.push(mapTile.owner);
@@ -53,7 +53,7 @@ GameManagement.prototype.createGame = function(game, callback) {
         tile.unit = null;
         if(mapTile.unit !== null) {
           if(mapTile.unit.owner !== 0 && playerIds.indexOf(mapTile.unit.owner) == -1) {
-            var player = new entities.Player(null, null, null, mapTile.unit.owner, null, map.funds, 0,
+            var player = new entities.Player(null, null, null, mapTile.unit.owner, mapTile.unit.owner, null, map.funds, 0,
                                             {emailNotifications: true});
             players.push(player);
             playerIds.push(mapTile.unit.owner);

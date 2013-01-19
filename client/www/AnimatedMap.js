@@ -37,6 +37,7 @@
         this.origin = $V([0, this.theme.settings.image.height - this.theme.settings.hex.height]);
         this.tiles = null;
         this.sprites = null;
+        this.players = null;
         this.rules = rules;
         this.powerMap = null;
         this.showPowerMap = false;
@@ -68,6 +69,17 @@
       origin = $M([[1, 0, -this.theme.settings.hex.width / 2], [0, 1, -this.theme.settings.hex.height / 2], [0, 0, 1]]);
       mat = $M([[this.xAxis.e(1), this.yAxis.e(1), 0], [this.xAxis.e(2), this.yAxis.e(2), 0], [0, 0, 1]]).inv();
       return mat.multiply(origin.multiply($V([p.e(1), p.e(2), 1]))).round();
+    };
+    AnimatedMap.prototype.getPlayer = function(playerNumber) {
+      var player, _i, _len, _ref;
+      _ref = this.players;
+      for (_i = 0, _len = _ref.length; _i < _len; _i++) {
+        player = _ref[_i];
+        if (player.playerNumber === playerNumber) {
+          return player;
+        }
+      }
+      return null;
     };
     AnimatedMap.prototype.getScale = function() {
       var horScale, mapSize, verScale;

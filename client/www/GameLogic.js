@@ -106,6 +106,23 @@
     return distance;
   };
 
+  GameLogic.prototype.areAllies = function(playerNumber1, playerNumber2) {
+    var p1, p2;
+    if (playerNumber1 === playerNumber2) {
+      return true;
+    }
+    p1 = this.map.getPlayer(playerNumber1);
+    p2 = this.map.getPlayer(playerNumber2);
+    if (!(p1 != null) || !(p2 != null)) {
+      return false;
+    }
+    return (p1.teamNumber != null) && p2.teamNumber && p1.teamNumber === p2.teamNumber;
+  };
+
+  GameLogic.prototype.areEnemies = function(playerNumber1, playerNumber2) {
+    return !areAllies(playerNumber1(playerNumber2));
+  };
+
   GameLogic.prototype.tileHasMovableUnit = function(player, x, y) {
     var tile;
     tile = this.map.getTile(x, y);
@@ -178,7 +195,7 @@
       if (!(tile != null)) {
         return false;
       }
-      if (tile.unit !== null && tile.unit.owner !== unit.owner) {
+      if (tile.unit !== null && this.areEnemies(tile.unit.owner, unit.owner)) {
         return false;
       }
       cost = 1;
@@ -259,7 +276,7 @@
         if ((from[tile.y] != null) && (from[tile.y][tile.x] != null)) {
           continue;
         }
-        if (tile.unit !== null && tile.unit.owner !== unit.owner) {
+        if (tile.unit !== null && this.areEnemies(tile.unit.owner, unit.owner)) {
           continue;
         }
         cost = 1;
@@ -353,13 +370,13 @@
       for (_i = 0, _len = neighbors.length; _i < _len; _i++) {
         neighbor = neighbors[_i];
         tile = mapArray[neighbor.y][neighbor.x];
-        if (!(tile != null)) {
+        if (tile == null) {
           continue;
         }
         if ((from[tile.y] != null) && (from[tile.y][tile.x] != null)) {
           continue;
         }
-        if (tile.unit !== null && tile.unit.owner !== playerNumber) {
+        if (tile.unit !== null && this.areEnemies(tile.unit.owner, playerNumber)) {
           continue;
         }
         cost = 1;
@@ -475,7 +492,7 @@
         if (cost > node.n) {
           continue;
         }
-        if ((tile.unit != null) && tile.unit.owner !== unit.owner) {
+        if ((tile.unit != null) && this.areEnemies(tile.unit.owner, unit.owner)) {
           continue;
         }
         newNode = {
@@ -540,7 +557,7 @@
     tile = this.map.getTile(x1, y1);
     attackFromTile = this.map.getTile(x2, y2);
     unit = tile.unit;
-    if (unit === undefined) {
+    if (unit == null) {
       return null;
     }
     unitType = this.rules.units[unit.type];
@@ -552,7 +569,7 @@
           continue;
         }
         targetUnit = targetTile.unit;
-        if (targetUnit.owner === unit.owner) {
+        if (this.areAllies(targetUnit.owner, unit.owner)) {
           continue;
         }
         power = this.calculateDamage(unit, attackFromTile, targetUnit, targetTile);
@@ -577,7 +594,7 @@
     unitType = this.rules.units[unit.type];
     targetTile = this.map.getTile(x2, y2);
     targetTileType = this.rules.terrains[targetTile.type];
-    if (targetTile.owner === unit.owner) {
+    if (this.areAllies(targetTile.owner, unit.owner)) {
       return false;
     }
     capturable = false;

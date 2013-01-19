@@ -62,6 +62,15 @@ GameLogic::getDistance = (x1, y1, x2, y2) ->
   distance += Math.abs(y2 - y1)
   return distance
 
+GameLogic::areAllies = (playerNumber1, playerNumber2) ->
+  return true if playerNumber1 is playerNumber2
+  p1 = @map.getPlayer(playerNumber1)
+  p2 = @map.getPlayer(playerNumber2)
+  return false if not p1? or not p2?
+  return p1.teamNumber? and p2.teamNumber and p1.teamNumber is p2.teamNumber
+
+GameLogic::areEnemies = (playerNumber1, playerNumber2) -> not areAllies playerNumber1 playerNumber2
+
 GameLogic::tileHasMovableUnit = (player, x, y) ->
   tile = @map.getTile(x, y)
   if not tile or not tile.unit
@@ -108,7 +117,7 @@ GameLogic::unitCanMovePath = (x, y, dx, dy, path) ->
     return false  if not tile?
     
     # Reject if tile has an enemy unit
-    return false  if tile.unit isnt null and tile.unit.owner isnt unit.owner
+    return false  if tile.unit isnt null and @areEnemies(tile.unit.owner, unit.owner)
     
     # Determine cost
     cost = 1
@@ -183,7 +192,7 @@ GameLogic::unitCanMoveTo = (x, y, dx, dy) ->
       continue  if from[tile.y]? and from[tile.y][tile.x]?
       
       # Reject if tile has an enemy unit
-      continue  if tile.unit isnt null and tile.unit.owner isnt unit.owner
+      continue  if tile.unit isnt null and @areEnemies(tile.unit.owner, unit.owner)
       
       # Determine cost
       cost = 1
@@ -278,13 +287,13 @@ GameLogic::getPath = (movementTypeId, playerNumber, x, y, dx, dy, maxCostPerNode
       tile = mapArray[neighbor.y][neighbor.x]
       
       # Reject if does not exist
-      continue  if not tile?
+      continue  unless tile?
       
       # Reject if visited
       continue  if from[tile.y]? and from[tile.y][tile.x]?
       
       # Reject if tile has an enemy unit
-      continue  if tile.unit isnt null and tile.unit.owner isnt playerNumber
+      continue  if tile.unit isnt null and @areEnemies(tile.unit.owner, playerNumber)
       
       # Determine cost
       cost = 1
@@ -370,7 +379,7 @@ GameLogic::unitMovementOptions = (x, y) ->
       cost = unitMovementType.effectMap[tile.type]  if tile.type of unitMovementType.effectMap
       continue if cost is null
       continue if cost > node.n
-      continue if tile.unit? and tile.unit.owner isnt unit.owner  
+      continue if tile.unit? and @areEnemies(tile.unit.owner, unit.owner)
       
       newNode =
         pos:
@@ -423,7 +432,7 @@ GameLogic::unitAttackOptions = (x1, y1, x2, y2) ->
   tile = @map.getTile(x1, y1)
   attackFromTile = @map.getTile(x2, y2)
   unit = tile.unit
-  return null  if unit is `undefined`
+  return null unless unit?
   unitType = @rules.units[unit.type]
   mapArray = @map.getMapArray()
   for ty of mapArray
@@ -431,7 +440,7 @@ GameLogic::unitAttackOptions = (x1, y1, x2, y2) ->
       targetTile = mapArray[ty][tx]
       continue  unless targetTile.unit?
       targetUnit = targetTile.unit
-      continue  if targetUnit.owner is unit.owner
+      continue  if @areAllies(targetUnit.owner, unit.owner)
       power = @calculateDamage(unit, attackFromTile, targetUnit, targetTile)
       if power isnt null
         attackOptions.push
@@ -448,7 +457,7 @@ GameLogic::unitCanCapture = (x1, y1, x2, y2) ->
   unitType = @rules.units[unit.type]
   targetTile = @map.getTile(x2, y2)
   targetTileType = @rules.terrains[targetTile.type]
-  return false  if targetTile.owner is unit.owner
+  return false  if @areAllies(targetTile.owner, unit.owner)
   capturable = false
 
   for flagName in targetTileType.flags

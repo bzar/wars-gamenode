@@ -1,8 +1,9 @@
-function Player(playerId, gameId, userId, playerNumber, playerName, funds, score, settings) {
+function Player(playerId, gameId, userId, playerNumber, teamNumber, playerName, funds, score, settings) {
   this.playerId = playerId;
   this.gameId = gameId;
   this.userId = userId;
   this.playerNumber = playerNumber;
+  this.teamNumber = teamNumber;
   this.playerName = playerName;
   this.funds = funds;
   this.score = score;
@@ -15,7 +16,7 @@ function Player(playerId, gameId, userId, playerNumber, playerName, funds, score
 exports.Player = Player;
 
 Player.prototype.clone = function() {
-  var p = new Player(this.playerId, this.gameId, this.userId, this.playerNumber, this.playerName,
+  var p = new Player(this.playerId, this.gameId, this.userId, this.playerNumber, this.teamNumber,this.playerName,
                      this.funds, this.score, {emailNotifications: this.settings.emailNotifications});
   return p;
 }
@@ -25,6 +26,7 @@ Player.prototype.cloneFrom = function(other) {
   this.gameId = other.gameId;
   this.userId = other.userId;
   this.playerNumber = other.playerNumber;
+  this.teamNumber = other.teamNumber;
   this.playerName = other.playerName;
   this.funds = other.funds;
   this.score = other.score;
