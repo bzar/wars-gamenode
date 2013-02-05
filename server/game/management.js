@@ -147,7 +147,7 @@ GameManagement.prototype.setTeam = function(userId, gameId, playerNumber, teamNu
         }
         if(allSameTeam) {
           callback({success: false, reason: "All players cannot belong to the same team!"});
-        } else if(userId != p.userId && userId != game.authorId) {
+        } else if(userId != player.userId && userId != game.authorId) {
           callback({success: false, reason: "Cannot change other players' teams unless game author!"});
         } else {
           player.teamNumber = teamNumber;

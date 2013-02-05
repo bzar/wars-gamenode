@@ -68,48 +68,78 @@
       });
       playerList = $("#players");
       _fn = function(player) {
-        var item, joinButton, name, number;
-        item = $("<li></li>");
-        number = $("<span></span>");
+        var item, joinButton, leaveButton, leaveButtonContainer, name, nameContainer, number, option, p, teamContainer, teamSelect, _j, _len1;
+        item = $("<tr></tr>");
+        number = $("<td></td>");
+        nameContainer = $("<td></td>");
         name = $("<span></span>");
         item.addClass("playerItem");
         item.attr("playerNumber", player.playerNumber);
         number.text(player.playerNumber);
         number.css("background-color", theme.getPlayerColorString(player.playerNumber));
         number.addClass("playerNumber");
-        name.text((player.playerName !== null ? player.playerName : ""));
+        if (player.playerName != null) {
+          name.text(player.playerName);
+        }
         name.addClass("playerName");
-        item.append(number);
-        item.append(name);
         joinButton = $("<span></span>");
         joinButton.addClass("joinButton");
-        item.append(joinButton);
-        joinButton.click(function() {
-          if ($(this).hasClass("notJoined")) {
-            return client.stub.joinGame(gameId, player.playerNumber, function(response) {
-              if (!response.success) {
-                return alert("Error joining game!" + response.reason);
-              }
-            });
-          } else {
-            return client.stub.leaveGame(gameId, player.playerNumber, function(response) {
-              if (!response.success) {
-                return alert("Error leaving game!" + response.reason);
-              }
-            });
-          }
-        });
-        if (player.userId === null) {
-          joinButton.addClass("notJoined");
-          joinButton.text("Click to join!");
-        } else {
-          if (player.isMe || authorMode) {
-            joinButton.addClass("joined");
-            joinButton.text("X");
-          } else {
-            joinButton.hide();
-          }
+        joinButton.text("Click to join!");
+        leaveButtonContainer = $("<td></td>");
+        leaveButton = $("<span></span>");
+        leaveButton.addClass("leaveButton");
+        leaveButton.text("X");
+        teamContainer = $("<td></td>");
+        teamSelect = $("<select></select>");
+        teamSelect.addClass("teamSelect");
+        teamSelect.prop("disabled", !player.isMe && !authorMode);
+        for (_j = 0, _len1 = players.length; _j < _len1; _j++) {
+          p = players[_j];
+          option = $("<option></option>");
+          option.attr("value", p.playerNumber);
+          option.text("Team " + p.playerNumber);
+          option.prop("selected", p.playerNumber === player.teamNumber);
+          teamSelect.append(option);
         }
+        nameContainer.append(name);
+        nameContainer.append(joinButton);
+        leaveButtonContainer.append(leaveButton);
+        teamContainer.append(teamSelect);
+        item.append(number);
+        item.append(nameContainer);
+        item.append(teamContainer);
+        item.append(leaveButtonContainer);
+        if (player.userId === null) {
+          joinButton.show();
+          leaveButton.hide();
+        } else {
+          joinButton.hide();
+          leaveButton.toggle(player.isMe || authorMode);
+        }
+        joinButton.click(function() {
+          return client.stub.joinGame(gameId, player.playerNumber, function(response) {
+            if (!response.success) {
+              return alert("Error joining game!" + response.reason);
+            }
+          });
+        });
+        leaveButton.click(function() {
+          return client.stub.leaveGame(gameId, player.playerNumber, function(response) {
+            if (!response.success) {
+              return alert("Error leaving game!" + response.reason);
+            }
+          });
+        });
+        teamSelect.change(function() {
+          var teamNumber;
+          teamNumber = parseInt($(this).val());
+          console.log(gameId, player.playerNumber, teamNumber);
+          return client.stub.setTeam(gameId, player.playerNumber, teamNumber, function(response) {
+            if (!response.success) {
+              return alert("Error setting team!" + response.reason);
+            }
+          });
+        });
         return playerList.append(item);
       };
       for (_i = 0, _len = players.length; _i < _len; _i++) {
@@ -117,30 +147,33 @@
         _fn(player);
       }
       client.skeleton.playerJoined = function(gameId, playerNumber, playerName, isMe) {
-        var joinButton, nameLabel;
+        var joinButton, leaveButton, nameLabel, teamSelect;
         nameLabel = $(".playerItem[playerNumber=\"" + playerNumber + "\"] .playerName");
         joinButton = $(".playerItem[playerNumber=\"" + playerNumber + "\"] .joinButton");
+        leaveButton = $(".playerItem[playerNumber=\"" + playerNumber + "\"] .leaveButton");
+        teamSelect = $(".playerItem[playerNumber=\"" + playerNumber + "\"] .teamSelect");
         nameLabel.text(playerName);
-        joinButton.removeClass("notJoined");
-        if (isMe || authorMode) {
-          joinButton.addClass("joined");
-          return joinButton.text("X");
-        } else {
-          return joinButton.hide();
-        }
+        joinButton.hide();
+        leaveButton.toggle(isMe || authorMode);
+        return teamSelect.prop("disabled", !isMe && !authorMode);
       };
       client.skeleton.playerLeft = function(gameId, playerNumber) {
-        var joinButton, nameLabel;
+        var joinButton, leaveButton, nameLabel;
         nameLabel = $(".playerItem[playerNumber=\"" + playerNumber + "\"] .playerName");
         joinButton = $(".playerItem[playerNumber=\"" + playerNumber + "\"] .joinButton");
+        leaveButton = $(".playerItem[playerNumber=\"" + playerNumber + "\"] .leaveButton");
         joinButton.removeClass("joined");
         nameLabel.text("");
-        joinButton.addClass("notJoined");
-        joinButton.text("Click to join!");
-        return joinButton.show();
+        joinButton.show();
+        return leaveButton.hide();
       };
-      return client.skeleton.gameStarted = function(gameId) {
+      client.skeleton.gameStarted = function(gameId) {
         return document.location = "game.html?gameId=" + gameId;
+      };
+      return client.skeleton.playerTeamChanged = function(gameId, playerNumber, teamNumber, playerName, isMe) {
+        var teamSelect;
+        teamSelect = $(".playerItem[playerNumber=\"" + playerNumber + "\"] .teamSelect");
+        return teamSelect.val(teamNumber);
       };
     };
     return initalizeAuthorTools = function() {

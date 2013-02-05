@@ -54,63 +54,97 @@ require ["Theme", "Map", "gamenode", "base"], (Theme, Map) ->
 
     for player in players
       do (player) ->
-        item = $("<li></li>")
-        number = $("<span></span>")
+        item = $("<tr></tr>")
+        number = $("<td></td>")
+        nameContainer = $("<td></td>")
         name = $("<span></span>")
+        
         item.addClass "playerItem"
         item.attr "playerNumber", player.playerNumber
         number.text player.playerNumber
         number.css "background-color", theme.getPlayerColorString(player.playerNumber)
         number.addClass "playerNumber"
-        name.text (if player.playerName isnt null then player.playerName else "")
+        name.text(player.playerName) if player.playerName?
         name.addClass "playerName"
-        item.append number
-        item.append name
+        
         joinButton = $("<span></span>")
         joinButton.addClass "joinButton"
-        item.append joinButton
-        joinButton.click ->
-          if $(this).hasClass("notJoined")
-            client.stub.joinGame gameId, player.playerNumber, (response) ->
-              alert "Error joining game!" + response.reason  unless response.success
-
-          else
-            client.stub.leaveGame gameId, player.playerNumber, (response) ->
-              alert "Error leaving game!" + response.reason  unless response.success
-
+        joinButton.text "Click to join!"
+        
+        leaveButtonContainer = $("<td></td>")
+        leaveButton = $("<span></span>")
+        leaveButton.addClass "leaveButton"
+        leaveButton.text "X"
+        
+        teamContainer = $("<td></td>")
+        teamSelect = $("<select></select>")
+        teamSelect.addClass "teamSelect"
+        teamSelect.prop("disabled", not player.isMe and not authorMode)
+        
+        for p in players
+          option = $("<option></option>")
+          option.attr "value", p.playerNumber
+          option.text "Team #{p.playerNumber}"
+          option.prop("selected", p.playerNumber is player.teamNumber) 
+          teamSelect.append option
+        
+        nameContainer.append name
+        nameContainer.append joinButton
+        leaveButtonContainer.append leaveButton
+        teamContainer.append teamSelect
+        item.append number
+        item.append nameContainer
+        item.append teamContainer
+        item.append leaveButtonContainer
+        
         if player.userId is null
-          joinButton.addClass "notJoined"
-          joinButton.text "Click to join!"
+          joinButton.show()
+          leaveButton.hide()
         else
-          if player.isMe or authorMode
-            joinButton.addClass "joined"
-            joinButton.text "X"
-          else
-            joinButton.hide()
+          joinButton.hide()
+          leaveButton.toggle(player.isMe or authorMode)
+
+        joinButton.click ->
+          client.stub.joinGame gameId, player.playerNumber, (response) ->
+            alert "Error joining game!" + response.reason  unless response.success
+
+        leaveButton.click ->
+          client.stub.leaveGame gameId, player.playerNumber, (response) ->
+            alert "Error leaving game!" + response.reason  unless response.success
+
+        teamSelect.change ->
+          teamNumber = parseInt $(this).val()
+          client.stub.setTeam gameId, player.playerNumber, teamNumber, (response) ->
+            alert "Error setting team!" + response.reason  unless response.success
+        
         playerList.append item
 
     client.skeleton.playerJoined = (gameId, playerNumber, playerName, isMe) ->
-      nameLabel = $(".playerItem[playerNumber=\"" + playerNumber + "\"] .playerName")
-      joinButton = $(".playerItem[playerNumber=\"" + playerNumber + "\"] .joinButton")
+      nameLabel = $(".playerItem[playerNumber=\"#{playerNumber}\"] .playerName")
+      joinButton = $(".playerItem[playerNumber=\"#{playerNumber}\"] .joinButton")
+      leaveButton = $(".playerItem[playerNumber=\"#{playerNumber}\"] .leaveButton")
+      teamSelect = $(".playerItem[playerNumber=\"#{playerNumber}\"] .teamSelect")
       nameLabel.text playerName
-      joinButton.removeClass "notJoined"
-      if isMe or authorMode
-        joinButton.addClass "joined"
-        joinButton.text "X"
-      else
-        joinButton.hide()
+      joinButton.hide()
+      leaveButton.toggle(isMe or authorMode)
+      teamSelect.prop "disabled", (not isMe and not authorMode)
 
     client.skeleton.playerLeft = (gameId, playerNumber) ->
-      nameLabel = $(".playerItem[playerNumber=\"" + playerNumber + "\"] .playerName")
-      joinButton = $(".playerItem[playerNumber=\"" + playerNumber + "\"] .joinButton")
+      nameLabel = $(".playerItem[playerNumber=\"#{playerNumber}\"] .playerName")
+      joinButton = $(".playerItem[playerNumber=\"#{playerNumber}\"] .joinButton")
+      leaveButton = $(".playerItem[playerNumber=\"#{playerNumber}\"] .leaveButton")
       joinButton.removeClass "joined"
       nameLabel.text ""
-      joinButton.addClass "notJoined"
-      joinButton.text "Click to join!"
       joinButton.show()
+      leaveButton.hide()
 
     client.skeleton.gameStarted = (gameId) ->
       document.location = "game.html?gameId=" + gameId
+      
+    client.skeleton.playerTeamChanged = (gameId, playerNumber, teamNumber, playerName, isMe) ->
+      teamSelect = $(".playerItem[playerNumber=\"#{playerNumber}\"] .teamSelect")
+      teamSelect.val(teamNumber)
+      
   initalizeAuthorTools = ->
     $("#startGame").click (e) ->
       e.preventDefault()

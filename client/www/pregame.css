@@ -9,17 +9,15 @@
   vertical-align: bottom;
 }
 #players {
-  list-style: none;
   color: #eee;
   margin: 0;
   padding: 8px 0;
   font: 16px sans-serif;
 }
-#players li {
+#players tr {
   padding: 8px 0 4px 8px;
   margin: 4px 0 4px 0;
   vertical-align: middle;
-  display: block;
   height: 24px;
   border: 0;
 }
@@ -34,10 +32,10 @@
   color: #111;
   margin-right: 24px;
 }
-.joinButton {
+.joinButton,
+.leaveButton {
   font: 14px sans-serif;
   padding: 2px;
-  display: inline-block;
   text-align: center;
   vertical-align: middle;
   cursor: pointer;
@@ -46,18 +44,17 @@
   font-weight: bold;
   margin: auto;
 }
-.joinButton.notJoined {
+.joinButton {
   background-color: #6a6;
-  width: 128px;
 }
-.joinButton.notJoined:hover {
+.joinButton:hover {
   background-color: #7b7;
 }
-.joinButton.joined {
+.leaveButton {
   border-radius: 4px;
   background-color: #a66;
 }
-.joinButton.joined:hover {
+.leaveButton:hover {
   border-radius: 4px;
   background-color: #b77;
 }
