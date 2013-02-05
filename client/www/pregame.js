@@ -133,7 +133,6 @@
         teamSelect.change(function() {
           var teamNumber;
           teamNumber = parseInt($(this).val());
-          console.log(gameId, player.playerNumber, teamNumber);
           return client.stub.setTeam(gameId, player.playerNumber, teamNumber, function(response) {
             if (!response.success) {
               return alert("Error setting team!" + response.reason);
@@ -158,14 +157,16 @@
         return teamSelect.prop("disabled", !isMe && !authorMode);
       };
       client.skeleton.playerLeft = function(gameId, playerNumber) {
-        var joinButton, leaveButton, nameLabel;
+        var joinButton, leaveButton, nameLabel, teamSelect;
         nameLabel = $(".playerItem[playerNumber=\"" + playerNumber + "\"] .playerName");
         joinButton = $(".playerItem[playerNumber=\"" + playerNumber + "\"] .joinButton");
         leaveButton = $(".playerItem[playerNumber=\"" + playerNumber + "\"] .leaveButton");
+        teamSelect = $(".playerItem[playerNumber=\"" + playerNumber + "\"] .teamSelect");
         joinButton.removeClass("joined");
         nameLabel.text("");
         joinButton.show();
-        return leaveButton.hide();
+        leaveButton.hide();
+        return teamSelect.prop("disabled", !authorMode);
       };
       client.skeleton.gameStarted = function(gameId) {
         return document.location = "game.html?gameId=" + gameId;

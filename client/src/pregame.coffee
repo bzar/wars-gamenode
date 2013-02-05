@@ -133,10 +133,12 @@ require ["Theme", "Map", "gamenode", "base"], (Theme, Map) ->
       nameLabel = $(".playerItem[playerNumber=\"#{playerNumber}\"] .playerName")
       joinButton = $(".playerItem[playerNumber=\"#{playerNumber}\"] .joinButton")
       leaveButton = $(".playerItem[playerNumber=\"#{playerNumber}\"] .leaveButton")
+      teamSelect = $(".playerItem[playerNumber=\"#{playerNumber}\"] .teamSelect")
       joinButton.removeClass "joined"
       nameLabel.text ""
       joinButton.show()
       leaveButton.hide()
+      teamSelect.prop "disabled", (not authorMode)
 
     client.skeleton.gameStarted = (gameId) ->
       document.location = "game.html?gameId=" + gameId
