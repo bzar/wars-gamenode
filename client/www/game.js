@@ -427,12 +427,54 @@
       });
     };
     initializePlayers = function(players) {
-      var i, item, name, number, player, playerList, star, _i, _len, _results;
+      var c, count, counts, i, item, name, number, player, playerList, playerTeams, showTeams, star, team, _i, _len, _results;
       players.sort(function(a, b) {
         return a.playerNumber - b.playerNumber;
       });
       playerList = $("#players");
       i = 0;
+      playerTeams = (function() {
+        var _i, _len, _results;
+        _results = [];
+        for (_i = 0, _len = players.length; _i < _len; _i++) {
+          player = players[_i];
+          _results.push(player.teamNumber);
+        }
+        return _results;
+      })();
+      count = function(item, items) {
+        return ((function() {
+          var _i, _len, _results;
+          _results = [];
+          for (_i = 0, _len = items.length; _i < _len; _i++) {
+            i = items[_i];
+            if (i === item) {
+              _results.push(i);
+            }
+          }
+          return _results;
+        })()).length;
+      };
+      counts = (function() {
+        var _i, _len, _results;
+        _results = [];
+        for (_i = 0, _len = playerTeams.length; _i < _len; _i++) {
+          team = playerTeams[_i];
+          _results.push(count(team, playerTeams));
+        }
+        return _results;
+      })();
+      showTeams = ((function() {
+        var _i, _len, _results;
+        _results = [];
+        for (_i = 0, _len = counts.length; _i < _len; _i++) {
+          c = counts[_i];
+          if (c > 1) {
+            _results.push(c);
+          }
+        }
+        return _results;
+      })()).length > 0;
       _results = [];
       for (_i = 0, _len = players.length; _i < _len; _i++) {
         player = players[_i];
@@ -458,10 +500,17 @@
         number.text(player.playerNumber);
         number.css("background-color", theme.getPlayerColorString(player.playerNumber));
         number.addClass("playerNumber");
-        name.text((player.playerName !== null ? player.playerName : ""));
+        if (player.playerName != null) {
+          name.text(player.playerName);
+        }
         name.addClass("playerName");
         item.append(number);
         item.append(name);
+        if (showTeams) {
+          team = $("<span></span>");
+          team.text(" (" + player.teamNumber + ")");
+          item.append(team);
+        }
         if (player.isMe) {
           star = $("<span>★</span>");
           star.addClass("selfIndicator");

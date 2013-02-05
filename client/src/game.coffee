@@ -329,31 +329,46 @@ require ["Theme", "AnimatedMap", "GameLogic", "Color", "gamenode", "base", "lib/
     playerList = $("#players")
     i = 0
 
+    playerTeams = (player.teamNumber for player in players)
+    count = (item, items) -> (i for i in items when i is item).length
+    counts = (count(team, playerTeams) for team in playerTeams)
+    showTeams = (c for c in counts when c > 1).length > 0
+    
     for player in players
       continue  if player.playerName is null
+      
       item = $("<li></li>")
       number = $("<span></span>")
       name = $("<span></span>")
       item.addClass "playerItem"
+      
       if player.playerNumber is inTurnNumber
         item.addClass "inTurn"
         if player.isMe and not finished
           initializeTurn player.playerNumber
         else
           finalizeTurn()
+      
       item.addClass "isMe"  if player.isMe
       item.attr "playerNumber", player.playerNumber
       number.text player.playerNumber
       number.css "background-color", theme.getPlayerColorString(player.playerNumber)
       number.addClass "playerNumber"
-      name.text (if player.playerName isnt null then player.playerName else "")
+      name.text(player.playerName) if player.playerName?
       name.addClass "playerName"
       item.append number
       item.append name
+      
+      if showTeams
+        team = $("<span></span>")
+        team.text " (#{player.teamNumber})"
+        item.append team
+      
       if player.isMe
         star = $("<span>★</span>")
         star.addClass "selfIndicator"
         item.append star
+      
       playerList.append item
 
   initializeTurn = ->
