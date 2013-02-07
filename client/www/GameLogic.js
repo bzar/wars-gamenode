@@ -213,21 +213,22 @@
 
   GameLogic.prototype.unitCanMoveTo = function(x, y, dx, dy) {
     var addNode, cost, current, existing, from, mapArray, neighbor, neighbors, next, node, path, previous, tile, unit, unitMovementType, unitType, _i, _len;
-    addNode = function(node) {
-      var isBefore, next, pos;
+    addNode = function(node, next) {
+      var isBefore, pos;
       isBefore = function(a, b) {
         return a.left > b.left || (a.left === b.left && a.distance < b.distance);
       };
       if (next === null || isBefore(node, next)) {
         node.next = next;
-        return next = node;
+        return node;
       } else {
         pos = next;
         while (pos.next !== null && isBefore(pos.next, node)) {
           pos = pos.next;
         }
         node.next = pos.next;
-        return pos.next = node;
+        pos.next = node;
+        return next;
       }
     };
     mapArray = this.map.getMapArray();
@@ -237,7 +238,7 @@
     }
     unitType = this.rules.units[unit.type];
     if (unit.deployed && (x !== dx || y !== dy)) {
-      return false;
+      return null;
     }
     unitMovementType = this.rules.movementTypes[unitType.movementType];
     from = {};
@@ -273,7 +274,7 @@
         if (!(tile != null)) {
           continue;
         }
-        if ((from[tile.y] != null) && (from[tile.y][tile.x] != null)) {
+        if (tile.y in from && tile.x in from[tile.y]) {
           continue;
         }
         if (tile.unit !== null && this.areEnemies(tile.unit.owner, unit.owner)) {
@@ -300,7 +301,7 @@
           distance: this.getDistance(tile.x, tile.y, dx, dy)
         };
         if (existing === null) {
-          addNode(node);
+          next = addNode(node, next);
         } else {
           if (existing.left < node.left) {
             if (previous === null) {
@@ -309,31 +310,32 @@
               previous.next = existing.next;
             }
             existing.next = null;
-            addNode(node);
+            next = addNode(node, next);
           }
         }
       }
     }
-    return false;
+    return null;
   };
 
   GameLogic.prototype.getPath = function(movementTypeId, playerNumber, x, y, dx, dy, maxCostPerNode, maxCost, acceptNextTo) {
     var addNode, cost, current, existing, from, mapArray, neighbor, neighbors, next, node, path, previous, tile, unitMovementType, _i, _len;
-    addNode = function(node) {
-      var isBefore, next, pos;
+    addNode = function(node, next) {
+      var isBefore, pos;
       isBefore = function(a, b) {
         return a.cost < b.cost || (a.cost === b.cost && a.distance < b.distance);
       };
       if (next === null || isBefore(node, next)) {
         node.next = next;
-        return next = node;
+        return node;
       } else {
         pos = next;
         while (pos.next !== null && isBefore(pos.next, node)) {
           pos = pos.next;
         }
         node.next = pos.next;
-        return pos.next = node;
+        pos.next = node;
+        return next;
       }
     };
     mapArray = this.map.getMapArray();
@@ -346,7 +348,7 @@
       from: null,
       distance: this.getDistance(x, y, dx, dy)
     };
-    while (next !== null) {
+    while (next != null) {
       current = next;
       next = current.next;
       if (!(current.tile.y in from)) {
@@ -372,7 +374,7 @@
         if (tile == null) {
           continue;
         }
-        if ((from[tile.y] != null) && (from[tile.y][tile.x] != null)) {
+        if (tile.y in from && tile.x in from[tile.y]) {
           continue;
         }
         if (tile.unit !== null && this.areEnemies(tile.unit.owner, playerNumber)) {
@@ -399,7 +401,7 @@
           distance: this.getDistance(tile.x, tile.y, dx, dy)
         };
         if (existing === null) {
-          addNode(node);
+          next = addNode(node, next);
         } else if (existing.cost > node.cost) {
           if (previous === null) {
             next = existing.next;
@@ -407,11 +409,11 @@
             previous.next = existing.next;
           }
           existing.next = null;
-          addNode(node);
+          next = addNode(node, next);
         }
       }
     }
-    return false;
+    return null;
   };
 
   GameLogic.prototype.unitMovementOptions = function(x, y) {
@@ -575,8 +577,8 @@
         if (power !== null) {
           attackOptions.push({
             pos: {
-              x: tx,
-              y: ty
+              x: parseInt(tx),
+              y: parseInt(ty)
             },
             power: power
           });

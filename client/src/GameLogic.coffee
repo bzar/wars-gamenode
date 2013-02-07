@@ -131,23 +131,24 @@ GameLogic::unitCanMovePath = (x, y, dx, dy, path) ->
   return true
 
 GameLogic::unitCanMoveTo = (x, y, dx, dy) ->
-  addNode = (node) ->
+  addNode = (node, next) ->
     isBefore = (a, b) -> a.left > b.left or (a.left is b.left and a.distance < b.distance)
-    
+
     if next is null or isBefore(node, next)
       node.next = next
-      next = node
+      return node
     else
       pos = next
       pos = pos.next  while pos.next isnt null and isBefore(pos.next, node)
       node.next = pos.next
       pos.next = node
+      return next
       
   mapArray = @map.getMapArray()
   unit = mapArray[y][x].unit  
   return null if not unit?
   unitType = @rules.units[unit.type]
-  return false  if unit.deployed and (x isnt dx or y isnt dy)
+  return null  if unit.deployed and (x isnt dx or y isnt dy)
   unitMovementType = @rules.movementTypes[unitType.movementType]
   
   from = {}
@@ -159,7 +160,6 @@ GameLogic::unitCanMoveTo = (x, y, dx, dy) ->
     distance: @getDistance(x, y, dx, dy)
 
   while next isnt null
-    
     # Take the next best node from list
     current = next
     next = current.next
@@ -189,7 +189,7 @@ GameLogic::unitCanMoveTo = (x, y, dx, dy) ->
       continue  if not tile?
       
       # Reject if visited
-      continue  if from[tile.y]? and from[tile.y][tile.x]?
+      continue  if tile.y of from and tile.x of from[tile.y]
       
       # Reject if tile has an enemy unit
       continue  if tile.unit isnt null and @areEnemies(tile.unit.owner, unit.owner)
@@ -218,11 +218,9 @@ GameLogic::unitCanMoveTo = (x, y, dx, dy) ->
         distance: @getDistance(tile.x, tile.y, dx, dy)
 
       if existing is null
-        
         # If node points to a new tile, add node to the list
-        addNode node
+        next = addNode node, next
       else
-        
         # Otherwise if new route is cheaper, remove the old node and add the new one
         if existing.left < node.left
           if previous is null
@@ -230,22 +228,22 @@ GameLogic::unitCanMoveTo = (x, y, dx, dy) ->
           else
             previous.next = existing.next
           existing.next = null
-          addNode node
+          next = addNode node, next
 
-  return false
+  return null
 
 GameLogic::getPath = (movementTypeId, playerNumber, x, y, dx, dy, maxCostPerNode, maxCost, acceptNextTo) ->
-  addNode = (node) ->
+  addNode = (node, next) ->
     isBefore = (a, b) -> a.cost < b.cost or (a.cost is b.cost and a.distance < b.distance)
-    
     if next is null or isBefore(node, next)
       node.next = next
-      next = node
+      return node
     else
       pos = next
       pos = pos.next  while pos.next isnt null and isBefore(pos.next, node)
       node.next = pos.next
       pos.next = node
+      return next
       
   mapArray = @map.getMapArray()
   unitMovementType = @rules.movementTypes[movementTypeId]
@@ -257,8 +255,7 @@ GameLogic::getPath = (movementTypeId, playerNumber, x, y, dx, dy, maxCostPerNode
     from: null
     distance: @getDistance(x, y, dx, dy)
 
-  while next isnt null
-    
+  while next?
     # Take the next best node from list
     current = next
     next = current.next
@@ -270,7 +267,7 @@ GameLogic::getPath = (movementTypeId, playerNumber, x, y, dx, dy, maxCostPerNode
     # Check end condition
     if @getDistance(current.tile.x, current.tile.y, dx, dy) <= (if acceptNextTo then 1 else 0)
       path = []
-      while current isnt null
+      while current isnt null        
         path.push
           x: current.tile.x
           y: current.tile.y
@@ -289,7 +286,7 @@ GameLogic::getPath = (movementTypeId, playerNumber, x, y, dx, dy, maxCostPerNode
       continue  unless tile?
       
       # Reject if visited
-      continue  if from[tile.y]? and from[tile.y][tile.x]?
+      continue  if tile.y of from and tile.x of from[tile.y]
       
       # Reject if tile has an enemy unit
       continue  if tile.unit isnt null and @areEnemies(tile.unit.owner, playerNumber)
@@ -319,16 +316,16 @@ GameLogic::getPath = (movementTypeId, playerNumber, x, y, dx, dy, maxCostPerNode
       # If node points to a new tile, add node to the list
       # Otherwise if new route is cheaper, remove the old node and add the new one
       if existing is null
-        addNode node
+        next = addNode node, next
       else if existing.cost > node.cost
         if previous is null
           next = existing.next
         else
           previous.next = existing.next
         existing.next = null
-        addNode node
+        next = addNode node, next
 
-  return false
+  return null
 
 GameLogic::unitMovementOptions = (x, y) ->
   mapArray = @map.getMapArray()
@@ -444,8 +441,8 @@ GameLogic::unitAttackOptions = (x1, y1, x2, y2) ->
       if power isnt null
         attackOptions.push
           pos:
-            x: tx
-            y: ty
+            x: parseInt(tx)
+            y: parseInt(ty)
           power: power
 
   return attackOptions
