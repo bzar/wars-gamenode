@@ -133,7 +133,6 @@ require ["Theme", "Map", "gamenode", "base"], (Theme, Map) ->
         client.stub.addInvite gameId, username, (response) ->
           alert "Error inviting user! " + response.reason  unless response.success
 
-
     client.stub.botNames (names) ->
       if not names? or names.length is 0
         $("#inviteForm").hide()
@@ -143,4 +142,38 @@ require ["Theme", "Map", "gamenode", "base"], (Theme, Map) ->
           item.attr "value", name
           item.text name
           $("#username").append item
+
+    client.stub.gameRules gameId, (rules) ->
+      populateBannedUnitSelections rules
+
+    populateBannedUnitSelections = (rules) ->
+      forEachProperty rules.units, (unit) ->
+        option = $("<option id='#{unit.id}'>#{unit.name}</option>")
+        if "#{unit.id}" in rules.bannedUnits  
+          $("#bannedUnits").append option 
+        else
+          $("#notBannedUnits").append option 
+   
+    $("#banUnit").click (e) ->
+      e.preventDefault()
+      for selected in $("#notBannedUnits option:selected")
+        $("#notBannedUnits").find(selected).remove
+        $("#bannedUnits").append selected
+      banned = $.map $("#bannedUnits option"), (option) -> option.id
+      setBannedUnitsToServer(banned)
+
+    $("#removeFromBannedUnits").click (e) ->
+      e.preventDefault()
+      for selected in $("#bannedUnits option:selected")
+        $("#bannedUnits").find(selected).remove
+        $("#notBannedUnits").append selected
+      banned = $.map $("#bannedUnits option"), (option) -> option.id
+      setBannedUnitsToServer(banned)
+
+    setBannedUnitsToServer = (bannedUnits) ->
+      client.stub.setBannedUnits gameId, bannedUnits, (response) ->
+        if response.success
+        else
+          alert "Cannot add units to ban list! " + response.reason
+  
 
