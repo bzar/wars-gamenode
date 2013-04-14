@@ -208,7 +208,8 @@ require ["Theme", "Map", "gamenode", "base"], (Theme, Map) ->
       setBannedUnitsToServer(banned)
 
     setBannedUnitsToServer = (bannedUnits) ->
-      client.stub.setBannedUnits gameId, bannedUnits, (response) ->
+      bannedUnitsInts = (parseInt(u) for u in bannedUnits)
+      client.stub.setBannedUnits gameId, bannedUnitsInts, (response) ->
         if response.success
         else
           alert "Cannot add units to ban list! " + response.reason
