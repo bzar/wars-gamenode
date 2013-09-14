@@ -186,7 +186,7 @@ require ["Theme", "Map", "gamenode", "base"], (Theme, Map) ->
     populateBannedUnitSelections = (rules) ->
       forEachProperty rules.units, (unit) ->
         option = $("<option id='#{unit.id}'>#{unit.name}</option>")
-        if "#{unit.id}" in rules.bannedUnits  
+        if unit.id in rules.bannedUnits  
           $("#bannedUnits").append option 
         else
           $("#notBannedUnits").append option 
