@@ -407,9 +407,15 @@ require ["Theme", "AnimatedMap", "GameLogic", "Color", "gamenode", "base", "lib/
         when "attack" then handleAttackMapClick tilePosition
         when "unloadUnit" then handleUnloadUnitMapClick()
         when "unloadTarget" then handleUnloadTargetMapClick tilePosition
-      
+        when "showRange" then handleShowRangeMapClick()
+    else
+      switch gameUIState.stateName
+        when "select" then handleSelectMapClick tilePosition, canvasPosition
+        when "showRange" then handleShowRangeMapClick()
+
+
   handleSelectMapClick = (tilePosition, canvasPosition) ->
-    if gameLogic.tileHasMovableUnit(inTurnNumber, tilePosition.x, tilePosition.y)
+    if inTurn and gameLogic.tileHasMovableUnit(inTurnNumber, tilePosition.x, tilePosition.y)
       movementOptions = gameLogic.unitMovementOptions(tilePosition.x, tilePosition.y)
       map.paintMovementMask movementOptions
       if movementOptions.length > 1
@@ -424,10 +430,15 @@ require ["Theme", "AnimatedMap", "GameLogic", "Color", "gamenode", "base", "lib/
           x: tilePosition.x
           y: tilePosition.y
         ], movementOptions, canvasPosition
-    else if gameLogic.tileCanBuild(inTurnNumber, tilePosition.x, tilePosition.y)
+    else if inTurn and gameLogic.tileCanBuild(inTurnNumber, tilePosition.x, tilePosition.y)
       buildOptions = gameLogic.tileBuildOptions(tilePosition.x, tilePosition.y)
       showBuildMenu buildOptions, canvasPosition, tilePosition
       
+    else if map.getTile(tilePosition.x, tilePosition.y).unit isnt null
+      gameUIState = stateName: "showRange"
+      movementOptions = gameLogic.unitMovementOptions(tilePosition.x, tilePosition.y)
+      map.paintMovementMask movementOptions
+
   handleMoveMapClick = (tilePosition, canvasPosition) ->
     map.refresh()
     x = gameUIState.x
@@ -456,8 +467,13 @@ require ["Theme", "AnimatedMap", "GameLogic", "Color", "gamenode", "base", "lib/
       map.showMoveUnit unitId, path, ->
         switchToActionState x, y, dx, dy, path, gameUIState.movementOptions, canvasPosition
 
+  handleShowRangeMapClick = ->
+    gameUIState = stateName: "select"
+    map.refresh()
+
   handleActionMapClick = ->
     undoMove()
+
   handleAttackMapClick = (tilePosition) ->
     map.refresh()
     map.hideOverlay()
