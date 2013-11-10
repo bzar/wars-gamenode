@@ -83,7 +83,7 @@ require ["Theme", "AnimatedMap", "GameLogic", "Color", "gamenode", "base", "lib/
             alert "Could not leave game! " + response.reason
             $("#spinner").hide()
           else
-            document.location = "home.html"
+            document.location = "mygames.html"
 
 
     client.stub.emailNotifications gameId, (response) ->

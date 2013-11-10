@@ -101,7 +101,7 @@
               alert("Could not leave game! " + response.reason);
               return $("#spinner").hide();
             } else {
-              return document.location = "home.html";
+              return document.location = "mygames.html";
             }
           });
         }
