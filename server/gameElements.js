@@ -462,7 +462,7 @@ var terrainList = [
               [],
               [],
               []),
-  new TerrainType(12, 'Base', 60,
+  new TerrainType(12, 'HQ', 60,
               [],
               ['Infantry', 'Vehicle'],
               ['Capturable', 'HQ']),
