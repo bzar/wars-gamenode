@@ -76,7 +76,7 @@ MongoDBDatabase.prototype.createGame = function(game, gameData, players, callbac
           playerValues.push(player);
         }
 
-        collection.insertAll(playerValues, function(err, players) {
+        collection.insert(playerValues, function(err, players) {
           if(err) { callback({success: false, reason: err}); return; }
 
           database.collection("tiles", function(err, tileCollection) {
@@ -115,8 +115,8 @@ MongoDBDatabase.prototype.createGame = function(game, gameData, players, callbac
                 tiles.push(tile);
               }
 
-              tileCollection.insertAll(tiles, function(err, tiles) {
-                unitCollection.insertAll(units, function(err, units) {
+              tileCollection.insert(tiles, function(err, tiles) {
+                unitCollection.insert(units, function(err, units) {
                   if(err) { callback({success: false, reason: err}); return; }
                   timer.end();
                   callback({success: true, gameId: gameId});
@@ -376,7 +376,7 @@ MongoDBDatabase.prototype.userPlayerInTurn = function(gameId, userId, callback) 
         collection.findOne({gameId: gameId, userId: userId,
                            playerNumber: game.inTurnNumber}, function(err, player) {
           if(err) { callback({success: false, reason: err}); return; }
-          if(player === null) { callback({success: false, reason: "Player not found!"}); return; }
+          if(player === null) { callback({success: false, reason: "Player not found!"}); return; }
           
           player.teamNumber = player.teamNumber ? player.teamNumber : player.playerNumber;
           var playerObj = new entities.Player(player._id.toString(), player.gameId, player.userId,
@@ -1057,7 +1057,7 @@ MongoDBDatabase.prototype.createGameEvents = function(newGameEvents, callback) {
       event = {gameId: gameId, time: event.time, content: event.content}
       events.push(event);
     });
-    collection.insertAll(events, function(err) {
+    collection.insert(events, function(err) {
       if(err) { callback({success: false, reason: err}); return; }
       timer.end();
       callback({success: true});
@@ -1108,7 +1108,7 @@ MongoDBDatabase.prototype.createGameStatistics = function(newGameStatistics, cal
                    content: statistic.content}
       statistics.push(statistic);
     });
-    collection.insertAll(statistics, function(err, statistics) {
+    collection.insert(statistics, function(err, statistics) {
       if(err) { callback({success: false, reason: err}); return; }
       timer.end();
       callback({success: true});
