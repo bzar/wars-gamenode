@@ -3,7 +3,7 @@
 	url = git://github.com/bzar/gamenode.git
 [submodule "server/lib/node-mongodb-native"]
 	path = server/lib/node-mongodb-native
-	url = https://github.com/christkv/node-mongodb-native.git
+	url = https://github.com/mongodb/node-mongodb-native.git
 [submodule "client/www/lib/d3"]
 	path = client/www/lib/d3
 	url = git://github.com/mbostock/d3.git

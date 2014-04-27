@@ -10,7 +10,7 @@ var MongoDBDatabase = function(params) {
   this.host = params.host ? params.host : "localhost";
   this.port = params.port ? params.port : mongo.Connection.DEFAULT_PORT;
   this.databaseName = params.database;
-  this.client = new mongo.Db(this.databaseName, new mongo.Server(this.host, this.port, {}));
+  this.client = new mongo.Db(this.databaseName, new mongo.Server(this.host, this.port, {}), {safe: true});
 
   var this_ = this;
   this.client.open(function(err, db) {
