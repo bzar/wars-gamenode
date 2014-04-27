@@ -427,7 +427,7 @@ MongoDBDatabase.prototype.updatePlayers = function(players, callback) {
       var player = {$set: {gameId: gameId, userId: userId, playerNumber: playerObj.playerNumber,
                     teamNumber: playerObj.teamNumber, playerName: playerObj.playerName, 
                     funds: playerObj.funds, score: playerObj.score, settings: playerObj.settings} };
-      collection.update({_id: playerId}, player);
+      collection.update({_id: playerId}, player, function(err, result) {});
     });
     timer.end();
     callback({success: true});
@@ -818,7 +818,7 @@ MongoDBDatabase.prototype.updateUnits = function(units, callback) {
       var unit = {$set: {tileId: tileId, carriedBy: carriedBy, owner: unitObj.owner,
                   health: unitObj.health, deployed: unitObj.deployed,
                   moved: unitObj.moved, capturing: unitObj.capturing} };
-      collection.update({_id: unitId}, unit);
+      collection.update({_id: unitId}, unit, function(err, result) {});
     });
     timer.end();
     callback({success: true});
@@ -966,7 +966,7 @@ MongoDBDatabase.prototype.updateTiles = function(tiles, callback) {
                   type: tileObj.type, subtype: tileObj.subtype, owner: tileObj.owner,
                   unitId: unitId, capturePoints: tileObj.capturePoints,
                   beingCaptured: tileObj.beingCaptured} }
-      collection.update({_id: tileId}, tile);
+      collection.update({_id: tileId}, tile, function(err, result) {});
     });
     timer.end();
     callback({success: true});
