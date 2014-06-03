@@ -13,6 +13,7 @@
   
   "sheet": {
     "filename": "wars-hexes-sprites-hq2x.png",
+    "highDpiFilename": "wars-hexes-sprites@2x.png",
     "cols": 9,
     "rows": 30
   },

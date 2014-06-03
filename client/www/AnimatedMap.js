@@ -9,7 +9,8 @@
         this.theme = (theme ? theme : new Theme("pixel"));
         this.autoscale = !scale;
         this.scale = scale;
-        this.canvas = new aja.Canvas(canvasId);
+        this.canvas = new aja.Canvas(canvasId, !!this.theme.highDpiTheme);
+        this.theme.setHighDpiCanvas(this.canvas.isHighDpiCanvas());
         this.canvas.verbosity = 1;
         this.overlay = new Overlay(this);
         this.overlay.z = 100;
@@ -194,7 +195,7 @@
     AnimatedMap.prototype._drawHex = function(ctx, tileType, tileSubtype, tileOwner, x, y, sheet) {
       var imageCoords;
       imageCoords = this.theme.getTileCoordinates(tileType, tileSubtype, tileOwner);
-      return ctx.drawImage((sheet ? sheet : this.sprites), imageCoords.x, imageCoords.y, this.theme.settings.image.width, this.theme.settings.image.height, x, y, this.theme.settings.image.width, this.theme.settings.image.height);
+      return ctx.drawImage((sheet ? sheet : this.sprites), this.theme.getSheetCoordinate(imageCoords.x), this.theme.getSheetCoordinate(imageCoords.y), this.theme.getSheetCoordinate(this.theme.settings.image.width), this.theme.getSheetCoordinate(this.theme.settings.image.height), x, y, this.theme.settings.image.width, this.theme.settings.image.height);
     };
     AnimatedMap.prototype._drawProp = function(ctx, tileType, tileSubtype, tileOwner, x, y, sheet) {
       var imageCoords;
@@ -202,7 +203,7 @@
       if (imageCoords === null) {
         return;
       }
-      return ctx.drawImage((sheet ? sheet : this.sprites), imageCoords.x, imageCoords.y, this.theme.settings.image.width, this.theme.settings.image.height, x, y, this.theme.settings.image.width, this.theme.settings.image.height);
+      return ctx.drawImage((sheet ? sheet : this.sprites), this.theme.getSheetCoordinate(imageCoords.x), this.theme.getSheetCoordinate(imageCoords.y), this.theme.getSheetCoordinate(this.theme.settings.image.width), this.theme.getSheetCoordinate(this.theme.settings.image.height), x, y, this.theme.settings.image.width, this.theme.settings.image.height);
     };
     AnimatedMap.prototype._drawPropOnHex = function(ctx, tileType, tileSubtype, tileOwner, x, y, sheet) {
       return this._drawProp(ctx, tileType, tileSubtype, tileOwner, x, y - (this.theme.settings.image.height - this.theme.settings.hex.height), sheet);
@@ -293,7 +294,7 @@
         while (i < damageString.length) {
           n = damageString[i];
           numCoord = this.theme.getDamageNumberCoordinates(n);
-          octx.drawImage(this.sprites, numCoord.x, numCoord.y, this.theme.settings.image.width, this.theme.settings.image.height, coord.e(1) - ((damageString.length - 1) / 2 - i) * (this.theme.settings.number.width + 1), coord.e(2) - (this.theme.settings.image.height - this.theme.settings.hex.height), this.theme.settings.image.width, this.theme.settings.image.height);
+          octx.drawImage(this.sprites, this.theme.getSheetCoordinate(numCoord.x), this.theme.getSheetCoordinate(numCoord.y), this.theme.getSheetCoordinate(this.theme.settings.image.width), this.theme.getSheetCoordinate(this.theme.settings.image.height), coord.e(1) - ((damageString.length - 1) / 2 - i) * (this.theme.settings.number.width + 1), coord.e(2) - (this.theme.settings.image.height - this.theme.settings.hex.height), this.theme.settings.image.width, this.theme.settings.image.height);
           ++i;
         }
       }
@@ -994,11 +995,11 @@
       sprites = (this.unit.moved ? this.map.spritesMoved : this.map.sprites);
       coord = (this.unit ? this.map.theme.getUnitCoordinates(this.unit.type, this.unit.owner) : null);
       if (coord) {
-        ctx.drawImage(sprites, coord.x, coord.y, this.map.theme.settings.image.width, this.map.theme.settings.image.height, this.x, this.y, this.map.theme.settings.image.width, this.map.theme.settings.image.height);
+        ctx.drawImage(sprites, this.map.theme.getSheetCoordinate(coord.x), this.map.theme.getSheetCoordinate(coord.y), this.map.theme.getSheetCoordinate(this.map.theme.settings.image.width), this.map.theme.getSheetCoordinate(this.map.theme.settings.image.height), this.x, this.y, this.map.theme.settings.image.width, this.map.theme.settings.image.height);
       }
       if (this.unit.deployed) {
         deployCoord = this.map.theme.getDeployEmblemCoordinates();
-        ctx.drawImage(sprites, deployCoord.x, deployCoord.y, this.map.theme.settings.image.width, this.map.theme.settings.image.height, this.x, this.y, this.map.theme.settings.image.width, this.map.theme.settings.image.height);
+        ctx.drawImage(sprites, this.map.theme.getSheetCoordinate(deployCoord.x), this.map.theme.getSheetCoordinate(deployCoord.y), this.map.theme.getSheetCoordinate(this.map.theme.settings.image.width), this.map.theme.getSheetCoordinate(this.map.theme.settings.image.height), this.x, this.y, this.map.theme.settings.image.width, this.map.theme.settings.image.height);
       }
       if (this.map.rules) {
         unitType = this.map.rules.units[this.unit.type];
@@ -1009,7 +1010,7 @@
           _results = [];
           while (i < unitType.carryNum) {
             slotCoords = (i < this.unit.carriedUnits.length ? occupiedCoords : freeCoords);
-            ctx.drawImage(this.map.sprites, slotCoords.x, slotCoords.y, this.map.theme.settings.image.width, this.map.theme.settings.image.height, this.x, this.y - i * this.map.theme.settings.carrierSlot.slotHeight, this.map.theme.settings.image.width, this.map.theme.settings.image.height);
+            ctx.drawImage(this.map.sprites, this.map.theme.getSheetCoordinate(slotCoords.x), this.map.theme.getSheetCoordinate(slotCoords.y), this.map.theme.getSheetCoordinate(this.map.theme.settings.image.width), this.map.theme.getSheetCoordinate(this.map.theme.settings.image.height), this.x, this.y - i * this.map.theme.settings.carrierSlot.slotHeight, this.map.theme.settings.image.width, this.map.theme.settings.image.height);
             _results.push(++i);
           }
           return _results;
@@ -1017,7 +1018,7 @@
       }
     };
     MapDigit.prototype.draw = function(ctx) {
-      return ctx.drawImage(this.map.sprites, this.coord.x, this.coord.y, this.map.theme.settings.image.width, this.map.theme.settings.image.height, this.x, this.y, this.map.theme.settings.image.width, this.map.theme.settings.image.height);
+      return ctx.drawImage(this.map.sprites, this.map.theme.getSheetCoordinate(this.coord.x), this.map.theme.getSheetCoordinate(this.coord.y), this.map.theme.getSheetCoordinate(this.map.theme.settings.image.width), this.map.theme.getSheetCoordinate(this.map.theme.settings.image.height), this.x, this.y, this.map.theme.settings.image.width, this.map.theme.settings.image.height);
     };
     MapDigit.prototype.rect = function(ctx) {
       return {
@@ -1048,11 +1049,11 @@
         barCoords = this.map.theme.getCoordinates(this.map.theme.settings.captureBar.barName);
         bitCoords = this.map.theme.getCoordinates((this.tile.beingCaptured ? this.map.theme.settings.captureBar.capturingName : this.map.theme.settings.captureBar.recoveringName));
         numBits = Math.ceil(this.map.theme.settings.captureBar.totalBits * this.tile.capturePoints / 200);
-        ctx.drawImage(this.map.sprites, barCoords.x, barCoords.y, this.map.theme.settings.image.width, this.map.theme.settings.image.height, this.x, this.y, this.map.theme.settings.image.width, this.map.theme.settings.image.height);
+        ctx.drawImage(this.map.sprites, this.map.theme.getSheetCoordinate(barCoords.x), this.map.theme.getSheetCoordinate(barCoords.y), this.map.theme.getSheetCoordinate(this.map.theme.settings.image.width), this.map.theme.getSheetCoordinate(this.map.theme.settings.image.height), this.x, this.y, this.map.theme.settings.image.width, this.map.theme.settings.image.height);
         i = 0;
         _results = [];
         while (i < numBits) {
-          ctx.drawImage(this.map.sprites, bitCoords.x, bitCoords.y, this.map.theme.settings.image.width, this.map.theme.settings.image.height, this.x, this.y - i * this.map.theme.settings.captureBar.bitHeight, this.map.theme.settings.image.width, this.map.theme.settings.image.height);
+          ctx.drawImage(this.map.sprites, this.map.theme.getSheetCoordinate(bitCoords.x), this.map.theme.getSheetCoordinate(bitCoords.y), this.map.theme.getSheetCoordinate(this.map.theme.settings.image.width), this.map.theme.getSheetCoordinate(this.map.theme.settings.image.height), this.x, this.y - i * this.map.theme.settings.captureBar.bitHeight, this.map.theme.settings.image.width, this.map.theme.settings.image.height);
           _results.push(++i);
         }
         return _results;
@@ -1075,7 +1076,7 @@
         while (i < healthString.length) {
           n = healthString[i];
           numCoord = this.mapUnit.map.theme.getHealthNumberCoordinates(n);
-          ctx.drawImage(this.mapUnit.map.sprites, numCoord.x, numCoord.y, this.mapUnit.map.theme.settings.image.width, this.mapUnit.map.theme.settings.image.height, this.mapUnit.x - (healthString.length - 1 - i) * (this.mapUnit.map.theme.settings.number.width + 1), this.mapUnit.y, this.mapUnit.map.theme.settings.image.width, this.mapUnit.map.theme.settings.image.height);
+          ctx.drawImage(this.mapUnit.map.sprites, this.mapUnit.map.theme.getSheetCoordinate(numCoord.x), this.mapUnit.map.theme.getSheetCoordinate(numCoord.y), this.mapUnit.map.theme.getSheetCoordinate(this.mapUnit.map.theme.settings.image.width), this.mapUnit.map.theme.getSheetCoordinate(this.mapUnit.map.theme.settings.image.height), this.mapUnit.x - (healthString.length - 1 - i) * (this.mapUnit.map.theme.settings.number.width + 1), this.mapUnit.y, this.mapUnit.map.theme.settings.image.width, this.mapUnit.map.theme.settings.image.height);
           _results.push(++i);
         }
         return _results;

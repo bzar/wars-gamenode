@@ -4,7 +4,8 @@ define ["Theme", "lib/aja/lib/aja", "lib/pixastic", "lib/sylvester"], (Theme) ->
       @theme = (if theme then theme else new Theme("pixel"))
       @autoscale = not scale
       @scale = scale
-      @canvas = new aja.Canvas(canvasId)
+      @canvas = new aja.Canvas(canvasId, !!@theme.highDpiTheme)
+      @theme.setHighDpiCanvas @canvas.isHighDpiCanvas()
       @canvas.verbosity = 1
       @overlay = new Overlay(this)
       @overlay.z = 100
@@ -153,12 +154,12 @@ define ["Theme", "lib/aja/lib/aja", "lib/pixastic", "lib/sylvester"], (Theme) ->
 
   AnimatedMap::_drawHex = (ctx, tileType, tileSubtype, tileOwner, x, y, sheet) ->
     imageCoords = @theme.getTileCoordinates(tileType, tileSubtype, tileOwner)
-    ctx.drawImage (if sheet then sheet else @sprites), imageCoords.x, imageCoords.y, @theme.settings.image.width, @theme.settings.image.height, x, y, @theme.settings.image.width, @theme.settings.image.height
+    ctx.drawImage (if sheet then sheet else @sprites), @theme.getSheetCoordinate(imageCoords.x), @theme.getSheetCoordinate(imageCoords.y), @theme.getSheetCoordinate(@theme.settings.image.width), @theme.getSheetCoordinate(@theme.settings.image.height), x, y, @theme.settings.image.width, @theme.settings.image.height
 
   AnimatedMap::_drawProp = (ctx, tileType, tileSubtype, tileOwner, x, y, sheet) ->
     imageCoords = @theme.getTilePropCoordinates(tileType, tileSubtype, tileOwner)
     return  if imageCoords is null
-    ctx.drawImage (if sheet then sheet else @sprites), imageCoords.x, imageCoords.y, @theme.settings.image.width, @theme.settings.image.height, x, y, @theme.settings.image.width, @theme.settings.image.height
+    ctx.drawImage (if sheet then sheet else @sprites), @theme.getSheetCoordinate(imageCoords.x), @theme.getSheetCoordinate(imageCoords.y), @theme.getSheetCoordinate(@theme.settings.image.width), @theme.getSheetCoordinate(@theme.settings.image.height), x, y, @theme.settings.image.width, @theme.settings.image.height
 
   AnimatedMap::_drawPropOnHex = (ctx, tileType, tileSubtype, tileOwner, x, y, sheet) ->
     @_drawProp ctx, tileType, tileSubtype, tileOwner, x, y - (@theme.settings.image.height - @theme.settings.hex.height), sheet
@@ -231,7 +232,7 @@ define ["Theme", "lib/aja/lib/aja", "lib/pixastic", "lib/sylvester"], (Theme) ->
       while i < damageString.length
         n = damageString[i]
         numCoord = @theme.getDamageNumberCoordinates(n)
-        octx.drawImage @sprites, numCoord.x, numCoord.y, @theme.settings.image.width, @theme.settings.image.height, coord.e(1) - ((damageString.length - 1) / 2 - i) * (@theme.settings.number.width + 1), coord.e(2) - (@theme.settings.image.height - @theme.settings.hex.height), @theme.settings.image.width, @theme.settings.image.height
+        octx.drawImage @sprites, @theme.getSheetCoordinate(numCoord.x), @theme.getSheetCoordinate(numCoord.y), @theme.getSheetCoordinate(@theme.settings.image.width), @theme.getSheetCoordinate(@theme.settings.image.height), coord.e(1) - ((damageString.length - 1) / 2 - i) * (@theme.settings.number.width + 1), coord.e(2) - (@theme.settings.image.height - @theme.settings.hex.height), @theme.settings.image.width, @theme.settings.image.height
         ++i
     @overlay.visible = true
     @canvas.forceRedraw()
@@ -785,10 +786,10 @@ define ["Theme", "lib/aja/lib/aja", "lib/pixastic", "lib/sylvester"], (Theme) ->
   MapUnit::draw = (ctx) ->
     sprites = (if @unit.moved then @map.spritesMoved else @map.sprites)
     coord = (if @unit then @map.theme.getUnitCoordinates(@unit.type, @unit.owner) else null)
-    ctx.drawImage sprites, coord.x, coord.y, @map.theme.settings.image.width, @map.theme.settings.image.height, @x, @y, @map.theme.settings.image.width, @map.theme.settings.image.height  if coord
+    ctx.drawImage sprites, @map.theme.getSheetCoordinate(coord.x), @map.theme.getSheetCoordinate(coord.y), @map.theme.getSheetCoordinate(@map.theme.settings.image.width), @map.theme.getSheetCoordinate(@map.theme.settings.image.height), @x, @y, @map.theme.settings.image.width, @map.theme.settings.image.height  if coord
     if @unit.deployed
       deployCoord = @map.theme.getDeployEmblemCoordinates()
-      ctx.drawImage sprites, deployCoord.x, deployCoord.y, @map.theme.settings.image.width, @map.theme.settings.image.height, @x, @y, @map.theme.settings.image.width, @map.theme.settings.image.height
+      ctx.drawImage sprites, @map.theme.getSheetCoordinate(deployCoord.x), @map.theme.getSheetCoordinate(deployCoord.y), @map.theme.getSheetCoordinate(@map.theme.settings.image.width), @map.theme.getSheetCoordinate(@map.theme.settings.image.height), @x, @y, @map.theme.settings.image.width, @map.theme.settings.image.height
     if @map.rules
       unitType = @map.rules.units[@unit.type]
       if unitType.carryNum > 0
@@ -798,11 +799,11 @@ define ["Theme", "lib/aja/lib/aja", "lib/pixastic", "lib/sylvester"], (Theme) ->
 
         while i < unitType.carryNum
           slotCoords = (if i < @unit.carriedUnits.length then occupiedCoords else freeCoords)
-          ctx.drawImage @map.sprites, slotCoords.x, slotCoords.y, @map.theme.settings.image.width, @map.theme.settings.image.height, @x, @y - i * @map.theme.settings.carrierSlot.slotHeight, @map.theme.settings.image.width, @map.theme.settings.image.height
+          ctx.drawImage @map.sprites, @map.theme.getSheetCoordinate(slotCoords.x), @map.theme.getSheetCoordinate(slotCoords.y), @map.theme.getSheetCoordinate(@map.theme.settings.image.width), @map.theme.getSheetCoordinate(@map.theme.settings.image.height), @x, @y - i * @map.theme.settings.carrierSlot.slotHeight, @map.theme.settings.image.width, @map.theme.settings.image.height
           ++i
 
   MapDigit::draw = (ctx) ->
-    ctx.drawImage @map.sprites, @coord.x, @coord.y, @map.theme.settings.image.width, @map.theme.settings.image.height, @x, @y, @map.theme.settings.image.width, @map.theme.settings.image.height
+    ctx.drawImage @map.sprites, @map.theme.getSheetCoordinate(@coord.x), @map.theme.getSheetCoordinate(@coord.y), @map.theme.getSheetCoordinate(@map.theme.settings.image.width), @map.theme.getSheetCoordinate(@map.theme.settings.image.height), @x, @y, @map.theme.settings.image.width, @map.theme.settings.image.height
 
   MapDigit::rect = (ctx) ->
     x: @x
@@ -828,11 +829,11 @@ define ["Theme", "lib/aja/lib/aja", "lib/pixastic", "lib/sylvester"], (Theme) ->
       barCoords = @map.theme.getCoordinates(@map.theme.settings.captureBar.barName)
       bitCoords = @map.theme.getCoordinates((if @tile.beingCaptured then @map.theme.settings.captureBar.capturingName else @map.theme.settings.captureBar.recoveringName))
       numBits = Math.ceil(@map.theme.settings.captureBar.totalBits * @tile.capturePoints / 200)
-      ctx.drawImage @map.sprites, barCoords.x, barCoords.y, @map.theme.settings.image.width, @map.theme.settings.image.height, @x, @y, @map.theme.settings.image.width, @map.theme.settings.image.height
+      ctx.drawImage @map.sprites, @map.theme.getSheetCoordinate(barCoords.x), @map.theme.getSheetCoordinate(barCoords.y), @map.theme.getSheetCoordinate(@map.theme.settings.image.width), @map.theme.getSheetCoordinate(@map.theme.settings.image.height), @x, @y, @map.theme.settings.image.width, @map.theme.settings.image.height
       i = 0
 
       while i < numBits
-        ctx.drawImage @map.sprites, bitCoords.x, bitCoords.y, @map.theme.settings.image.width, @map.theme.settings.image.height, @x, @y - i * @map.theme.settings.captureBar.bitHeight, @map.theme.settings.image.width, @map.theme.settings.image.height
+        ctx.drawImage @map.sprites, @map.theme.getSheetCoordinate(bitCoords.x), @map.theme.getSheetCoordinate(bitCoords.y), @map.theme.getSheetCoordinate(@map.theme.settings.image.width), @map.theme.getSheetCoordinate(@map.theme.settings.image.height), @x, @y - i * @map.theme.settings.captureBar.bitHeight, @map.theme.settings.image.width, @map.theme.settings.image.height
         ++i
 
   CaptureBar::rect = ->
@@ -849,7 +850,7 @@ define ["Theme", "lib/aja/lib/aja", "lib/pixastic", "lib/sylvester"], (Theme) ->
       while i < healthString.length
         n = healthString[i]
         numCoord = @mapUnit.map.theme.getHealthNumberCoordinates(n)
-        ctx.drawImage @mapUnit.map.sprites, numCoord.x, numCoord.y, @mapUnit.map.theme.settings.image.width, @mapUnit.map.theme.settings.image.height, @mapUnit.x - (healthString.length - 1 - i) * (@mapUnit.map.theme.settings.number.width + 1), @mapUnit.y, @mapUnit.map.theme.settings.image.width, @mapUnit.map.theme.settings.image.height
+        ctx.drawImage @mapUnit.map.sprites, @mapUnit.map.theme.getSheetCoordinate(numCoord.x), @mapUnit.map.theme.getSheetCoordinate(numCoord.y), @mapUnit.map.theme.getSheetCoordinate(@mapUnit.map.theme.settings.image.width), @mapUnit.map.theme.getSheetCoordinate(@mapUnit.map.theme.settings.image.height), @mapUnit.x - (healthString.length - 1 - i) * (@mapUnit.map.theme.settings.number.width + 1), @mapUnit.y, @mapUnit.map.theme.settings.image.width, @mapUnit.map.theme.settings.image.height
         ++i
 
   HealthIndicator::rect = ->
