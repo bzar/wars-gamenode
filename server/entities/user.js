@@ -5,6 +5,7 @@ function User(userId, username, password, email, settings) {
   this.email = email;
   this.settings = {
     emailNotifications: settings.emailNotifications,
+    noHighDpi: settings.noHighDpi,
     gameTheme: settings.gameTheme,
     animationSpeed: settings.animationSpeed
   };
@@ -27,6 +28,7 @@ User.prototype.cloneFrom = function(other) {
   this.email = other.email;
   this.settings = {
     emailNotifications: other.settings.emailNotifications,
+    noHighDpi: other.settings.noHighDpi,
     gameTheme: other.settings.gameTheme,
     animationSpeed: other.settings.animationSpeed
   };

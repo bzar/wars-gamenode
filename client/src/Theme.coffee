@@ -1,6 +1,7 @@
 define ->
   class Theme
-    constructor: (@themeName) ->
+    constructor: (@themeName, noHighDpi) ->
+      @noHighDpi = !!noHighDpi;
       @settings = {}
       
     load: (callback) ->
@@ -21,7 +22,7 @@ define ->
               y: Math.floor(i / sheet.cols) * image.height
           ++i
         that.settings.sprites = coords
-        if that.isHighDpiAvailable that.settings.sheet
+        if !that.noHighDpi && that.isHighDpiAvailable that.settings.sheet
           that.highDpiTheme = true
         callback()
 

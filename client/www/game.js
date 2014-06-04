@@ -268,7 +268,7 @@
         }), 1000);
       }
       return client.stub.profile(function(response) {
-        theme = new Theme(response.profile.settings.gameTheme);
+        theme = new Theme(response.profile.settings.gameTheme, response.profile.settings.noHighDpi);
         return theme.load(function() {
           updateStatistic();
           return client.stub.gameRules(gameId, function(rules) {

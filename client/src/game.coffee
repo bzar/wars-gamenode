@@ -204,7 +204,7 @@ require ["Theme", "AnimatedMap", "GameLogic", "Color", "gamenode", "base", "lib/
         turnCounter = (if turnCounter > 0 then turnCounter - 1 else 0)
       ), 1000
     client.stub.profile (response) ->
-      theme = new Theme(response.profile.settings.gameTheme)
+      theme = new Theme(response.profile.settings.gameTheme, response.profile.settings.noHighDpi)
       theme.load ->
         updateStatistic()
         client.stub.gameRules gameId, (rules) ->
