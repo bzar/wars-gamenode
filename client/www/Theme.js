@@ -71,6 +71,14 @@
         }
       };
 
+      Theme.prototype.getOriginalSheetSize = function(size) {
+        if (this.isRenderInHighDpi()) {
+          return size / 2;
+        } else {
+          return size;
+        }
+      };
+
       Theme.prototype.getTileCoordinates = function(tileType, tileSubtype, tileOwner) {
         return this.getCoordinates(this.settings.tiles[tileType][tileSubtype][tileOwner].hex);
       };
