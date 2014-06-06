@@ -16,6 +16,7 @@ exports.User = User;
 User.prototype.clone = function() {
   var u = new User(this.userId, this.username, this.password, this.email, 
                    {emailNotifications: this.settings.emailNotifications,
+                    noHighDpi: this.settings.noHighDpi,
                     gameTheme: this.settings.gameTheme,
                     animationSpeed: this.settings.animationSpeed});
   return u;
