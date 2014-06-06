@@ -1,6 +1,7 @@
 define ->
   class Theme
-    constructor: (@themeName) ->
+    constructor: (@themeName, noHighDpi) ->
+      @noHighDpi = !!noHighDpi;
       @settings = {}
       
     load: (callback) ->
@@ -21,7 +22,7 @@ define ->
               y: Math.floor(i / sheet.cols) * image.height
           ++i
         that.settings.sprites = coords
-        if that.isHighDpiAvailable that.settings.sheet
+        if !that.noHighDpi && that.isHighDpiAvailable that.settings.sheet
           that.highDpiTheme = true
         callback()
 
@@ -36,6 +37,7 @@ define ->
     getSpriteSheetUrl: -> "/img/themes/#{@themeName}/" + (if @isRenderInHighDpi() then @settings.sheet.highDpiFilename else @settings.sheet.filename)
     getCoordinates: (name) -> if name? then @settings.sprites[name] else null
     getSheetCoordinate: (coord) -> if @isRenderInHighDpi() then coord * 2 else coord
+    getOriginalSheetSize: (size) -> if @isRenderInHighDpi() then size / 2 else size
     getTileCoordinates: (tileType, tileSubtype, tileOwner) -> @getCoordinates @settings.tiles[tileType][tileSubtype][tileOwner].hex
     getTilePropCoordinates: (tileType, tileSubtype, tileOwner) -> @getCoordinates @settings.tiles[tileType][tileSubtype][tileOwner].prop
     getTileOffset: (tileType, tileSubtype, tileOwner) -> @settings.tiles[tileType][tileSubtype][tileOwner].offset

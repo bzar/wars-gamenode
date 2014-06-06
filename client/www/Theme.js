@@ -5,8 +5,9 @@
     var Theme;
     Theme = (function() {
 
-      function Theme(themeName) {
+      function Theme(themeName, noHighDpi) {
         this.themeName = themeName;
+        this.noHighDpi = !!noHighDpi;
         this.settings = {};
       }
 
@@ -32,7 +33,7 @@
             ++i;
           }
           that.settings.sprites = coords;
-          if (that.isHighDpiAvailable(that.settings.sheet)) {
+          if (!that.noHighDpi && that.isHighDpiAvailable(that.settings.sheet)) {
             that.highDpiTheme = true;
           }
           return callback();
@@ -68,6 +69,14 @@
           return coord * 2;
         } else {
           return coord;
+        }
+      };
+
+      Theme.prototype.getOriginalSheetSize = function(size) {
+        if (this.isRenderInHighDpi()) {
+          return size / 2;
+        } else {
+          return size;
         }
       };
 

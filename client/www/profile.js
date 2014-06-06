@@ -24,20 +24,22 @@
         $("#email").val(profile.email);
         $("#theme").val(profile.settings.gameTheme);
         $("#animationSpeed").val(profile.settings.animationSpeed);
-        return $("#emailNotifications").prop("checked", profile.settings.emailNotifications);
+        $("#emailNotifications").prop("checked", profile.settings.emailNotifications);
+        $("#noHighDpi").prop("checked", profile.settings.noHighDpi);
       });
       return $("#profileForm").submit(function(e) {
-        var animationSpeed, email, emailNotifications, gameTheme, password, password1, password2, username;
+        var animationSpeed, email, emailNotifications, gameTheme, noHighDpi, password, password1, password2, username;
         e.preventDefault();
         username = $("#username").val();
         email = $("#email").val();
         gameTheme = $("#theme").val();
         animationSpeed = $("#animationSpeed").val();
         emailNotifications = $("#emailNotifications").prop("checked");
+        noHighDpi = $("#noHighDpi").prop("checked");
         password1 = $("#password").val();
         password2 = $("#password2").val();
         password = (password1 !== password2 || password1 === "" ? null : password1);
-        return client.stub.saveProfile(username, password, email, gameTheme, animationSpeed, emailNotifications, function(response) {
+        return client.stub.saveProfile(username, password, email, gameTheme, animationSpeed, emailNotifications, noHighDpi, function(response) {
           var message;
           if (!response.success) {
             return alert("Unable to get profile! " + response.reason);

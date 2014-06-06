@@ -204,7 +204,7 @@ require ["Theme", "AnimatedMap", "GameLogic", "Color", "gamenode", "base", "lib/
         turnCounter = (if turnCounter > 0 then turnCounter - 1 else 0)
       ), 1000
     client.stub.profile (response) ->
-      theme = new Theme(response.profile.settings.gameTheme)
+      theme = new Theme(response.profile.settings.gameTheme, response.profile.settings.noHighDpi)
       theme.load ->
         updateStatistic()
         client.stub.gameRules gameId, (rules) ->
@@ -755,6 +755,7 @@ require ["Theme", "AnimatedMap", "GameLogic", "Color", "gamenode", "base", "lib/
       item.css "height", theme.settings.image.height
       pos = theme.getUnitCoordinates(unit.type, inTurnNumber)
       item.css "background-position", -pos.x + "px " + -pos.y + "px"
+      item.css "background-size", theme.getOriginalSheetSize(gameMap.sprites.width)
       item.addClass "unloadItem"
       item.attr "unitId", unit.unitId
       unloadMenu.append item
@@ -804,6 +805,7 @@ require ["Theme", "AnimatedMap", "GameLogic", "Color", "gamenode", "base", "lib/
       unitImage.addClass "sprite"
       pos = theme.getUnitCoordinates(unitType.id, inTurnNumber)
       unitImage.css "background-position", -pos.x + "px " + -pos.y + "px"
+      unitImage.css "background-size", theme.getOriginalSheetSize(gameMap.sprites.width)
       unitImage.css "width", theme.settings.image.width
       unitImage.css "height", theme.settings.image.height
       buildItem.append unitPrice
