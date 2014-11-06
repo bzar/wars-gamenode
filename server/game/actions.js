@@ -467,6 +467,8 @@ GameActions.prototype.build = function(gameId, userId, unitTypeId, destination, 
           callback({success: false, reason: "Tile not owned by player!"}); return;
         } else if(!tileType.canBuild(unitTypeId)) {
           callback({success: false, reason: "Tile cannot build that unit type!"}); return;
+        } else if(tile.capturePoints !== settings.maxCapturePoints) {
+          callback({success: false, reason: "Tile not completely captured!"}); return;
         } else if(tile.unitId !== null) {
           callback({success: false, reason: "Tile is occupied!"}); return;
         } else if(unitType === undefined) {
@@ -633,43 +635,48 @@ GameActions.prototype.startTurn = function(game, callback) {
           var nextPlayerTiles = [];
           for(var i = 0; i < tiles.length; ++i) {
             var tile = tiles[i];
+
             if(tile.owner != nextPlayer.playerNumber) {
               continue;
             } else {
               nextPlayerTiles.push(tile);
             }
 
+            var unit = null;
+            if(tile.unitId !== null) {
+              for(var j = 0; j < units.length; ++j) {
+                if(units[j].unitId == tile.unitId) {
+                  unit = units[j];
+                  break;
+                }
+              }
+            }
+
+            // Handle capturing
+            if((unit === null || !unit.capturing) && tile.capturePoints < settings.maxCapturePoints) {
+              tile.beingCaptured = false;
+              tile.regenerateCapturePoints();
+              events.regenerateCapturePoints(tile, tile.capturePoints);
+            }
+
+            var captured = tile.capturePoints / settings.maxCapturePoints;
+
             var tileType = tile.terrainType();
             // Produce funds
             if(tileType.producesFunds()) {
               events.produceFunds(tile);
-              nextPlayer.funds += settings.defaultFundsPerProperty;
-              nextPlayer.score += settings.defaultFundsPerProperty;
+              amount = parseInt(settings.defaultFundsPerProperty * captured); 
+              nextPlayer.funds += amount
+              nextPlayer.score += amount;
             }
 
-            if(tile.unitId !== null) {
-              for(var j = 0; j < units.length; ++j) {
-                var unit = units[j];
-                tile.unit = unit;
-                if(unit.unitId == tile.unitId) {
-                  // Heal units
-                  if(unit.owner == nextPlayer.playerNumber && tileType.canRepair(unit.type) && unit.health < 100) {
-                    nextPlayer.score += unit.heal(settings.defaultRepairRate);
-                    events.repair(tile, unit, unit.health);
-                  }
-                  // Handle capturing
-                  if(!unit.capturing && tile.capturePoints < settings.maxCapturePoints) {
-                    tile.beingCaptured = false;
-                    tile.regenerateCapturePoints();
-                    events.regenerateCapturePoints(tile, tile.capturePoints);
-                  }
-                  break;
-                }
+            if(unit !== null) {
+              // Heal units
+              if(unit.owner == nextPlayer.playerNumber && tileType.canRepair(unit.type) && unit.health < 100) {
+                healAmount = settings.defaultRepairRate * captured;
+                nextPlayer.score += unit.heal(healAmount);
+                events.repair(tile, unit, unit.health);
               }
-            } else {
-              tile.beingCaptured = false;
-              tile.regenerateCapturePoints();
-              events.regenerateCapturePoints(tile, tile.capturePoints);
             }
           }
 

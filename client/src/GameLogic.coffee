@@ -82,9 +82,9 @@ GameLogic::tileHasMovableUnit = (player, x, y) ->
 
 GameLogic::tileCanBuild = (player, x, y) ->
   tile = @map.getTile(x, y)
-  if not tile? or tile.owner isnt player or tile.unit?
+  if not tile? or tile.owner isnt player or tile.unit? or tile.capturePoints < 200
     return false
-  else 
+  else
     return @rules.terrains[tile.type].buildTypes.length isnt 0
 
 GameLogic::tileBuildOptions = (x, y) ->
