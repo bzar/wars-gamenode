@@ -151,9 +151,13 @@ GameActions.prototype.moveAndAttack = function(gameId, userId, unitId, destinati
           deletedUnits = deletedUnits.concat(getCarriedUnits(deletedUnits));
 
           database.deleteUnits(deletedUnits, function(result) {
+            if(!result.success) { callback(result); return; }
             database.updateUnits(updatedUnits, function(result) {
+              if(!result.success) { callback(result); return; }
               database.updateTiles([sourceTile, destinationTile, targetTile], function(result) {
+                if(!result.success) { callback(result); return; }
                 database.updatePlayers(targetPlayer ? [player, targetPlayer] : [player], function(result) {
+                  if(!result.success) { callback(result); return; }
                   database.createGameEvents(events.objects, function(result) {
                     callback({success: true, events: events.objects});
                   });

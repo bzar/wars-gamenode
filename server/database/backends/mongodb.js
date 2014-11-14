@@ -845,6 +845,7 @@ MongoDBDatabase.prototype.deleteUnit = function(unit, callback) {
 }
 
 MongoDBDatabase.prototype.deleteUnits = function(units, callback) {
+  if(units.length === 0) { callback({success: true}); return; }
   var timer = new utils.Timer("MongoDBDatabase.deleteUnits");
   var this_ = this;
   var unitIds = units.map(function(d){ return this_.toObjectID(d.unitId); });
@@ -853,6 +854,7 @@ MongoDBDatabase.prototype.deleteUnits = function(units, callback) {
     collection.remove({_id:{$in: unitIds}}, function(err) {
       if(err) { callback({success: false, reason: err}); return; }
       this_.database.collection("tiles", function(err, collection) {
+        if(err) { callback({success: false, reason: err}); return; }
         collection.update({unitId:{$in: unitIds}}, {$set: {unitId: null}}, {multi: true}, function(err) {
           if(err) { callback({success: false, reason: err}); return; }
           timer.end();

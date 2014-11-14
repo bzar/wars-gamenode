@@ -60,7 +60,7 @@ require ["Theme", "AnimatedMap", "GameLogic", "Color", "gamenode", "base", "lib/
       $("#spinner").show()
       client.stub.endTurn gameId, (response) ->
         unless response.success
-          alert response.reason
+          alert JSON.stringify(response.reason)
           $("#spinner").hide()
 
 
@@ -70,7 +70,7 @@ require ["Theme", "AnimatedMap", "GameLogic", "Color", "gamenode", "base", "lib/
         $("#spinner").show()
         client.stub.surrender gameId, (response) ->
           unless response.success
-            alert "Could not surrender! " + response.reason
+            alert "Could not surrender! " + JSON.stringify(response.reason)
             $("#spinner").hide()
 
 
@@ -80,7 +80,7 @@ require ["Theme", "AnimatedMap", "GameLogic", "Color", "gamenode", "base", "lib/
         $("#spinner").show()
         client.stub.leaveGame gameId, inTurnNumber, (response) ->
           unless response.success
-            alert "Could not leave game! " + response.reason
+            alert "Could not leave game! " + JSON.stringify(response.reason)
             $("#spinner").hide()
           else
             document.location = "mygames.html"
@@ -101,7 +101,7 @@ require ["Theme", "AnimatedMap", "GameLogic", "Color", "gamenode", "base", "lib/
           status.removeClass (if nextValue then "icon-check-empty" else "icon-check")
           status.addClass (if nextValue then "icon-check" else "icon-check-empty")
         else
-          alert "Could not change email notifications setting! " + response.reason
+          alert "Could not change email notifications setting! " + JSON.stringify(response.reason)
 
 
     speeds = [
@@ -288,7 +288,7 @@ require ["Theme", "AnimatedMap", "GameLogic", "Color", "gamenode", "base", "lib/
     #          }
     client.stub.gameEvents gameId, 0, 10, (response) ->
       unless response.success
-        alert "Could not get game events! " + response.reason
+        alert "Could not get game events! " + JSON.stringify(response.reason)
       else
         ticker.setMessages response.gameEvents, true
 
@@ -317,7 +317,7 @@ require ["Theme", "AnimatedMap", "GameLogic", "Color", "gamenode", "base", "lib/
       if $(this).scrollTop() + $(this).innerHeight() >= @scrollHeight - 16
         client.stub.gameEvents gameId, messageTicker.children().length, 10, (response) ->
           unless response.success
-            alert "Could not get game events! " + response.reason
+            alert "Could not get game events! " + JSON.stringify(response.reason)
           else
             ticker.showOldMessages response.gameEvents
 
@@ -495,7 +495,7 @@ require ["Theme", "AnimatedMap", "GameLogic", "Color", "gamenode", "base", "lib/
       targetId = map.getTile(tx, ty).unit.unitId
       $("#spinner").show()
       client.stub.moveAndAttack gameId, unitId, destination, gameUIState.path, targetId, (response) ->
-        alert response.reason  unless response.success
+        alert JSON.stringify(response.reason)  unless response.success
         gameUIState = stateName: "select"
     else
       undoMove()
@@ -528,7 +528,7 @@ require ["Theme", "AnimatedMap", "GameLogic", "Color", "gamenode", "base", "lib/
 
       $("#spinner").show()
       client.stub.moveAndUnload gameId, unitId, destination, gameUIState.path, carriedUnitId, unloadDestination, (response) ->
-        alert response.reason  unless response.success
+        alert JSON.stringify(response.reason)  unless response.success
         gameUIState = stateName: "select"
     else
       undoMove()
@@ -666,7 +666,7 @@ require ["Theme", "AnimatedMap", "GameLogic", "Color", "gamenode", "base", "lib/
 
     $(".actionItem").click (e) ->
       resetUI = (response) ->
-        alert response.reason  unless response.success
+        alert JSON.stringify(response.reason)  unless response.success
         map.refresh()
         gameUIState = stateName: "select"
       action = $(this).attr("action")
@@ -821,7 +821,7 @@ require ["Theme", "AnimatedMap", "GameLogic", "Color", "gamenode", "base", "lib/
             if response.success
               refreshFunds()
             else
-              alert "Error building unit! " + response.reason
+              alert "Error building unit! " + JSON.stringify(response.reason)
             buildMenu.hide()
       else
         buildItem.addClass "disabled"
