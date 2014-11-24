@@ -116,11 +116,15 @@ MongoDBDatabase.prototype.createGame = function(game, gameData, players, callbac
               }
 
               tileCollection.insert(tiles, function(err, tiles) {
-                unitCollection.insert(units, function(err, units) {
-                  if(err) { callback({success: false, reason: err}); return; }
-                  timer.end();
+                if(units.length === 0) {
                   callback({success: true, gameId: gameId});
-                });
+                } else {
+                  unitCollection.insert(units, function(err, units) {
+                    if(err) { callback({success: false, reason: err}); return; }
+                    timer.end();
+                    callback({success: true, gameId: gameId});
+                  });
+                }
               });
             });
           });
