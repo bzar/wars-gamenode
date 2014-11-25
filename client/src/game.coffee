@@ -383,8 +383,6 @@ require ["Theme", "AnimatedMap", "GameLogic", "Color", "gamenode", "base", "lib/
   handleMapClick = (e) ->
     return  if finished
     buildMenu = $("#buildMenu")
-    canvas = $("#mapCanvas")
-    content = $("#content")
     canvasPosition =
       x: e.pageX - e.currentTarget.offsetLeft
       y: e.pageY - e.currentTarget.offsetTop
@@ -400,7 +398,7 @@ require ["Theme", "AnimatedMap", "GameLogic", "Color", "gamenode", "base", "lib/
 
     if inTurn
       buildMenu.hide()
-      switch gameUIState.stateName 
+      switch gameUIState.stateName
         when "select" then handleSelectMapClick tilePosition, canvasPosition
         when "move" then handleMoveMapClick tilePosition, canvasPosition
         when "action" then handleActionMapClick()
@@ -603,7 +601,7 @@ require ["Theme", "AnimatedMap", "GameLogic", "Color", "gamenode", "base", "lib/
     
   showActionMenu = (actions, canvasPosition) ->
     actionMenu = $("#actionMenu")
-    content = $("#content")
+    content = $("#mapCanvas")
     size = fitElement(actions.length, 48, 48, content)
     optimalLeft = canvasPosition.x
     optimalTop = canvasPosition.y
@@ -735,7 +733,7 @@ require ["Theme", "AnimatedMap", "GameLogic", "Color", "gamenode", "base", "lib/
 
   showUnloadMenu = (units, canvasPosition) ->
     unloadMenu = $("#unloadMenu")
-    content = $("#content")
+    content = $("#mapCanvas")
     size = fitElement(units.length, theme.settings.image.width + 12, theme.settings.image.height + 12, content)
     optimalLeft = canvasPosition.x
     optimalTop = canvasPosition.y
@@ -778,7 +776,7 @@ require ["Theme", "AnimatedMap", "GameLogic", "Color", "gamenode", "base", "lib/
 
   showBuildMenu = (buildOptions, canvasPosition, tilePosition) ->
     buildMenu = $("#buildMenu")
-    content = $("#content")
+    content = $("#mapCanvas")
     size = fitElement(buildOptions.length, 140, 140, content)
     optimalLeft = canvasPosition.x - size.width / 2
     optimalTop = canvasPosition.y - size.height / 2

@@ -530,13 +530,11 @@
       return $(".turnAction").hide();
     };
     handleMapClick = function(e) {
-      var buildMenu, canvas, canvasPosition, content, hexCoords, tilePosition, windowPosition;
+      var buildMenu, canvasPosition, hexCoords, tilePosition, windowPosition;
       if (finished) {
         return;
       }
       buildMenu = $("#buildMenu");
-      canvas = $("#mapCanvas");
-      content = $("#content");
       canvasPosition = {
         x: e.pageX - e.currentTarget.offsetLeft,
         y: e.pageY - e.currentTarget.offsetTop
@@ -838,7 +836,7 @@
     showActionMenu = function(actions, canvasPosition) {
       var action, actionMap, actionMenu, actionName, content, item, optimalLeft, optimalTop, position, size, _i, _len;
       actionMenu = $("#actionMenu");
-      content = $("#content");
+      content = $("#mapCanvas");
       size = fitElement(actions.length, 48, 48, content);
       optimalLeft = canvasPosition.x;
       optimalTop = canvasPosition.y;
@@ -978,7 +976,7 @@
     showUnloadMenu = function(units, canvasPosition) {
       var content, item, optimalLeft, optimalTop, pos, position, size, unit, unloadMenu, _i, _len;
       unloadMenu = $("#unloadMenu");
-      content = $("#content");
+      content = $("#mapCanvas");
       size = fitElement(units.length, theme.settings.image.width + 12, theme.settings.image.height + 12, content);
       optimalLeft = canvasPosition.x;
       optimalTop = canvasPosition.y;
@@ -1024,7 +1022,7 @@
     showBuildMenu = function(buildOptions, canvasPosition, tilePosition) {
       var buildItem, buildMenu, content, funds, optimalLeft, optimalTop, pos, position, size, unitImage, unitName, unitPrice, unitType, _i, _len, _results;
       buildMenu = $("#buildMenu");
-      content = $("#content");
+      content = $("#mapCanvas");
       size = fitElement(buildOptions.length, 140, 140, content);
       optimalLeft = canvasPosition.x - size.width / 2;
       optimalTop = canvasPosition.y - size.height / 2;
