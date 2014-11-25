@@ -1,4 +1,4 @@
-var email = require("./lib/nodemailer");
+var email = require("nodemailer");
 var utils = require("./utils");
 var configuration = require("./configuration").configuration;
 

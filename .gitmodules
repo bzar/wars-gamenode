@@ -1,21 +1,12 @@
 [submodule "lib/gamenode"]
 	path = lib/gamenode
 	url = git://github.com/bzar/gamenode.git
-[submodule "server/lib/node-mongodb-native"]
-	path = server/lib/node-mongodb-native
-	url = https://github.com/mongodb/node-mongodb-native.git
-[submodule "client/www/lib/d3"]
-	path = client/www/lib/d3
+[submodule "client/static/lib/d3"]
+	path = client/static/lib/d3
 	url = git://github.com/mbostock/d3.git
-[submodule "client/www/lib/aja"]
-	path = client/www/lib/aja
+[submodule "client/static/lib/aja"]
+	path = client/static/lib/aja
 	url = git://github.com/bzar/aja.git
-[submodule "client/lib/ect"]
-	path = client/lib/ect
-	url = https://github.com/baryshev/ect
-[submodule "client/lib/less"]
-	path = client/lib/less
-	url = https://github.com/cloudhead/less.js
-[submodule "client/www/lib/font-awesome"]
-	path = client/www/lib/font-awesome
+[submodule "client/static/lib/font-awesome"]
+	path = client/static/lib/font-awesome
 	url = https://github.com/FortAwesome/Font-Awesome.git

@@ -4,7 +4,7 @@ var utils = require("../../utils");
 
 var DummyDatabase = require("./dummy").implementation;
 
-var mongo = require("../../lib/node-mongodb-native/lib/mongodb");
+var mongo = require("mongodb");
 
 var MongoDBDatabase = function(params) {
   this.host = params.host ? params.host : "localhost";

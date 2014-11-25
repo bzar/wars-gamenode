@@ -42,7 +42,7 @@ if(configuration.enableFileServer) {
       img: "img",
       lib: "lib"
     }, 
-    __dirname + "/../client/www", "login.html");
+    __dirname + "/../client", "login.html");
   fileServer.attachTo(server);
 }
 
