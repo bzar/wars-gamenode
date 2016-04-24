@@ -20,7 +20,7 @@ gulp.task('server', function() {
     .pipe(gulp.dest('build/server'));
 });
 
-gulp.task('client', ['client-coffee', 'client-less', 'client-ect', 'client-static']);
+gulp.task('client', ['client-coffee', 'client-less', 'client-ect', 'client-static', 'client-gamenode']);
 
 gulp.task('client-coffee', function() {
   return gulp.src('client/src/*.coffee')
@@ -40,4 +40,8 @@ gulp.task('client-ect', function() {
 gulp.task('client-static', function() {
   return gulp.src('client/static/**/*')
     .pipe(gulp.dest('build/client'));
+});
+gulp.task('client-gamenode', function() {
+  return gulp.src('lib/gamenode/web/**/*')
+    .pipe(gulp.dest('build/client/gamenode'));
 });
