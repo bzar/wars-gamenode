@@ -519,9 +519,8 @@ GameActions.prototype.build = function(gameId, userId, unitTypeId, destination, 
 
         database.updatePlayer(player, function(result) {
           database.createUnit(gameId, unit, function(result) {
-            tile.unitId = result.unitId;
             unit.unitId = result.unitId;
-            tile.unit = unit;
+            tile.setUnit(unit);
 
             var events = new GameEventManager(gameId);
             events.build(tile, unit);
@@ -564,7 +563,7 @@ GameActions.prototype.endTurn = function(game, userId, callback) {
             for(var j = 0; j < tiles.length; ++j) {
               var tile = tiles[j];
               if(tile.tileId == unit.tileId) {
-                tile.unit = unit;
+                tile.setUnit(unit);
               }
             }
             if(!unit.moved)
