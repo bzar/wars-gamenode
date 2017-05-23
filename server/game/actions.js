@@ -64,6 +64,7 @@ function checkMove(database, gameId, userId, unitId, destination, path, callback
 
 GameActions.prototype.moveAndAttack = function(gameId, userId, unitId, destination, path, targetId, callback) {
   var database = this.database;
+  var gameProcedures = this.gameProcedures;
   checkMove(database, gameId, userId, unitId, destination, path,
             function(result, game, player, unit, sourceTile, destinationTile, path, gameLogic) {
     if(!result.success) {
@@ -159,7 +160,11 @@ GameActions.prototype.moveAndAttack = function(gameId, userId, unitId, destinati
                 database.updatePlayers(targetPlayer ? [player, targetPlayer] : [player], function(result) {
                   if(!result.success) { callback(result); return; }
                   database.createGameEvents(events.objects, function(result) {
-                    callback({success: true, events: events.objects});
+                    if(!result.success) { callback(result); return; }
+                    gameProcedures.validateGame(gameId, function(result) {
+                      if(!result.success) { callback(result); return; }
+                      callback({success: true, events: events.objects});
+                    });
                   });
                 });
               });
@@ -173,6 +178,7 @@ GameActions.prototype.moveAndAttack = function(gameId, userId, unitId, destinati
 
 GameActions.prototype.moveAndWait = function(gameId, userId, unitId, destination, path, callback) {
   var database = this.database;
+  var gameProcedures = this.gameProcedures;
   checkMove(database, gameId, userId, unitId, destination, path,
             function(result, game, player, unit, sourceTile, destinationTile, path, gameLogic) {
     if(!result.success) {
@@ -191,8 +197,13 @@ GameActions.prototype.moveAndWait = function(gameId, userId, unitId, destination
     events.wait(unit);
 
     database.updateUnit(unit, function(result) {
+      if(!result.success) { callback(result); return; }
       database.updateTiles([sourceTile, destinationTile], function(result) {
-        callback({success: true, events: events.objects});
+        if(!result.success) { callback(result); return; }
+        gameProcedures.validateGame(gameId, function(result) {
+          if(!result.success) { callback(result); return; }
+          callback({success: true, events: events.objects});
+        });
       });
     });
   });
@@ -236,7 +247,10 @@ GameActions.prototype.moveAndCapture = function(gameId, userId, unitId, destinat
 
     function cb() {
       database.createGameEvents(events.objects, function(result) {
-        callback({success: true, events: events.objects});
+        gameProcedures.validateGame(gameId, function(result) {
+          if(!result.success) { callback(result); return; }
+          callback({success: true, events: events.objects});
+        });
       });
     }
     
@@ -265,6 +279,7 @@ GameActions.prototype.moveAndCapture = function(gameId, userId, unitId, destinat
 
 GameActions.prototype.moveAndDeploy = function(gameId, userId, unitId, destination, path, callback) {
   var database = this.database;
+  var gameProcedures = this.gameProcedures;
   checkMove(database, gameId, userId, unitId, destination, path,
             function(result, game, player, unit, sourceTile, destinationTile, path, gameLogic) {
     if(!result.success) {
@@ -295,7 +310,10 @@ GameActions.prototype.moveAndDeploy = function(gameId, userId, unitId, destinati
     database.updateUnit(unit, function(result) {
       database.updateTiles([sourceTile, destinationTile], function(result) {
         database.createGameEvents(events.objects, function(result) {
-          callback({success: true, events: events.objects});
+          gameProcedures.validateGame(gameId, function(result) {
+            if(!result.success) { callback(result); return; }
+            callback({success: true, events: events.objects});
+          });
         });
       });
     });
@@ -304,6 +322,7 @@ GameActions.prototype.moveAndDeploy = function(gameId, userId, unitId, destinati
 
 GameActions.prototype.undeploy = function(gameId, userId, unitId, callback) {
   var database = this.database;
+  var gameProcedures = this.gameProcedures;
   checkMove(database, gameId, userId, unitId, null, null,
             function(result, game, player, unit, sourceTile, destinationTile, path, gameLogic) {
     if(!result.success) {
@@ -326,7 +345,10 @@ GameActions.prototype.undeploy = function(gameId, userId, unitId, callback) {
     database.updateUnit(unit, function(result) {
       database.updateTiles([sourceTile], function(result) {
         database.createGameEvents(events.objects, function(result) {
-          callback({success: true, events: events.objects});
+          gameProcedures.validateGame(gameId, function(result) {
+            if(!result.success) { callback(result); return; }
+            callback({success: true, events: events.objects});
+          });
         });
       });
     });
@@ -335,6 +357,7 @@ GameActions.prototype.undeploy = function(gameId, userId, unitId, callback) {
 
 GameActions.prototype.moveAndLoadInto = function(gameId, userId, unitId, carrierId, path, callback) {
   var database = this.database;
+  var gameProcedures = this.gameProcedures;
   var gameInformation = new GameInformation(database);
   gameInformation.unitWithTile(carrierId, function(result) {
     if(!result.success) {
@@ -372,7 +395,10 @@ GameActions.prototype.moveAndLoadInto = function(gameId, userId, unitId, carrier
       database.updateUnits([unit, carrier], function(result) {
         database.updateTiles([sourceTile], function(result) {
           database.createGameEvents(events.objects, function(result) {
-            callback({success: true, events: events.objects});
+            gameProcedures.validateGame(gameId, function(result) {
+              if(!result.success) { callback(result); return; }
+              callback({success: true, events: events.objects});
+            });
           });
         });
       });
@@ -382,6 +408,7 @@ GameActions.prototype.moveAndLoadInto = function(gameId, userId, unitId, carrier
 
 GameActions.prototype.moveAndUnload = function(gameId, userId, carrierId, destination, path, unitId, unloadDestination, callback) {
   var database = this.database;
+  var gameProcedures = this.gameProcedures;
   checkMove(database, gameId, userId, carrierId, destination, path,
             function(result, game, player, unit, sourceTile, destinationTile, path, gameLogic) {
     if(!result.success) {
@@ -429,7 +456,10 @@ GameActions.prototype.moveAndUnload = function(gameId, userId, carrierId, destin
       database.updateUnits([unit, carriedUnit], function(result) {
         database.updateTiles([sourceTile, destinationTile, unloadTile], function(result) {
           database.createGameEvents(events.objects, function(result) {
-            callback({success: true, events: events.objects});
+            gameProcedures.validateGame(gameId, function(result) {
+              if(!result.success) { callback(result); return; }
+              callback({success: true, events: events.objects});
+            });
           });
         });
       });
@@ -439,6 +469,7 @@ GameActions.prototype.moveAndUnload = function(gameId, userId, carrierId, destin
 
 GameActions.prototype.build = function(gameId, userId, unitTypeId, destination, callback) {
   var database = this.database;
+  var gameProcedures = this.gameProcedures;
   database.game(gameId, function(result) {
     if(!result.success) {
       callback({success: false, reason: result.reason}); return;
@@ -497,7 +528,10 @@ GameActions.prototype.build = function(gameId, userId, unitTypeId, destination, 
 
             database.updateTile(tile, function(result) {
               database.createGameEvents(events.objects, function(result) {
-                callback({success: true, events: events.objects});
+                gameProcedures.validateGame(gameId, function(result) {
+                  if(!result.success) { callback(result); return; }
+                  callback({success: true, events: events.objects});
+                });
               });
             });
           });
@@ -509,6 +543,7 @@ GameActions.prototype.build = function(gameId, userId, unitTypeId, destination, 
 
 GameActions.prototype.endTurn = function(game, userId, callback) {
   var database = this.database;
+  var gameProcedures = this.gameProcedures;
 
   function endTurn(result) {
     if(!result.success) {
@@ -541,7 +576,10 @@ GameActions.prototype.endTurn = function(game, userId, callback) {
               callback({success: false, reason: result.reason});
             } else {
               database.createGameEvents(events.objects, function(result) {
-                callback({success: true, events: events.objects});
+                gameProcedures.validateGame(game.gameId, function(result) {
+                  if(!result.success) { callback(result); return; }
+                  callback({success: true, events: events.objects});
+                });
               });
             }
           });
@@ -560,6 +598,7 @@ GameActions.prototype.endTurn = function(game, userId, callback) {
 
 GameActions.prototype.startTurn = function(game, callback) {
   var database = this.database;
+  var gameProcedures = this.gameProcedures;
   // Determine next player
   database.players(game.gameId, function(result) {
     var players = result.players.sort(function(a, b) { return a.playerNumber - b.playerNumber });
@@ -629,7 +668,10 @@ GameActions.prototype.startTurn = function(game, callback) {
           events.gameFinished(nextPlayer);
           database.updateGame(game, function(result) {
             database.createGameEvents(events.objects, function(result) {
-              callback({success: true, finished: true, events: events.objects});
+              gameProcedures.validateGame(gameId, function(result) {
+                if(!result.success) { callback(result); return; }
+                callback({success: true, events: events.objects});
+              });
             });
           });
         } else {
@@ -701,8 +743,11 @@ GameActions.prototype.startTurn = function(game, callback) {
                     database.createGameStatistic(gameStatistic, function(result) {
                       database.user(nextPlayer.userId, function(result) {
                         email.sendTurnNotification(game, nextPlayer, result.user);
-                        callback({success: true, finished: false, inTurnNumber: game.inTurnNumber, roundNumber: game.roundNumber,
-                                  events: events.objects, untilNextTurn: untilNextTurn});
+                        gameProcedures.validateGame(game.gameId, function(result) {
+                          if(!result.success) { callback(result); return; }
+                          callback({success: true, finished: false, inTurnNumber: game.inTurnNumber, roundNumber: game.roundNumber,
+                            events: events.objects, untilNextTurn: untilNextTurn});
+                        });
                       });
                     });
                   });
@@ -719,6 +764,7 @@ GameActions.prototype.startTurn = function(game, callback) {
 
 GameActions.prototype.nextTurn = function(gameId, userId, callback) {
   var this_ = this;
+  var gameProcedures = this.gameProcedures;
   this.database.game(gameId, function(result) {
     if(!result.success) {
       callback({success: false, reason: result.reason});
@@ -746,8 +792,11 @@ GameActions.prototype.nextTurn = function(gameId, userId, callback) {
           }
 
           var events = firstEvents.concat(result.events);
-          callback({success: true, finished: result.finished, inTurnNumber: result.inTurnNumber, roundNumber: game.roundNumber,
-                    events: events, untilNextTurn: result.untilNextTurn});
+          gameProcedures.validateGame(gameId, function(r) {
+            if(!r.success) { callback(r); return; }
+            callback({success: true, finished: result.finished, inTurnNumber: result.inTurnNumber, roundNumber: game.roundNumber,
+                      events: events, untilNextTurn: result.untilNextTurn});
+          });
         });
       });
     }
@@ -757,6 +806,7 @@ GameActions.prototype.nextTurn = function(gameId, userId, callback) {
 GameActions.prototype.surrender = function(gameId, userId, callback) {
   var this_ = this;
   var database = this.database;
+  var gameProcedures = this.gameProcedures;
   database.game(gameId, function(result) {
     if(!result.success) {
       callback({success: false, reason: result.reason}); return;
@@ -785,8 +835,11 @@ GameActions.prototype.surrender = function(gameId, userId, callback) {
           var untilNextTurn = result.untilNextTurn;
           this_.gameInformation.tilesWithUnits(gameId, function(result) {
             database.createGameEvents(events.objects, function(result) {
-              callback({success: true, finished: finished, inTurnNumber: inTurnNumber,
-                       events: events.objects, untilNextTurn: untilNextTurn});
+              gameProcedures.validateGame(gameId, function(r) {
+                if(!r.success) { callback(r); return; }
+                callback({success: true, finished: finished, inTurnNumber: inTurnNumber,
+                  events: events.objects, untilNextTurn: untilNextTurn});
+              });
             });
           });
         });

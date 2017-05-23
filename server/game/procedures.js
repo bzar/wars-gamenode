@@ -1,4 +1,5 @@
 var utils = require("../utils");
+var DEBUG = require("../configuration").configuration.debug;
 
 function GameProcedures(database) {
   this.database = database;
@@ -105,4 +106,36 @@ GameProcedures.prototype.automaticEndTurn = function(gameId, server) {
       mutex.release();
     });
   });
+}
+
+GameProcedures.prototype.validateGame = function(gameId, callback) {
+  if(DEBUG) {
+    var database = this.database;
+    database.tiles(gameId, function(result) {
+      if(!result.success) { callback({success: false, reason: result.reason}); return; }
+      var tiles = result.tiles;
+      database.units(gameId, function(result) {
+        if(!result.success) { callback({success: false, reason: result.reason}); return; }
+        var units = result.units;
+        for(var i = 0; i < tiles.length; ++i) {
+          for(var j = 0; j < units.length; ++j) {
+            var tile = tiles[i];
+            var unit = units[j];
+            if((tile.unitId === unit.id || unit.tileId === tile.id)
+              && !(tile.unitId === unit.id && unit.tileId === tile.id)) {
+                callback({
+                  success: false,
+                  reason: "Tile-Unit mismatch (tile: " + tile.id + " | unit: " + unit.id + ")"
+                });
+                return;
+              }
+          }
+        }
+
+        callback({success: true});
+      });
+    });
+  } else {
+    callback({success: true});
+  }
 }

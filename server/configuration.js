@@ -5,6 +5,7 @@ var configuration = {
   enableFileServer: true,
   logTopics: ["error", "performance", "email", "game", "login"],
   crashOnError: true,
+  debug: true,
 
   database: {
     //type: "jsonfile"
