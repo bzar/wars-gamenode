@@ -558,27 +558,35 @@ GameActions.prototype.endTurn = function(game, userId, callback) {
         var tiles = result.tiles;
         database.playerUnits(game.gameId, previousPlayer.playerNumber, function(result) {
           var previousPlayerUnits = result.units;
+          var previousPlayerUnitTiles = [];
           for(var i = 0; i < previousPlayerUnits.length; ++i) {
             var unit = previousPlayerUnits[i];
             for(var j = 0; j < tiles.length; ++j) {
               var tile = tiles[j];
               if(tile.tileId == unit.tileId) {
                 tile.setUnit(unit);
+                previousPlayerUnitTiles.push(tile);
               }
             }
             if(!unit.moved)
               unit.wait();
             unit.reset();
           }
-          database.updateUnits(previousPlayerUnits, function(result) {
+          database.updateTiles(previousPlayerUnitTiles, function(result) {
             if(!result.success) {
               callback({success: false, reason: result.reason});
             } else {
-              database.createGameEvents(events.objects, function(result) {
-                gameProcedures.validateGame(game.gameId, function(result) {
-                  if(!result.success) { callback(result); return; }
-                  callback({success: true, events: events.objects});
-                });
+              database.updateUnits(previousPlayerUnits, function(result) {
+                if(!result.success) {
+                  callback({success: false, reason: result.reason});
+                } else {
+                  database.createGameEvents(events.objects, function(result) {
+                    gameProcedures.validateGame(game.gameId, function(result) {
+                      if(!result.success) { callback(result); return; }
+                      callback({success: true, events: events.objects});
+                    });
+                  });
+                }
               });
             }
           });
